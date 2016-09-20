@@ -7,4 +7,8 @@
 ![Version](https://img.shields.io/nuget/v/[NUGET.PACKAGENAME].svg)
 ![Pre-release version](https://img.shields.io/nuget/vpre/Orc.FileSystem.svg)
 
-To be described.
+# FileService
+
+# DirectoryService
+
+# FileLocker

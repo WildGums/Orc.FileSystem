@@ -15,7 +15,8 @@ public static class ModuleInitializer
     {
         var serviceLocator = ServiceLocator.Default;
 
-		// TODO: register services here
+        serviceLocator.RegisterType<IFileService, FileService>();
+        serviceLocator.RegisterType<IDirectoryService, DirectoryService>();
 
         var languageService = serviceLocator.ResolveType<ILanguageService>();
         languageService.RegisterLanguageSource(new LanguageResourceSource("Orc.FileSystem", "Orc.FileSystem.Properties", "Resources"));
