@@ -11,16 +11,20 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\..\SolutionAssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\FileInfoExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\StreamExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Locking\FileLocker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModuleInitializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\DirectoryService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Extensions\IFileServiceExtensions.text.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Extensions\IFileServiceExtensions.lines.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Extensions\IFileServiceExtensions.bytes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Extensions\IFileServiceExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\FileService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Interfaces\IDirectoryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Interfaces\IFileService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Models\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Services\Extensions\" />
   </ItemGroup>
 </Project>
