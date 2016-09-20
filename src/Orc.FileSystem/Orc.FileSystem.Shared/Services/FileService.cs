@@ -20,7 +20,7 @@ namespace Orc.FileSystem
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
-            Log.Info($"Creating file '{fileName}'");
+            Log.Debug($"Creating file '{fileName}'");
 
             try
             {
@@ -39,7 +39,7 @@ namespace Orc.FileSystem
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
-            Log.Info($"Opening file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}'");
+            Log.Debug($"Opening file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}'");
 
             try
             {
@@ -59,7 +59,7 @@ namespace Orc.FileSystem
             Argument.IsNotNullOrWhitespace(() => sourceFileName);
             Argument.IsNotNullOrWhitespace(() => destinationFileName);
 
-            Log.Info($"Copying file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
+            Log.Debug($"Copying file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
 
             try
             {
@@ -78,7 +78,7 @@ namespace Orc.FileSystem
             Argument.IsNotNullOrWhitespace(() => sourceFileName);
             Argument.IsNotNullOrWhitespace(() => destinationFileName);
 
-            Log.Info($"Moving file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
+            Log.Debug($"Moving file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
 
             try
             {
@@ -125,7 +125,7 @@ namespace Orc.FileSystem
             {
                 if (File.Exists(fileName))
                 {
-                    Log.Info($"Deleting file '{fileName}'");
+                    Log.Debug($"Deleting file '{fileName}'");
 
                     File.Delete(fileName);
                 }
