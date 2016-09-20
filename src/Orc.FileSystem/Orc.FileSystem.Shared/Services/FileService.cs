@@ -35,7 +35,7 @@ namespace Orc.FileSystem
             }
         }
 
-        public FileStream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite)
+        public FileStream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -43,7 +43,7 @@ namespace Orc.FileSystem
 
             try
             {
-                var fileStream = File.Open(fileName, fileMode, fileAccess);
+                var fileStream = File.Open(fileName, fileMode, fileAccess, fileShare);
                 return fileStream;
             }
             catch (Exception ex)

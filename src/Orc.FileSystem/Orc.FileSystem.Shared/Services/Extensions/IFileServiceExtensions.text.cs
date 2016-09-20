@@ -22,7 +22,7 @@ namespace Orc.FileSystem
 
             try
             {
-                using (var stream = fileService.Open(fileName, FileMode.Open, FileAccess.Read))
+                using (var stream = fileService.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     Log.Debug($"Reading all text from '{fileName}'");
 
@@ -48,7 +48,7 @@ namespace Orc.FileSystem
 
             try
             {
-                using (var stream = fileService.Open(fileName, FileMode.Open, FileAccess.Read))
+                using (var stream = fileService.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     Log.Debug($"Reading all text from '{fileName}'");
 
@@ -74,7 +74,7 @@ namespace Orc.FileSystem
 
             try
             {
-                using (var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write))
+                using (var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     Log.Debug($"Writing text to '{fileName}'");
 
@@ -99,7 +99,7 @@ namespace Orc.FileSystem
 
             try
             {
-                using (var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write))
+                using (var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     Log.Debug($"Writing text to '{fileName}'");
 
