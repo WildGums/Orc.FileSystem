@@ -16,6 +16,15 @@ namespace Orc.FileSystem
     {
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
+        private readonly IFileService _fileService;
+
+        public DirectoryService(IFileService fileService)
+        {
+            Argument.IsNotNull(() => fileService);
+
+            _fileService = fileService;
+        }
+
         public string Create(string path)
         {
             Argument.IsNotNullOrWhitespace(() => path);
@@ -56,6 +65,49 @@ namespace Orc.FileSystem
                 Log.Error(ex, $"Failed to move directory '{sourcePath}' => '{destinationPath}'");
 
                 throw;
+            }
+        }
+
+        public void Copy(string sourcePath, string destinationPath, bool copySubDirs = true, bool overwriteExisting = false)
+        {
+            Argument.IsNotNullOrWhitespace(() => sourcePath);
+            Argument.IsNotNullOrWhitespace(() => destinationPath);
+
+            if (!Exists(sourcePath))
+            {
+                throw Log.ErrorAndCreateException<DirectoryNotFoundException>($"Source directory '{sourcePath}' does not exist or could not be found");
+            }
+
+            Log.Debug($"Copying directory '{sourcePath}' to '{destinationPath}'");
+
+            Create(destinationPath);
+
+            var files = GetFiles(sourcePath);
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileName(file);
+                var destinationFileName = Path.Combine(destinationPath, fileName);
+
+                if (File.Exists(destinationFileName) && !overwriteExisting)
+                {
+                    Log.Debug($"Skipping copying of '{file}', file already exists in target directory");
+                    continue;
+                }
+
+                _fileService.Copy(file, destinationFileName, overwriteExisting);
+            }
+
+            if (copySubDirs)
+            {
+                var subDirectories = GetDirectories(sourcePath);
+
+                foreach (var subDirectory in subDirectories)
+                {
+                    var subDirectoryName = Path.GetDirectoryName(subDirectory);
+                    var destinationSubDirectory = Path.Combine(destinationPath, subDirectoryName);
+
+                    Copy(subDirectory, destinationSubDirectory, copySubDirs, overwriteExisting);
+                }
             }
         }
 

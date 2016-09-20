@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ModuleInitializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\DirectoryService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Extensions\IDirectoryServiceExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Extensions\IFileServiceExtensions.text.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Extensions\IFileServiceExtensions.lines.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Extensions\IFileServiceExtensions.bytes.cs" />
