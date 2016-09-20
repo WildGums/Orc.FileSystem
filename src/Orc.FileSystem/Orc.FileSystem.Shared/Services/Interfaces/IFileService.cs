@@ -7,7 +7,14 @@
 
 namespace Orc.FileSystem
 {
+    using System.IO;
+
     public interface IFileService
     {
+        FileStream Create(string fileName);
+        void Copy(string sourceFileName, string destinationFileName, bool overwrite = false);
+        void Move(string sourceFileName, string destinationFileName, bool overwrite = false);
+        bool Exists(string fileName);
+        void Delete(string fileName);
     }
 }
