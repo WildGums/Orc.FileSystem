@@ -59,7 +59,7 @@ namespace Orc.FileSystem
             }
         }
 
-        public void Delete(string path, bool recursive)
+        public void Delete(string path, bool recursive = true)
         {
             Argument.IsNotNullOrWhitespace(() => path);
 

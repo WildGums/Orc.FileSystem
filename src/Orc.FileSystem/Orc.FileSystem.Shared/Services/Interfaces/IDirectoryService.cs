@@ -13,7 +13,7 @@ namespace Orc.FileSystem
     {
         string Create(string path);
         void Move(string sourcePath, string destinationPath);
-        void Delete(string path, bool recursive);
+        void Delete(string path, bool recursive = true);
         bool Exists(string path);
         string[] GetDirectories(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly);
         string[] GetFiles(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly);
