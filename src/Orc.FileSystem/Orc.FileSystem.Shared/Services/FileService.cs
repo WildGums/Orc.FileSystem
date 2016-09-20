@@ -35,6 +35,25 @@ namespace Orc.FileSystem
             }
         }
 
+        public FileStream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite)
+        {
+            Argument.IsNotNullOrWhitespace(() => fileName);
+
+            Log.Info($"Opening file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}'");
+
+            try
+            {
+                var fileStream = File.Open(fileName, fileMode, fileAccess);
+                return fileStream;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Failed to open file '{fileName}'");
+
+                throw;
+            }
+        }
+
         public void Copy(string sourceFileName, string destinationFileName, bool overwrite = false)
         {
             Argument.IsNotNullOrWhitespace(() => sourceFileName);
