@@ -19,4 +19,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Interfaces\IDirectoryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Interfaces\IFileService.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Models\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Services\Extensions\" />
+  </ItemGroup>
 </Project>

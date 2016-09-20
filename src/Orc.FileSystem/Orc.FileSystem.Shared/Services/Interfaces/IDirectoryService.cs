@@ -7,7 +7,15 @@
 
 namespace Orc.FileSystem
 {
+    using System.IO;
+
     public interface IDirectoryService
     {
+        string Create(string path);
+        void Move(string sourcePath, string destinationPath);
+        void Delete(string path, bool recursive);
+        bool Exists(string path);
+        string[] GetDirectories(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly);
+        string[] GetFiles(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly);
     }
 }
