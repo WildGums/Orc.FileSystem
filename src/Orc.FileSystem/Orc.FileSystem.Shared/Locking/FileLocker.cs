@@ -18,18 +18,25 @@ namespace Orc.FileSystem
 
     public class FileLocker : IDisposable
     {
+        #region Constants
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+        #endregion
 
+        #region Fields
         private readonly FileLocker _existingLocker;
         private readonly int _uniqueId = UniqueIdentifierHelper.GetUniqueIdentifier<FileLocker>();
 
         private Dictionary<FileInfo, FileStream> _lockedFiles = new Dictionary<FileInfo, FileStream>();
+        #endregion
 
+        #region Constructors
         public FileLocker(FileLocker existingLocker)
         {
             _existingLocker = existingLocker;
         }
+        #endregion
 
+        #region IDisposable Members
         public void Dispose()
         {
             lock (_lockedFiles)
@@ -48,7 +55,9 @@ namespace Orc.FileSystem
                 }
             }
         }
+        #endregion
 
+        #region Methods
         public Task LockFilesAsync(params string[] files)
         {
             if (_existingLocker != null)
@@ -105,15 +114,12 @@ namespace Orc.FileSystem
                 }
 
                 return new DisposableToken<object>(existingLockedFile, x =>
-                {
-                    Log.Debug($"[{_uniqueId}] Temporarily unlocking file '{fileInfo}'");
-
-                    _lockedFiles[existingLockedFile].Dispose();
-                },
-                    async x =>
                     {
-                        await LockFileAsync(fileInfo);
-                    });
+                        Log.Debug($"[{_uniqueId}] Temporarily unlocking file '{fileInfo}'");
+
+                        _lockedFiles[existingLockedFile].Dispose();
+                    },
+                    async x => await LockFileAsync(fileInfo));
             }
         }
 
@@ -123,11 +129,7 @@ namespace Orc.FileSystem
 
             var retryCounter = 0;
 
-            var finalFileInfo = GetExistingLockedFile(fileInfo.FullName);
-            if (finalFileInfo == null)
-            {
-                finalFileInfo = fileInfo;
-            }
+            var finalFileInfo = GetExistingLockedFile(fileInfo.FullName) ?? fileInfo;
 
             if (!finalFileInfo.Exists)
             {
@@ -141,16 +143,31 @@ namespace Orc.FileSystem
 
                 try
                 {
-                    var lockedFile = finalFileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.None);
+                    if(_lockedFiles == null)
+                    {
+                        // FileLocker already disposed
+                        break;
+                    }
 
                     lock (_lockedFiles)
                     {
+                        if(_lockedFiles.ContainsKey(finalFileInfo))
+                        {
+                            // in case if LockFileAsync for the same file was executed in parallel
+                            break;
+                        }
+
+                        var lockedFile = finalFileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.None);
                         _lockedFiles[finalFileInfo] = lockedFile;
                     }
 
                     Log.Debug($"[{_uniqueId}] Locked file '{fileInfo.FullName}' after '{retryCounter}' tries");
 
                     break;
+                }
+                catch (IOException)
+                {
+                    // do nothing, just try again
                 }
                 catch (Exception ex)
                 {
@@ -177,9 +194,10 @@ namespace Orc.FileSystem
         private FileInfo GetExistingLockedFile(string filePath)
         {
             var existingLockedFile = (from lockedFile in _lockedFiles
-                                      where filePath.EqualsIgnoreCase(lockedFile.Key.FullName)
-                                      select lockedFile.Key).FirstOrDefault();
+                where filePath.EqualsIgnoreCase(lockedFile.Key.FullName)
+                select lockedFile.Key).FirstOrDefault();
             return existingLockedFile;
         }
+        #endregion
     }
 }
