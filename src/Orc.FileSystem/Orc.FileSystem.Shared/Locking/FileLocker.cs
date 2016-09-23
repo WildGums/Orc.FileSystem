@@ -57,6 +57,8 @@ namespace Orc.FileSystem
         {
             lock (Locks)
             {
+                Log.Debug("Releasing locked files");
+
                 foreach (var lockFile in _internalLocks.ToList())
                 {
                     int count;
@@ -76,6 +78,8 @@ namespace Orc.FileSystem
                         lockStream.Dispose();
 
                         Locks.Remove(lockFile);
+
+                        Log.Debug($"'{lockFile}' released");
                     }
 
                     if (count <= 0 && File.Exists(lockFile))
@@ -83,6 +87,7 @@ namespace Orc.FileSystem
                         try
                         {
                             File.Delete(lockFile);
+                            Log.Debug($"'{lockFile}' deleted");
                         }
                         catch (Exception ex)
                         {
