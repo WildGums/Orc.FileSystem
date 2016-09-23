@@ -18,15 +18,20 @@ namespace Orc.FileSystem
 
     public class FileLocker : IDisposable
     {
-        #region Constants
-        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
-        #endregion
-
         #region Fields
+        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+
+        private static readonly Dictionary<string, FileStream> Locks = new Dictionary<string, FileStream>(StringComparer.InvariantCultureIgnoreCase);
+        private static readonly Dictionary<string, int> LockCounts = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+
         private readonly FileLocker _existingLocker;
         private readonly int _uniqueId = UniqueIdentifierHelper.GetUniqueIdentifier<FileLocker>();
+ 
+        private readonly HashSet<string> _internalLocks = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
-        private Dictionary<FileInfo, FileStream> _lockedFiles = new Dictionary<FileInfo, FileStream>();
+        private static readonly AsyncLock AsyncLock = new AsyncLock();
+
+        private bool _isDisposed;
         #endregion
 
         #region Constructors
@@ -39,164 +44,196 @@ namespace Orc.FileSystem
         #region IDisposable Members
         public void Dispose()
         {
-            lock (_lockedFiles)
+            if (_isDisposed)
             {
-                if (_lockedFiles != null)
+                return;
+            }
+
+            ReleaseLockFiles();
+            _isDisposed = true;
+        }
+
+        private void ReleaseLockFiles()
+        {
+            lock (Locks)
+            {
+                foreach (var lockFile in _internalLocks.ToList())
                 {
-                    foreach (var lockedFile in _lockedFiles)
+                    int count;
+                    LockCounts.TryGetValue(lockFile, out count);
+
+                    _internalLocks.Remove(lockFile);
+
+                    if (count > 0)
                     {
-                        var fileStream = lockedFile.Value;
-                        fileStream.Close();
-                        fileStream.Dispose();
+                        count --;
                     }
 
-                    _lockedFiles.Clear();
-                    _lockedFiles = null;
+                    FileStream lockStream;
+                    if (count <= 0 && Locks.TryGetValue(lockFile, out lockStream))
+                    {
+                        lockStream.Close();
+                        lockStream.Dispose();
+
+                        Locks.Remove(lockFile);
+                    }
+
+                    if (count <= 0 && File.Exists(lockFile))
+                    {
+                        try
+                        {
+                            File.Delete(lockFile);
+                        }
+                        catch (Exception ex)
+                        {
+                            // it is not a reason for crashing the app
+                            Log.Warning(ex, $"Failed to delete '{lockFile}'");                            
+                        }
+                    }
+
+                    if (count > 0)
+                    {
+                        LockCounts[lockFile] = count;
+                    }
+                    else
+                    {
+                        LockCounts.Remove(lockFile);
+                    }
                 }
-            }
+            }            
         }
         #endregion
 
         #region Methods
-        public Task LockFilesAsync(params string[] files)
-        {
-            if (_existingLocker != null)
-            {
-                return _existingLocker.LockFilesAsync(files);
-            }
-
-            var fileInfos = files.Select(x => new FileInfo(x)).ToArray();
-            return LockFilesAsync(fileInfos);
-        }
-
-        public async Task LockFilesAsync(params FileInfo[] files)
-        {
+        public async Task LockFilesAsync(params string[] files)
+        {           
             if (_existingLocker != null)
             {
                 await _existingLocker.LockFilesAsync(files);
                 return;
             }
 
-            Log.Debug($"[{_uniqueId}] Ensuring that the following files are not busy");
-
-            foreach (var file in files)
+            using (await AsyncLock.LockAsync())
             {
-                Log.Debug($"[{_uniqueId}]  * {file.FullName}");
-            }
+                var newLockFiles = files.Where(x => !x.EndsWith(".lock", StringComparison.InvariantCultureIgnoreCase)).Select(x => x + ".lock");
+                string[] fileNames;
 
-            await files.EnsureFilesNotBusyAsync();
-
-            foreach (var file in files.Where(x => x.Exists))
-            {
-                await LockFileAsync(file);
-            }
-        }
-
-        public IDisposable UnlockTemporarily(string file)
-        {
-            var fileInfo = new FileInfo(file);
-            return UnlockTemporarily(fileInfo);
-        }
-
-        public IDisposable UnlockTemporarily(FileInfo fileInfo)
-        {
-            if (_existingLocker != null)
-            {
-                return _existingLocker.UnlockTemporarily(fileInfo);
-            }
-
-            lock (_lockedFiles)
-            {
-                var existingLockedFile = GetExistingLockedFile(fileInfo);
-                if (existingLockedFile == null)
+                lock (Locks)
                 {
-                    return new DisposableToken<object>(fileInfo, x => { }, x => { });
+                    fileNames = newLockFiles.Except(_internalLocks,  StringComparer.InvariantCultureIgnoreCase).ToArray();
                 }
 
-                return new DisposableToken<object>(existingLockedFile, x =>
-                    {
-                        Log.Debug($"[{_uniqueId}] Temporarily unlocking file '{fileInfo}'");
+                Log.Debug($"[{_uniqueId}] Creating and locking following files");
+                foreach (var file in fileNames)
+                {
+                    Log.Debug($"[{_uniqueId}]  * {file}");
+                }
 
-                        _lockedFiles[existingLockedFile].Dispose();
-                    },
-                    async x => await LockFileAsync(fileInfo));
+                var continueLoop = true;
+                while (continueLoop)
+                {
+                    var lockedFiles = TryCreateAndLockFiles(fileNames);
+                    if (lockedFiles == null)
+                    {
+                        await TaskShim.Delay(10);
+                        continue;
+                    }
+
+                    lock (Locks)
+                    {
+                        foreach (var fileName in fileNames)
+                        {
+                            _internalLocks.Add(fileName);
+
+                            int count;
+                            LockCounts.TryGetValue(fileName, out count);
+                            count++;
+                            LockCounts[fileName] = count;
+
+                            FileStream stream;
+                            if (lockedFiles.TryGetValue(fileName, out stream) && stream != null)
+                            {
+                                Locks[fileName] = stream;
+                            }
+                        }
+
+                        continueLoop = false;
+                    }
+                }
             }
         }
 
-        private async Task LockFileAsync(FileInfo fileInfo)
+        private static Dictionary<string, FileStream> TryCreateAndLockFiles(string[] fileNames)
         {
-            Log.Debug($"[{_uniqueId}] Locking file '{fileInfo}' again after a temporarily unlock");
+            var result = new Dictionary<string, FileStream>();
 
-            var retryCounter = 0;
-
-            var finalFileInfo = GetExistingLockedFile(fileInfo.FullName) ?? fileInfo;
-
-            if (!finalFileInfo.Exists)
+            foreach (var fileName in fileNames)
             {
-                Log.Debug($"[{_uniqueId}] Failed to lock file '{fileInfo.FullName}', it doesn't exist");
-                return;
-            }
-
-            while (true)
-            {
-                retryCounter++;
-
                 try
                 {
-                    if(_lockedFiles == null)
+                    var fileStream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                    File.SetAttributes(fileName, FileAttributes.Hidden);
+
+                    result[fileName] = fileStream;
+                }
+                catch(IOException)
+                {
+                    foreach (var fileStream in result.Values.Where(x => x!=null))
                     {
-                        // FileLocker already disposed
-                        break;
+                        fileStream.Close();
+                        fileStream.Dispose();
                     }
 
-                    lock (_lockedFiles)
-                    {
-                        if(_lockedFiles.ContainsKey(finalFileInfo))
-                        {
-                            // in case if LockFileAsync for the same file was executed in parallel
-                            break;
-                        }
-
-                        var lockedFile = finalFileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.None);
-                        _lockedFiles[finalFileInfo] = lockedFile;
-                    }
-
-                    Log.Debug($"[{_uniqueId}] Locked file '{fileInfo.FullName}' after '{retryCounter}' tries");
+                    result.Clear();
+                    result = null;
 
                     break;
                 }
-                catch (IOException)
+                catch (Exception)
                 {
-                    // do nothing, just try again
-                }
-                catch (Exception ex)
-                {
-                    var message = $"[{_uniqueId}] Failed to lock file '{fileInfo.FullName}', tried '{retryCounter}' time(s)";
-
-                    if (retryCounter > 5)
+                    foreach (var fileStream in result.Values.Where(x => x != null))
                     {
-                        Log.Error(ex, message);
-                        throw;
+                        fileStream.Close();
+                        fileStream.Dispose();
                     }
 
-                    Log.Debug(ex, message);
+                    result.Clear();
+
+                    throw;
                 }
-
-                await TaskShim.Delay(10);
             }
+
+            return result;
         }
 
-        private FileInfo GetExistingLockedFile(FileInfo filePath)
+        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
+        public Task LockFilesAsync(params FileInfo[] files)
         {
-            return GetExistingLockedFile(filePath.FullName);
+            if (_existingLocker != null)
+            {
+                return _existingLocker.LockFilesAsync(files);
+            }
+
+            var fileInfos = files.Select(x => x.FullName).ToArray();
+            return LockFilesAsync(fileInfos);
         }
 
-        private FileInfo GetExistingLockedFile(string filePath)
+
+        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
+        public IDisposable UnlockTemporarily(string file)
         {
-            var existingLockedFile = (from lockedFile in _lockedFiles
-                where filePath.EqualsIgnoreCase(lockedFile.Key.FullName)
-                select lockedFile.Key).FirstOrDefault();
-            return existingLockedFile;
+            if (_existingLocker != null)
+            {
+                return _existingLocker.UnlockTemporarily(file);
+            }
+
+            return new DisposableToken<object>(file, x => { }, x => { });
+        }
+
+        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
+        public IDisposable UnlockTemporarily(FileInfo fileInfo)
+        {
+            return UnlockTemporarily(fileInfo.FullName);
         }
         #endregion
     }
