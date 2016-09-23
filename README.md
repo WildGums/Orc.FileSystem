@@ -36,3 +36,7 @@ The `DirectoryService` provides the following methods:
 - string[] GetFiles(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly)
 
 # FileLocker
+The `FileLocker` is a disposable class which provides file read/write synchronization for several concurrent processes. It provides the following methods:
+
+- Task LockFilesAsync(params string[] files)
+- Task LockFilesAsync(TimeSpan timeout, params string[] files)
