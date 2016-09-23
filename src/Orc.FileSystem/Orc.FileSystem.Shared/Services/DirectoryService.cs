@@ -155,6 +155,11 @@ namespace Orc.FileSystem
 
             try
             {
+                if (string.IsNullOrWhiteSpace(searchPattern))
+                {
+                    searchPattern = "*";
+                }
+
                 Log.Debug($"Getting directories inside '{path}', searchPattern: '{searchPattern}', searchOption: '{searchOption}'");
 
                 var directories = Directory.GetDirectories(path, searchPattern, searchOption);
@@ -174,6 +179,10 @@ namespace Orc.FileSystem
 
             try
             {
+                if (string.IsNullOrWhiteSpace(searchPattern))
+                {
+                    searchPattern = "*";
+                }
 
                 Log.Debug($"Getting files inside '{path}', searchPattern: '{searchPattern}', searchOption: '{searchOption}'");
 
