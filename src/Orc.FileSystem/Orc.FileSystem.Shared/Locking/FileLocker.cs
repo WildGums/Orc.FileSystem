@@ -15,7 +15,7 @@ namespace Orc.FileSystem
     using Catel;
     using Catel.Logging;
     using Catel.Threading;
-
+    using Timer = System.Timers.Timer;
     public class FileLocker : IDisposable
     {
         #region Fields
@@ -52,69 +52,18 @@ namespace Orc.FileSystem
             ReleaseLockFiles();
             _isDisposed = true;
         }
-
-        private void ReleaseLockFiles()
-        {
-            lock (Locks)
-            {
-                Log.Debug("Releasing locked files");
-
-                foreach (var lockFile in _internalLocks.ToList())
-                {
-                    int count;
-                    LockCounts.TryGetValue(lockFile, out count);
-
-                    _internalLocks.Remove(lockFile);
-
-                    if (count > 0)
-                    {
-                        count --;
-                    }
-
-                    FileStream lockStream;
-                    if (count <= 0 && Locks.TryGetValue(lockFile, out lockStream))
-                    {
-                        lockStream.Close();
-                        lockStream.Dispose();
-
-                        Locks.Remove(lockFile);
-
-                        Log.Debug($"'{lockFile}' released");
-                    }
-
-                    if (count <= 0 && File.Exists(lockFile))
-                    {
-                        try
-                        {
-                            File.Delete(lockFile);
-                            Log.Debug($"'{lockFile}' deleted");
-                        }
-                        catch (Exception ex)
-                        {
-                            // it is not a reason for crashing the app
-                            Log.Warning(ex, $"Failed to delete '{lockFile}'");                            
-                        }
-                    }
-
-                    if (count > 0)
-                    {
-                        LockCounts[lockFile] = count;
-                    }
-                    else
-                    {
-                        LockCounts.Remove(lockFile);
-                    }
-                }
-            }            
-        }
         #endregion
 
         #region Methods
-        public async Task LockFilesAsync(params string[] files)
+        public Task LockFilesAsync(params string[] files)
+        {
+            return LockFilesAsync(TimeSpan.FromSeconds(5), files);
+        }
+        public async Task LockFilesAsync(TimeSpan timeout, params string[] files)
         {           
             if (_existingLocker != null)
             {
-                await _existingLocker.LockFilesAsync(files);
+                await _existingLocker.LockFilesAsync(timeout, files);
                 return;
             }
 
@@ -140,14 +89,36 @@ namespace Orc.FileSystem
                 }
 
                 var continueLoop = true;
+                var timer = new Timer
+                {
+                    Interval = timeout.TotalMilliseconds
+                };
+
+                timer.Elapsed += (sender, args) =>
+                {
+                    timer.Stop();
+                    continueLoop = false;
+
+                    Log.Warning("Locking files has interrupted due to timeout");
+                };
+
+                timer.Start();
+
                 while (continueLoop)
                 {
                     var lockedFiles = TryCreateAndLockFiles(fileNames);
-                    if (lockedFiles == null)
+                    if (lockedFiles == null && continueLoop)
                     {
                         await TaskShim.Delay(10);
                         continue;
                     }
+
+                    if(lockedFiles == null)
+                    {
+                        continue;
+                    }
+
+                    timer.Stop();
 
                     lock (Locks)
                     {
@@ -169,8 +140,38 @@ namespace Orc.FileSystem
 
                         continueLoop = false;
                     }
-                }
+                }                
             }
+        }
+
+        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
+        public Task LockFilesAsync(params FileInfo[] files)
+        {
+            if (_existingLocker != null)
+            {
+                return _existingLocker.LockFilesAsync(files);
+            }
+
+            var fileInfos = files.Select(x => x.FullName).ToArray();
+            return LockFilesAsync(fileInfos);
+        }
+
+
+        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
+        public IDisposable UnlockTemporarily(string file)
+        {
+            if (_existingLocker != null)
+            {
+                return _existingLocker.UnlockTemporarily(file);
+            }
+
+            return new DisposableToken<object>(file, x => { }, x => { });
+        }
+
+        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
+        public IDisposable UnlockTemporarily(FileInfo fileInfo)
+        {
+            return UnlockTemporarily(fileInfo.FullName);
         }
 
         private static Dictionary<string, FileStream> TryCreateAndLockFiles(string[] fileNames)
@@ -216,35 +217,60 @@ namespace Orc.FileSystem
             return result;
         }
 
-        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
-        public Task LockFilesAsync(params FileInfo[] files)
+        private void ReleaseLockFiles()
         {
-            if (_existingLocker != null)
+            lock (Locks)
             {
-                return _existingLocker.LockFilesAsync(files);
+                Log.Debug("Releasing locked files");
+
+                foreach (var lockFile in _internalLocks.ToList())
+                {
+                    int count;
+                    LockCounts.TryGetValue(lockFile, out count);
+
+                    _internalLocks.Remove(lockFile);
+
+                    if (count > 0)
+                    {
+                        count--;
+                    }
+
+                    FileStream lockStream;
+                    if (count <= 0 && Locks.TryGetValue(lockFile, out lockStream))
+                    {
+                        lockStream.Close();
+                        lockStream.Dispose();
+
+                        Locks.Remove(lockFile);
+
+                        Log.Debug($"'{lockFile}' released");
+                    }
+
+                    if (count <= 0 && File.Exists(lockFile))
+                    {
+                        try
+                        {
+                            File.Delete(lockFile);
+                            Log.Debug($"'{lockFile}' deleted");
+                        }
+                        catch (Exception ex)
+                        {
+                            // it is not a reason for crashing the app
+                            Log.Warning(ex, $"Failed to delete '{lockFile}'");
+                        }
+                    }
+
+                    if (count > 0)
+                    {
+                        LockCounts[lockFile] = count;
+                    }
+                    else
+                    {
+                        LockCounts.Remove(lockFile);
+                    }
+                }
             }
-
-            var fileInfos = files.Select(x => x.FullName).ToArray();
-            return LockFilesAsync(fileInfos);
-        }
-
-
-        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
-        public IDisposable UnlockTemporarily(string file)
-        {
-            if (_existingLocker != null)
-            {
-                return _existingLocker.UnlockTemporarily(file);
-            }
-
-            return new DisposableToken<object>(file, x => { }, x => { });
-        }
-
-        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
-        public IDisposable UnlockTemporarily(FileInfo fileInfo)
-        {
-            return UnlockTemporarily(fileInfo.FullName);
-        }
+        }       
         #endregion
     }
 }
