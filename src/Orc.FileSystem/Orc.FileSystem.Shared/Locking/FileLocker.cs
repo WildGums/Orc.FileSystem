@@ -144,7 +144,7 @@ namespace Orc.FileSystem
             }
         }
 
-        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
+        [ObsoleteEx(ReplacementTypeOrMember = "LockFilesAsync(params string[])", RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
         public Task LockFilesAsync(params FileInfo[] files)
         {
             if (_existingLocker != null)
