@@ -16,6 +16,7 @@ namespace Orc.FileSystem
     using Catel.Logging;
     using Catel.Threading;
     using Timer = System.Timers.Timer;
+
     public class FileLocker : IDisposable
     {
         #region Fields
@@ -23,13 +24,12 @@ namespace Orc.FileSystem
 
         private static readonly Dictionary<string, FileStream> Locks = new Dictionary<string, FileStream>(StringComparer.InvariantCultureIgnoreCase);
         private static readonly Dictionary<string, int> LockCounts = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        private static readonly AsyncLock AsyncLock = new AsyncLock();
 
         private readonly FileLocker _existingLocker;
         private readonly int _uniqueId = UniqueIdentifierHelper.GetUniqueIdentifier<FileLocker>();
- 
-        private readonly HashSet<string> _internalLocks = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
-        private static readonly AsyncLock AsyncLock = new AsyncLock();
+        private readonly HashSet<string> _internalLocks = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
         private bool _isDisposed;
         #endregion
@@ -49,7 +49,8 @@ namespace Orc.FileSystem
                 return;
             }
 
-            ReleaseLockFiles();
+            ReleaseLockedFiles();
+
             _isDisposed = true;
         }
         #endregion
@@ -59,8 +60,9 @@ namespace Orc.FileSystem
         {
             return LockFilesAsync(TimeSpan.FromSeconds(5), files);
         }
+
         public async Task LockFilesAsync(TimeSpan timeout, params string[] files)
-        {           
+        {
             if (_existingLocker != null)
             {
                 await _existingLocker.LockFilesAsync(timeout, files);
@@ -78,8 +80,8 @@ namespace Orc.FileSystem
 
                     // Note: instead of adding new locked files better to release already locked ones and lock them again combined with the new ones
                     //       I think it should prevent hangings in concurrent applications
-                    fileNames = newLockFiles.Union(_internalLocks,  StringComparer.InvariantCultureIgnoreCase).ToArray();
-                    ReleaseLockFiles();
+                    fileNames = newLockFiles.Union(_internalLocks, StringComparer.InvariantCultureIgnoreCase).ToArray();
+                    ReleaseLockedFiles();
                 }
 
                 Log.Debug($"[{_uniqueId}] Creating and locking following files");
@@ -113,7 +115,7 @@ namespace Orc.FileSystem
                         continue;
                     }
 
-                    if(lockedFiles == null)
+                    if (lockedFiles == null)
                     {
                         continue;
                     }
@@ -140,7 +142,7 @@ namespace Orc.FileSystem
 
                         continueLoop = false;
                     }
-                }                
+                }
             }
         }
 
@@ -187,9 +189,9 @@ namespace Orc.FileSystem
 
                     result[fileName] = fileStream;
                 }
-                catch(IOException)
+                catch (IOException)
                 {
-                    foreach (var fileStream in result.Values.Where(x => x!=null))
+                    foreach (var fileStream in result.Values.Where(x => x != null))
                     {
                         fileStream.Close();
                         fileStream.Dispose();
@@ -217,7 +219,7 @@ namespace Orc.FileSystem
             return result;
         }
 
-        private void ReleaseLockFiles()
+        private void ReleaseLockedFiles()
         {
             lock (Locks)
             {
@@ -251,6 +253,7 @@ namespace Orc.FileSystem
                         try
                         {
                             File.Delete(lockFile);
+
                             Log.Debug($"'{lockFile}' deleted");
                         }
                         catch (Exception ex)
@@ -270,7 +273,7 @@ namespace Orc.FileSystem
                     }
                 }
             }
-        }       
+        }
         #endregion
     }
 }
