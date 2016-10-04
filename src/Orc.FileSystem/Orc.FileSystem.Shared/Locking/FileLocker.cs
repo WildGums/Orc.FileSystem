@@ -17,6 +17,7 @@ namespace Orc.FileSystem
     using Catel.Threading;
     using Timer = System.Timers.Timer;
 
+    [ObsoleteEx(ReplacementTypeOrMember = "IIOSynchronizerService", TreatAsErrorFromVersion = "1.0", RemoveInVersion = "1.1")]
     public class FileLocker : IDisposable
     {
         #region Fields
