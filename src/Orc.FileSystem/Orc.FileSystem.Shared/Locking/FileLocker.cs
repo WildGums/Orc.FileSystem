@@ -146,36 +146,6 @@ namespace Orc.FileSystem
             }
         }
 
-        [ObsoleteEx(ReplacementTypeOrMember = "LockFilesAsync(params string[])", RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
-        public Task LockFilesAsync(params FileInfo[] files)
-        {
-            if (_existingLocker != null)
-            {
-                return _existingLocker.LockFilesAsync(files);
-            }
-
-            var fileInfos = files.Select(x => x.FullName).ToArray();
-            return LockFilesAsync(fileInfos);
-        }
-
-
-        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
-        public IDisposable UnlockTemporarily(string file)
-        {
-            if (_existingLocker != null)
-            {
-                return _existingLocker.UnlockTemporarily(file);
-            }
-
-            return new DisposableToken<object>(file, x => { }, x => { });
-        }
-
-        [ObsoleteEx(RemoveInVersion = "2.0", TreatAsErrorFromVersion = "1.0")]
-        public IDisposable UnlockTemporarily(FileInfo fileInfo)
-        {
-            return UnlockTemporarily(fileInfo.FullName);
-        }
-
         private static Dictionary<string, FileStream> TryCreateAndLockFiles(string[] fileNames)
         {
             var result = new Dictionary<string, FileStream>();
