@@ -35,8 +35,49 @@ The `DirectoryService` provides the following methods:
 - string[] GetDirectories(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly)
 - string[] GetFiles(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly)
 
-# FileLocker
-The `FileLocker` is a disposable class which provides file read/write synchronization for several concurrent processes. It provides the following methods:
+# IOSynchronizationService
 
-- Task LockFilesAsync(params string[] files)
-- Task LockFilesAsync(TimeSpan timeout, params string[] files)
+The `IOSynchronizerService` can take care of synchronized blocks of reading and/or write to a specific directory or file. This provides an easy way to "lock" a directory or file until the director/file has been released. For example, when writing several files that need to lock a directory until all files are written, this class can come in handy. The examples below all use a `projectDirectory` variable to use as base path. This will also be the path to be locked.
+
+## Start watching for changes
+
+	ioSynchronizationService.RefreshRequired += OnIoSynchronizationServiceRefreshRequired;
+	await ioSynchronizationService.StartWatchingForChangesAsync(projectDirectory);
+
+## Writing files
+
+The writing of the files can happen in a completely different app, the services will take care of the synchronization automatically. To write files, use the following code:
+
+	var file1 = Path.Combine(projectDirectory, "file1.txt");
+	var file2 = Path.Combine(projectDirectory, "file2.txt");
+	
+	await ioSynchronizationService.ExecuteWritingAsync(projectDirectory, async x => 
+	{
+	    fileService.WriteAllText(file1, "sample content");
+		fileService.WriteAllText(file2, "sample content");
+	
+	    return true;
+	});
+
+## Reading files
+
+To read files, use the following code:
+
+	var file1 = Path.Combine(projectDirectory, "file1.txt");
+	var file2 = Path.Combine(projectDirectory, "file2.txt");
+	
+	var file1Contents = string.Empty;
+	var file2Contents = string.Empty;
+	
+	await ioSynchronizationService.ExecuteReadingAsync(projectDirectory, async x => 
+	{
+	    file1Contents = fileService.ReadAllText(file1);
+		file2Contents = fileService.ReadAllText(file2);
+	
+	    return true;
+	});
+
+
+
+
+

@@ -17,6 +17,7 @@ public static class ModuleInitializer
 
         serviceLocator.RegisterType<IFileService, FileService>();
         serviceLocator.RegisterType<IDirectoryService, DirectoryService>();
+        serviceLocator.RegisterType<IIOSynchronizationService, IOSynchronizationService>();
 
         var languageService = serviceLocator.ResolveType<ILanguageService>();
         languageService.RegisterLanguageSource(new LanguageResourceSource("Orc.FileSystem", "Orc.FileSystem.Properties", "Resources"));
