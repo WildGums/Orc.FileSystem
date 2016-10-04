@@ -8,7 +8,10 @@
 namespace Orc.FileSystem
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
+    using System.Net;
     using System.Threading.Tasks;
     using Catel;
     using Catel.Logging;
@@ -73,14 +76,28 @@ namespace Orc.FileSystem
 
         public static void WriteAllLines(this IFileService fileService, string fileName, string[] lines)
         {
+            WriteAllLines(fileService, fileName, (IEnumerable<string>)lines);
+        }
+
+        public static Task WriteAllLinesAsync(this IFileService fileService, string fileName, string[] lines)
+        {
+            return WriteAllLinesAsync(fileService, fileName, (IEnumerable<string>)lines);
+        }
+
+        public static void WriteAllLines(this IFileService fileService, string fileName, IEnumerable<string> lines)
+        {
             Argument.IsNotNull(() => fileService);
             Argument.IsNotNullOrWhitespace(() => fileName);
 
+            var count = 0;
+
             try
             {
+                count = lines.Count();
+
                 using (var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    Log.Debug($"Writing '{lines.Length}' lines to '{fileName}'");
+                    Log.Debug($"Writing '{count}' lines to '{fileName}'");
 
                     using (var writer = new StreamWriter(stream))
                     {
@@ -93,22 +110,26 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to write '{lines.Length}' lines to '{fileName}'");
+                Log.Error(ex, $"Failed to write '{count}' lines to '{fileName}'");
 
                 throw;
             }
         }
 
-        public static async Task WriteAllLinesAsync(this IFileService fileService, string fileName, string[] lines)
+        public static async Task WriteAllLinesAsync(this IFileService fileService, string fileName, IEnumerable<string> lines)
         {
             Argument.IsNotNull(() => fileService);
             Argument.IsNotNullOrWhitespace(() => fileName);
 
+            var count = 0;
+
             try
             {
+                count = lines.Count();
+
                 using (var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    Log.Debug($"Writing '{lines.Length}' lines to '{fileName}'");
+                    Log.Debug($"Writing '{count}' lines to '{fileName}'");
 
                     using (var writer = new StreamWriter(stream))
                     {
@@ -121,7 +142,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to write '{lines.Length}' lines to '{fileName}'");
+                Log.Error(ex, $"Failed to write '{count}' lines to '{fileName}'");
 
                 throw;
             }
