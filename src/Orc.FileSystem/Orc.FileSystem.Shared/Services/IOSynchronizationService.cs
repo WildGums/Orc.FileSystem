@@ -15,6 +15,7 @@ namespace Orc.FileSystem
     using System.Threading.Tasks;
     using Catel;
     using Catel.Logging;
+    using Catel.Scoping;
     using Catel.Threading;
     using Orc.FileSystem;
     using Path = Catel.IO.Path;
@@ -123,18 +124,36 @@ namespace Orc.FileSystem
 
             try
             {
-                bool requiresStartReading;
-
-                using (await _asyncLock.LockAsync())
+                var scopeName = $"{path}_reading";
+                using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
                 {
-                    requiresStartReading = !_readingCallbacks.ContainsKey(path);
+                    var requiresStartReading = true;
 
-                    _readingCallbacks[path] = readAsync;
-                }
+                    Action action = () =>
+                    {
+                        requiresStartReading = !_readingCallbacks.ContainsKey(path);
+                        _readingCallbacks[path] = readAsync;
+                    };
 
-                if (requiresStartReading)
-                {
-                    ExecutePendingReading(path);
+                    // If scope ref count <= 1, we are the first in this process to access this path
+                    // and we need to await clearance
+                    var requiresLock = scopeManager.RefCount <= 1;
+                    if (requiresLock)
+                    {
+                        using (await _asyncLock.LockAsync())
+                        {
+                            action();
+                        }
+                    }
+                    else
+                    {
+                        action();
+                    }
+
+                    if (requiresStartReading)
+                    {
+                        await ExecutePendingReadingAsync(path);
+                    }
                 }
             }
             catch (Exception ex)
@@ -149,17 +168,43 @@ namespace Orc.FileSystem
 
             try
             {
-                bool requiresStartWriting;
-                using (await _asyncLock.LockAsync())
+                var scopeName = $"{path}_writing";
+                using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
                 {
-                    requiresStartWriting = !_writingCallbacks.ContainsKey(path);
+                    bool requiresStartWriting = true;
 
-                    _writingCallbacks[path] = writeAsync;
-                }
+                    Action action = () =>
+                    {
+                        requiresStartWriting = !_writingCallbacks.ContainsKey(path);
+                        _writingCallbacks[path] = writeAsync;
+                    };
 
-                if (requiresStartWriting)
-                {
-                    ExecutePendingWriting(path);
+                    // If scope ref count <= 1, we are the first in this process to access this path
+                    // and we need to await clearance
+                    var requiresLock = scopeManager.RefCount <= 1;
+                    if (requiresLock)
+                    {
+                        using (await _asyncLock.LockAsync())
+                        {
+                            action();
+                        }
+                    }
+                    else
+                    {
+                        action();
+                    }
+
+                    if (requiresStartWriting)
+                    {
+                        await ExecutePendingWritingAsync(path);
+                    }
+
+                    if (scopeManager.RefCount <= 1)
+                    {
+                        Log.Debug("Deleting synchronization file");
+
+
+                    }
                 }
             }
             catch (Exception ex)
@@ -179,7 +224,7 @@ namespace Orc.FileSystem
             return Path.Combine(basePath, DefaultSyncFile);
         }
 
-        private async void ExecutePendingReading(string path)
+        private async Task ExecutePendingReadingAsync(string path)
         {
             Argument.IsNotNullOrWhitespace(() => path);
 
@@ -198,7 +243,7 @@ namespace Orc.FileSystem
             }
         }
 
-        private async void ExecutePendingWriting(string path)
+        private async Task ExecutePendingWritingAsync(string path)
         {
             Argument.IsNotNullOrWhitespace(() => path);
 
