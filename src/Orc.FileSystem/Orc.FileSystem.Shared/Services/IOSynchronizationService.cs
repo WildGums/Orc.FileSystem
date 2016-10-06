@@ -24,7 +24,7 @@ namespace Orc.FileSystem
     {
         #region Constants
         private const string DefaultSyncFile = "__ofs.sync";
-        private static readonly TimeSpan DefaultDelay = TimeSpan.FromMilliseconds(250);
+        private static readonly TimeSpan DefaultDelay = TimeSpan.FromMilliseconds(500);
         #endregion
 
         #region #region Fields
@@ -124,7 +124,7 @@ namespace Orc.FileSystem
 
             try
             {
-                var scopeName = $"{path}_reading";
+                var scopeName = GetScopeName(path, false);
                 using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
                 {
                     var requiresStartReading = true;
@@ -168,7 +168,7 @@ namespace Orc.FileSystem
 
             try
             {
-                var scopeName = $"{path}_writing";
+                var scopeName = GetScopeName(path, true);
                 using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
                 {
                     var requiresStartWriting = true;
@@ -373,22 +373,27 @@ namespace Orc.FileSystem
 
                 try
                 {
-                    // Note: no need to lock file in FG-like projects (single file)
+
                     if (!path.EqualsIgnoreCase(refreshFile))
                     {
                         try
                         {
-                            fileStream = _fileService.Open(refreshFile, FileMode.Open, FileAccess.Read, FileShare.None);
+                            // Note: don't use _fileService because we don't want logging in case of failure
+                            fileStream = File.Open(refreshFile, FileMode.Open, FileAccess.Read, FileShare.None);
                         }
                         catch (IOException)
                         {
+                            Log.Debug($"Failed to open refresh file '{refreshFile}', delaying read action");
                             return;
                         }
                     }
 
+                    Log.Debug($"Executing read actions from path '{path}'");
+
                     success = await read(path);
                     if (!success)
                     {
+                        Log.Debug($"Failed to execute read actions to path '{path}'");
                         return;
                     }
 
@@ -419,24 +424,36 @@ namespace Orc.FileSystem
                 var refreshFile = GetRefreshFileByPath(path);
 
                 FileStream fileStream = null;
+
                 try
                 {
-                    // Note: no need to lock file in FG-like projects (single file)
-                    if (!path.EqualsIgnoreCase(refreshFile))
+                    var scopeName = GetScopeName(path, false);
+                    using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
                     {
-                        try
+                        var acquireLock = scopeManager.RefCount <= 1 || !_fileService.Exists(refreshFile);
+                        if (acquireLock)
                         {
-                            DeleteRefreshFile(path);
-                            fileStream = _fileService.OpenWrite(refreshFile);
-                        }
-                        catch (IOException)
-                        {
-                            return;
+                            if (!path.EqualsIgnoreCase(refreshFile))
+                            {
+                                try
+                                {
+                                    // Note: don't use _fileService because we don't want logging in case of failure
+                                    fileStream = File.Open(refreshFile, FileMode.Create, FileAccess.Write, FileShare.None);
+                                }
+                                catch (IOException)
+                                {
+                                    Log.Debug($"Failed to open refresh file '{refreshFile}', delaying write action");
+                                    return;
+                                }
+                            }
                         }
                     }
 
+                    Log.Debug($"Executing write actions to path '{path}'");
+
                     if (!await write(path))
                     {
+                        Log.Debug($"Failed to execute write actions to path '{path}'");
                         return;
                     }
 
@@ -450,6 +467,12 @@ namespace Orc.FileSystem
                     fileStream?.Dispose();
                 }
             }
+        }
+
+        private string GetScopeName(string path, bool isWriteLock)
+        {
+            var scopeName = $"{path}_" + (isWriteLock ? "write" : "read");
+            return scopeName;
         }
 
         private void DeleteRefreshFile(string path)
