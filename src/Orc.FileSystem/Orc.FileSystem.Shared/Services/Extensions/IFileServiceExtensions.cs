@@ -17,11 +17,25 @@ namespace Orc.FileSystem
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
         #endregion
 
+        public static bool CanOpenRead(this IFileService fileService, string fileName)
+        {
+            Argument.IsNotNull(() => fileService);
+
+            return fileService.CanOpen(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+        }
+
         public static FileStream OpenRead(this IFileService fileService, string fileName)
         {
             Argument.IsNotNull(() => fileService);
 
             return fileService.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+        }
+
+        public static bool CanOpenWrite(this IFileService fileService, string fileName)
+        {
+            Argument.IsNotNull(() => fileService);
+
+            return fileService.CanOpen(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
         }
 
         public static FileStream OpenWrite(this IFileService fileService, string fileName)

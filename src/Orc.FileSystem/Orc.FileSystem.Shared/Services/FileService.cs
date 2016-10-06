@@ -39,7 +39,7 @@ namespace Orc.FileSystem
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
-            Log.Debug($"Opening file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}'");
+            Log.Debug($"Opening file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
 
             try
             {
@@ -51,6 +51,75 @@ namespace Orc.FileSystem
                 Log.Error(ex, $"Failed to open file '{fileName}'");
 
                 throw;
+            }
+        }
+
+        public bool CanOpen(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+        {
+            Argument.IsNotNullOrWhitespace(() => fileName);
+
+            Log.Debug($"Checking for possibility to open file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
+
+            try
+            {
+                // If file is create => always use append (so we don't change the file)
+                var fileMustNotExist = false;
+                var fileMustExist = false;
+                var finalFileMode = FileMode.Open;
+
+                switch (fileMode)
+                {
+                    case FileMode.CreateNew:
+                        finalFileMode = FileMode.Append;
+                        fileMustNotExist = true;
+                        break;
+
+                    case FileMode.Create:
+                        finalFileMode = FileMode.Append;
+                        break;
+
+                    case FileMode.Open:
+                        fileMustExist = true;
+                        break;
+
+                    case FileMode.OpenOrCreate:
+                        finalFileMode = FileMode.Append;
+                        break;
+
+                    case FileMode.Truncate:
+                        finalFileMode = FileMode.Append;
+                        fileMustExist = true;
+                        break;
+
+                    case FileMode.Append:
+                        finalFileMode = FileMode.Append;
+                        fileMustExist = true;
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(fileMode), fileMode, null);
+                }
+
+                if (fileMustExist && !File.Exists(fileName))
+                {
+                    return false;
+                }
+
+                if (fileMustNotExist && File.Exists(fileName))
+                {
+                    return false;
+                }
+
+                using (var fileStream = File.Open(fileName, finalFileMode, fileAccess, fileShare))
+                {
+                    fileStream.Close();
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 

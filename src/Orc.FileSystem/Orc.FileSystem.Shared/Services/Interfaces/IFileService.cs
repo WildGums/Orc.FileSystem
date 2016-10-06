@@ -17,5 +17,6 @@ namespace Orc.FileSystem
         bool Exists(string fileName);
         void Delete(string fileName);
         FileStream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite);
+        bool CanOpen(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite);
     }
 }
