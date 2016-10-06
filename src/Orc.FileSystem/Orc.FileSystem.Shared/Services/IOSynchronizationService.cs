@@ -171,7 +171,7 @@ namespace Orc.FileSystem
                 var scopeName = $"{path}_writing";
                 using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
                 {
-                    bool requiresStartWriting = true;
+                    var requiresStartWriting = true;
 
                     Action action = () =>
                     {
@@ -197,13 +197,6 @@ namespace Orc.FileSystem
                     if (requiresStartWriting)
                     {
                         await ExecutePendingWritingAsync(path);
-                    }
-
-                    if (scopeManager.RefCount <= 1)
-                    {
-                        Log.Debug("Deleting synchronization file");
-
-
                     }
                 }
             }
