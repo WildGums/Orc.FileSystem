@@ -351,104 +351,121 @@ namespace Orc.FileSystem
 
         private async Task ExecuteReadingIfPossibleAsync(string path)
         {
+            Func<string, Task<bool>> read;
+
             using (await _asyncLock.LockAsync())
             {
-                Func<string, Task<bool>> read;
-                if (!_readingCallbacks.TryGetValue(path, out read))
+                if (!_readingCallbacks.TryRemove(path, out read))
                 {
                     return;
                 }
+            }
 
-                var refreshFile = GetRefreshFileByPath(path);
-                if (!_fileService.Exists(refreshFile))
+            var refreshFile = GetRefreshFileByPath(path);
+            if (!_fileService.Exists(refreshFile))
+            {
+                return;
+            }
+
+            FileSystemWatcher fileSystemWatcher;
+            _fileSystemWatchers.TryGetValue(path, out fileSystemWatcher);
+
+            var succeeded = true;
+            FileStream fileStream = null;
+
+            try
+            {
+                if (!path.EqualsIgnoreCase(refreshFile))
                 {
-                    return;
-                }
-
-                FileSystemWatcher fileSystemWatcher;
-                _fileSystemWatchers.TryGetValue(path, out fileSystemWatcher);
-
-                var success = false;
-                FileStream fileStream = null;
-
-                try
-                {
-
-                    if (!path.EqualsIgnoreCase(refreshFile))
+                    try
                     {
-                        try
-                        {
-                            // Note: don't use _fileService because we don't want logging in case of failure
-                            fileStream = File.Open(refreshFile, FileMode.Open, FileAccess.Read, FileShare.None);
-                        }
-                        catch (IOException)
-                        {
-                            Log.Debug($"Failed to open refresh file '{refreshFile}', delaying read action");
-                            return;
-                        }
+                        // Note: don't use _fileService because we don't want logging in case of failure
+                        fileStream = File.Open(refreshFile, FileMode.Open, FileAccess.Read, FileShare.None);
                     }
+                    catch (IOException)
+                    {
+                        succeeded = false;
+                    }
+                }
 
+                if (succeeded)
+                {
                     Log.Debug($"Executing read actions from path '{path}'");
 
-                    success = await read(path);
-                    if (!success)
+                    succeeded = await read(path);
+                    if (!succeeded)
                     {
                         Log.Debug($"Failed to execute read actions to path '{path}'");
                         return;
                     }
-
-                    _readingCallbacks.TryRemove(path, out read);
                 }
-                finally
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, $"Reading from '{path}' failed, adding enqueued action back in the queue");
+
+                succeeded = false;
+            }
+            finally
+            {
+                fileStream?.Dispose();
+            }
+
+            if (!succeeded)
+            {
+                using (await _asyncLock.LockAsync())
                 {
-                    fileStream?.Dispose();
-
-                    if (success)
-                    {
-                        DeleteRefreshFile(path);
-                    }
+                    _readingCallbacks.TryAdd(path, read);
                 }
+            }
+            else
+            {
+                DeleteRefreshFile(path);
             }
         }
 
         private async Task ExecuteWritingIfPossibleAsync(string path)
         {
+            Func<string, Task<bool>> write;
+
             using (await _asyncLock.LockAsync())
             {
-                Func<string, Task<bool>> write;
-                if (!_writingCallbacks.TryGetValue(path, out write))
+                if (!_writingCallbacks.TryRemove(path, out write))
                 {
                     return;
                 }
+            }
 
-                var refreshFile = GetRefreshFileByPath(path);
+            var refreshFile = GetRefreshFileByPath(path);
 
-                FileStream fileStream = null;
+            var succeeded = true;
+            FileStream fileStream = null;
 
-                try
+            try
+            {
+                var scopeName = GetScopeName(path, true);
+                using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
                 {
-                    var scopeName = GetScopeName(path, false);
-                    using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
+                    var acquireLock = scopeManager.RefCount <= 1 || !_fileService.Exists(refreshFile);
+                    if (acquireLock)
                     {
-                        var acquireLock = scopeManager.RefCount <= 1 || !_fileService.Exists(refreshFile);
-                        if (acquireLock)
+                        if (!path.EqualsIgnoreCase(refreshFile))
                         {
-                            if (!path.EqualsIgnoreCase(refreshFile))
+                            try
                             {
-                                try
-                                {
-                                    // Note: don't use _fileService because we don't want logging in case of failure
-                                    fileStream = File.Open(refreshFile, FileMode.Create, FileAccess.Write, FileShare.None);
-                                }
-                                catch (IOException)
-                                {
-                                    Log.Debug($"Failed to open refresh file '{refreshFile}', delaying write action");
-                                    return;
-                                }
+                                // Note: don't use _fileService because we don't want logging in case of failure
+                                fileStream = File.Open(refreshFile, FileMode.Create, FileAccess.Write, FileShare.None);
+                            }
+                            catch (IOException)
+                            {
+                                succeeded = false;
                             }
                         }
                     }
+                }
 
+                if (succeeded)
+                {
                     Log.Debug($"Executing write actions to path '{path}'");
 
                     if (!await write(path))
@@ -459,12 +476,24 @@ namespace Orc.FileSystem
 
                     // Note: writing dummy data for FileSystemWatcher
                     fileStream?.WriteByte(0);
-
-                    _writingCallbacks.TryRemove(path, out write);
                 }
-                finally
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, $"Writing to '{path}' failed, adding enqueued action back in the queue");
+
+                succeeded = false;
+            }
+            finally
+            {
+                fileStream?.Dispose();
+            }
+
+            if (!succeeded)
+            {
+                using (await _asyncLock.LockAsync())
                 {
-                    fileStream?.Dispose();
+                    _writingCallbacks.TryAdd(path, write);
                 }
             }
         }
