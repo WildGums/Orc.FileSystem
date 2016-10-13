@@ -118,8 +118,6 @@ namespace Orc.FileSystem.Tests.Services
 
                     var ioSynchronizationService = new IOSynchronizationService(new FileService());
 
-                    var readSucceeded = false;
-
                     // Step 1: Write, do not await
 #pragma warning disable 4014
                     ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
