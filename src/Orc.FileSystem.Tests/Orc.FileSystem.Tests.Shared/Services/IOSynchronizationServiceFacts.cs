@@ -7,8 +7,10 @@
 
 namespace Orc.FileSystem.Tests.Services
 {
+    using System;
     using System.IO;
     using System.Threading.Tasks;
+    using Catel.Threading;
     using NUnit.Framework;
 
     public class IOSynchronizationServiceFacts
@@ -103,6 +105,47 @@ namespace Orc.FileSystem.Tests.Services
 
                     // Only now the refresh file should be removed
                     Assert.IsFalse(File.Exists(refreshFile));
+                }
+            }
+
+            [Test]
+            public async Task WaitWithReadingUntilWriteIsFinishedAsync()
+            {
+                using (var temporaryFilesContext = new TemporaryFilesContext("WaitWithReadingUntilWriteIsFinishedAsync"))
+                {
+                    var rootDirectory = temporaryFilesContext.GetDirectory("output");
+                    var fileName = temporaryFilesContext.GetFile("file1.txt");
+
+                    var ioSynchronizationService = new IOSynchronizationService(new FileService());
+
+                    var readSucceeded = false;
+
+                    // Step 1: Write, do not await
+#pragma warning disable 4014
+                    ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
+#pragma warning restore 4014
+                    {
+                        File.WriteAllText(fileName, "12345");
+
+                        await TaskShim.Delay(2500);
+
+                        return true;
+                    });
+
+                    var startTime = DateTime.Now;
+                    var endTime = DateTime.Now;
+
+                    // Step 2: read, but should only be allowed after 5 seconds
+                    await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async y =>
+                    {
+                        endTime = DateTime.Now;
+                        return true;
+                    });
+
+                    var delta = endTime - startTime;
+
+                    // Delta should be at least 2 seconds (meaning we have awaited the writing)
+                    Assert.IsTrue(delta > TimeSpan.FromSeconds(2));
                 }
             }
         }
