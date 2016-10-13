@@ -24,7 +24,9 @@ namespace Orc.FileSystem
     {
         #region Constants
         private const string DefaultSyncFile = "__ofs.sync";
-        private static readonly TimeSpan DefaultDelay = TimeSpan.FromMilliseconds(500);
+
+        private static readonly TimeSpan DefaultDelayBetweenChecks = TimeSpan.FromMilliseconds(500);
+        private static readonly TimeSpan DefaultDelayAfterWriteOperations = TimeSpan.FromMilliseconds(50);
         #endregion
 
         #region #region Fields
@@ -48,10 +50,17 @@ namespace Orc.FileSystem
             Argument.IsNotNull(() => fileService);
 
             _fileService = fileService;
+
+            DelayBetweenChecks = DefaultDelayBetweenChecks;
+            DelayAfterWriteOperations = DefaultDelayAfterWriteOperations;
         }
         #endregion
 
         #region IProjectIOSynchronizationService members
+        public TimeSpan DelayBetweenChecks { get; set; }
+
+        public TimeSpan DelayAfterWriteOperations { get; set; }
+
         public event EventHandler<PathEventArgs> RefreshRequired;
 
         public async Task StartWatchingForChangesAsync(string path)
@@ -227,7 +236,7 @@ namespace Orc.FileSystem
                 {
                     await ExecuteReadingIfPossibleAsync(path);
 
-                    await TaskShim.Delay(DefaultDelay);
+                    await TaskShim.Delay(DelayBetweenChecks);
                 }
             }
             catch (Exception ex)
@@ -246,7 +255,7 @@ namespace Orc.FileSystem
                 {
                     await ExecuteWritingIfPossibleAsync(path);
 
-                    await TaskShim.Delay(DefaultDelay);
+                    await TaskShim.Delay(DelayBetweenChecks);
                 }
             }
             catch (Exception ex)
@@ -473,6 +482,9 @@ namespace Orc.FileSystem
                         Log.Debug($"Failed to execute write actions to path '{path}'");
                         return;
                     }
+
+                    // Sometimes we need a bit of delay in order to write files to disk
+                    await TaskShim.Delay(DelayAfterWriteOperations);
 
                     // Note: writing dummy data for FileSystemWatcher
                     fileStream?.WriteByte(0);
