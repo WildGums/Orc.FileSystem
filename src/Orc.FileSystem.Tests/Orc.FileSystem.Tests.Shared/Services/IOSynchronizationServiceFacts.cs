@@ -84,27 +84,27 @@ namespace Orc.FileSystem.Tests.Services
                         return true;
                     });
 
-                    var refreshFile = ioSynchronizationService.GetRefreshFileByPath(rootDirectory);
+                    var syncFile = ioSynchronizationService.GetSyncFileByPath(rootDirectory);
 
-                    Assert.IsTrue(File.Exists(refreshFile));
+                    Assert.IsTrue(File.Exists(syncFile));
 
                     // Now do 2 nested reads
                     await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async x =>
                     {
                         await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async y =>
                         {
-                            Assert.IsTrue(File.Exists(refreshFile));
+                            Assert.IsTrue(File.Exists(syncFile));
 
                             return true;
                         });
 
-                        Assert.IsTrue(File.Exists(refreshFile));
+                        Assert.IsTrue(File.Exists(syncFile));
 
                         return true;
                     });
 
                     // Only now the refresh file should be removed
-                    Assert.IsFalse(File.Exists(refreshFile));
+                    Assert.IsFalse(File.Exists(syncFile));
                 }
             }
 

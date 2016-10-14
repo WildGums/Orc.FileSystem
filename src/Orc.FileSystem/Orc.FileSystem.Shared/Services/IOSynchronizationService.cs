@@ -38,7 +38,7 @@ namespace Orc.FileSystem
         private readonly Dictionary<string, string> _basePathsCache = new Dictionary<string, string>();
 
         private readonly Dictionary<string, FileSystemWatcher> _fileSystemWatchers = new Dictionary<string, FileSystemWatcher>();
-        private readonly Dictionary<string, string> _refreshFileCache = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _syncFilesCache = new Dictionary<string, string>();
 
         private readonly ConcurrentDictionary<string, Func<string, Task<bool>>> _readingCallbacks = new ConcurrentDictionary<string, Func<string, Task<bool>>>();
         private readonly ConcurrentDictionary<string, Func<string, Task<bool>>> _writingCallbacks = new ConcurrentDictionary<string, Func<string, Task<bool>>>();
@@ -56,7 +56,7 @@ namespace Orc.FileSystem
         }
         #endregion
 
-        #region IProjectIOSynchronizationService members
+        #region IIOSynchronizationService members
         public TimeSpan DelayBetweenChecks { get; set; }
 
         public TimeSpan DelayAfterWriteOperations { get; set; }
@@ -78,12 +78,10 @@ namespace Orc.FileSystem
                     {
                         Log.Debug($"Start watching path '{path}'");
 
-                        var refreshFile = GetRefreshFileByPath(path);
-                        refreshFile = Path.GetFileName(refreshFile);
+                        var syncFile = GetSyncFileByPath(path);
+                        syncFile = Path.GetFileName(syncFile);
 
-                        //DeleteRefreshFile(path);
-
-                        fileSystemWatcher = CreateFileSystemWatcher(basePath, refreshFile);
+                        fileSystemWatcher = CreateFileSystemWatcher(basePath, syncFile);
                         _fileSystemWatchers[path] = fileSystemWatcher;
                     }
                 }
@@ -103,7 +101,7 @@ namespace Orc.FileSystem
                 using (await _asyncLock.LockAsync())
                 {
                     _basePathsCache.Remove(path);
-                    _refreshFileCache.Remove(path);
+                    _syncFilesCache.Remove(path);
 
                     FileSystemWatcher fileSystemWatcher;
                     if (_fileSystemWatchers.TryGetValue(path, out fileSystemWatcher))
@@ -134,8 +132,8 @@ namespace Orc.FileSystem
             try
             {
                 var scopeName = GetScopeName(path, false);
-                var refreshFile = GetRefreshFileByPath(path);
-                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(true, refreshFile, _fileService)))
+                var syncFile = GetSyncFileByPath(path);
+                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(true, syncFile, _fileService)))
                 {
                     var requiresStartReading = true;
 
@@ -179,8 +177,8 @@ namespace Orc.FileSystem
             try
             {
                 var scopeName = GetScopeName(path, true);
-                var refreshFile = GetRefreshFileByPath(path);
-                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(false, refreshFile, _fileService)))
+                var syncFile = GetSyncFileByPath(path);
+                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(false, syncFile, _fileService)))
                 {
                     var requiresStartWriting = true;
 
@@ -266,26 +264,26 @@ namespace Orc.FileSystem
             }
         }
 
-        protected internal string GetRefreshFileByPath(string path)
+        protected internal string GetSyncFileByPath(string path)
         {
             Argument.IsNotNullOrWhitespace(() => path);
 
-            string refreshFile;
-            if (_refreshFileCache.TryGetValue(path, out refreshFile))
+            string syncFile;
+            if (_syncFilesCache.TryGetValue(path, out syncFile))
             {
-                return refreshFile;
+                return syncFile;
             }
 
-            refreshFile = ResolveObservedFileName(path);
+            syncFile = ResolveObservedFileName(path);
 
-            _refreshFileCache[path] = refreshFile;
+            _syncFilesCache[path] = syncFile;
 
-            return refreshFile;
+            return syncFile;
         }
 
-        private List<string> GetPathsByRefreshFile(string fullPath)
+        private List<string> GetPathsBySyncFile(string fullPath)
         {
-            return _refreshFileCache.Where(x => x.Value.EqualsIgnoreCase(fullPath))
+            return _syncFilesCache.Where(x => x.Value.EqualsIgnoreCase(fullPath))
                 .Select(x => x.Key).Distinct().ToList();
         }
 
@@ -330,7 +328,7 @@ namespace Orc.FileSystem
                 Log.Debug($"Received file watcher event '{e.FullPath} => {e.ChangeType}'");
 
                 var fileName = e.FullPath;
-                var paths = GetPathsByRefreshFile(fileName);
+                var paths = GetPathsBySyncFile(fileName);
 
                 foreach (var path in paths)
                 {
@@ -364,8 +362,8 @@ namespace Orc.FileSystem
         {
             Func<string, Task<bool>> read;
 
-            var refreshFile = GetRefreshFileByPath(path);
-            if (!_fileService.Exists(refreshFile))
+            var syncFile = GetSyncFileByPath(path);
+            if (!_fileService.Exists(syncFile))
             {
                 return;
             }
@@ -384,7 +382,7 @@ namespace Orc.FileSystem
             {
                 var scopeName = GetScopeName(path, false);
 
-                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(true, refreshFile, _fileService)))
+                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(true, syncFile, _fileService)))
                 {
                     var scopeObject = scopeManager.ScopeObject;
                     if (!scopeObject.HasStream)
@@ -444,9 +442,9 @@ namespace Orc.FileSystem
             try
             {
                 var scopeName = GetScopeName(path, true);
-                var refreshFile = GetRefreshFileByPath(path);
+                var syncFile = GetSyncFileByPath(path);
 
-                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(false, refreshFile, _fileService)))
+                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(false, syncFile, _fileService)))
                 {
                     var scopeObject = scopeManager.ScopeObject;
                     if (!scopeObject.HasStream)
@@ -508,18 +506,18 @@ namespace Orc.FileSystem
         {
             private readonly object _lock = new object();
             private readonly bool _isReadScope;
-            private readonly string _refreshFile;
+            private readonly string _syncFile;
             private readonly IFileService _fileService;
 
             private FileStream _fileStream;
 
-            public FileLockScope(bool isReadScope, string refreshFile, IFileService fileService)
+            public FileLockScope(bool isReadScope, string syncFile, IFileService fileService)
             {
-                Argument.IsNotNullOrWhitespace(() => refreshFile);
+                Argument.IsNotNullOrWhitespace(() => syncFile);
                 Argument.IsNotNull(() => fileService);
 
                 _isReadScope = isReadScope;
-                _refreshFile = refreshFile;
+                _syncFile = syncFile;
                 _fileService = fileService;
             }
 
@@ -557,7 +555,7 @@ namespace Orc.FileSystem
                     try
                     {
                         // Note: don't use _fileService because we don't want logging in case of failure
-                        _fileStream = File.Open(_refreshFile, FileMode.Create, FileAccess.Write, FileShare.None);
+                        _fileStream = File.Open(_syncFile, FileMode.Create, FileAccess.Write, FileShare.None);
                     }
                     catch (IOException)
                     {
@@ -578,22 +576,22 @@ namespace Orc.FileSystem
 
                 if (_isReadScope)
                 {
-                    DeleteRefreshFile();
+                    DeleteSyncFile();
                 }
             }
 
-            private void DeleteRefreshFile()
+            private void DeleteSyncFile()
             {
                 try
                 {
-                    if (_fileService.Exists(_refreshFile))
+                    if (_fileService.Exists(_syncFile))
                     {
-                        _fileService.Delete(_refreshFile);
+                        _fileService.Delete(_syncFile);
                     }
                 }
                 catch (IOException ex)
                 {
-                    Log.Warning(ex, $"Failed to delete refresh file '{_refreshFile}'");
+                    Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}'");
                 }
             }
 
