@@ -131,9 +131,7 @@ namespace Orc.FileSystem
 
             try
             {
-                var scopeName = GetScopeName(path, false);
-                var syncFile = GetSyncFileByPath(path);
-                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(true, syncFile, _fileService)))
+                using (var scopeManager = GetScopeManager(true, path))
                 {
                     var requiresStartReading = true;
 
@@ -167,6 +165,7 @@ namespace Orc.FileSystem
             catch (Exception ex)
             {
                 Log.Error(ex, $"Failed to execute reading task for '{path}'");
+                throw;
             }
         }
 
@@ -176,9 +175,7 @@ namespace Orc.FileSystem
 
             try
             {
-                var scopeName = GetScopeName(path, true);
-                var syncFile = GetSyncFileByPath(path);
-                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(false, syncFile, _fileService)))
+                using (var scopeManager = GetScopeManager(false, path))
                 {
                     var requiresStartWriting = true;
 
@@ -212,6 +209,7 @@ namespace Orc.FileSystem
             catch (Exception ex)
             {
                 Log.Error(ex, $"Failed to execute writing task for '{path}'");
+                throw;
             }
         }
         #endregion
@@ -242,6 +240,7 @@ namespace Orc.FileSystem
             catch (Exception ex)
             {
                 Log.Error(ex, $"Failed to execute pending reading for '{path}'");
+                throw;
             }
         }
 
@@ -261,6 +260,7 @@ namespace Orc.FileSystem
             catch (Exception ex)
             {
                 Log.Error(ex, $"Failed to execute pending writing for '{path}'");
+                throw;
             }
         }
 
@@ -376,28 +376,30 @@ namespace Orc.FileSystem
                 }
             }
 
-            var succeeded = true;
+            bool succeeded;
 
             try
             {
-                var scopeName = GetScopeName(path, false);
-
-                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(true, syncFile, _fileService)))
+                using (var scopeManager = GetScopeManager(true, path))
                 {
                     var scopeObject = scopeManager.ScopeObject;
-                    if (!scopeObject.HasStream)
-                    {
-                        if (!scopeObject.Lock())
-                        {
-                            succeeded = false;
-                        }
-                    }
+                    succeeded = scopeObject.Lock();
 
                     if (succeeded)
                     {
                         Log.Debug($"Executing read actions from path '{path}'");
 
-                        succeeded = await read(path);
+                        try
+                        {
+                            succeeded = await read(path);
+                        }
+                        catch (Exception readException)
+                        {                            
+                            Log.Error(readException, $"Fatal error in executing reading for '{path}': '{readException.Message}'");
+
+                            throw new IOSynchronizationException($"Fatal error in executing reading for '{path}'", readException);
+                        }                        
+
                         if (!succeeded)
                         {
                             Log.Debug($"Failed to execute read actions to path '{path}'");
@@ -409,7 +411,8 @@ namespace Orc.FileSystem
                     }
                 }
             }
-            catch (Exception ex)
+            // Note: if we will swallow any other exception we will get endless loop
+            catch (IOException ex)
             {
                 Log.Warning(ex, $"Reading from '{path}' failed, adding enqueued action back in the queue");
 
@@ -437,29 +440,30 @@ namespace Orc.FileSystem
                 }
             }
 
-            var succeeded = true;
+            bool succeeded;
 
             try
             {
-                var scopeName = GetScopeName(path, true);
-                var syncFile = GetSyncFileByPath(path);
-
-                using (var scopeManager = ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(false, syncFile, _fileService)))
+                using (var scopeManager = GetScopeManager(false, path))
                 {
                     var scopeObject = scopeManager.ScopeObject;
-                    if (!scopeObject.HasStream)
-                    {
-                        if (!scopeObject.Lock())
-                        {
-                            succeeded = false;
-                        }
-                    }
+                    succeeded = scopeObject.Lock();
 
                     if (succeeded)
                     {
                         Log.Debug($"Executing write actions to path '{path}'");
+                        
+                        try
+                        {
+                            succeeded = await write(path);
+                        }
+                        catch (Exception readException)
+                        {
+                            Log.Error(readException, $"Fatal error in executing writing for '{path}': '{readException.Message}'");
 
-                        succeeded = await write(path);
+                            throw new IOSynchronizationException($"Fatal error in executing writing for '{path}'", readException);
+                        }
+
                         if (!succeeded)
                         {
                             Log.Debug($"Failed to execute write actions to path '{path}'");
@@ -478,7 +482,7 @@ namespace Orc.FileSystem
                     }
                 }
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
                 Log.Warning(ex, $"Writing to '{path}' failed, adding enqueued action back in the queue");
 
@@ -499,6 +503,16 @@ namespace Orc.FileSystem
             var scopeName = $"{path}_" + (isWriteLock ? "write" : "read");
             return scopeName;
         }
+
+        private ScopeManager<FileLockScope> GetScopeManager(bool isReadScope, string path)
+        {
+            var scopeName = GetScopeName(path, !isReadScope);
+            var syncFile = GetSyncFileByPath(path);
+
+            return !string.Equals(path, syncFile)
+                    ? ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(isReadScope, syncFile, _fileService))
+                    : ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope());
+        }
         #endregion
 
         #region Nested classes
@@ -511,6 +525,11 @@ namespace Orc.FileSystem
 
             private FileStream _fileStream;
 
+            public FileLockScope()
+            {
+                // DummyLock
+            }
+
             public FileLockScope(bool isReadScope, string syncFile, IFileService fileService)
             {
                 Argument.IsNotNullOrWhitespace(() => syncFile);
@@ -521,7 +540,7 @@ namespace Orc.FileSystem
                 _fileService = fileService;
             }
 
-            public bool HasStream
+            private bool HasStream
             {
                 get
                 {
@@ -532,8 +551,15 @@ namespace Orc.FileSystem
                 }
             }
 
+            private bool IsDummyLock => string.IsNullOrWhiteSpace(_syncFile);
+
             public void WriteDummyContent()
             {
+                if(IsDummyLock)
+                {
+                    return;
+                }
+
                 // Note: writing dummy data for FileSystemWatcher
                 lock (_lock)
                 {
@@ -545,7 +571,7 @@ namespace Orc.FileSystem
             {
                 lock (_lock)
                 {
-                    if (HasStream)
+                    if (IsDummyLock || HasStream)
                     {
                         return true;
                     }
@@ -568,6 +594,11 @@ namespace Orc.FileSystem
 
             public void Unlock()
             {
+                if (IsDummyLock)
+                {
+                    return;
+                }
+
                 if (_fileStream != null)
                 {
                     _fileStream.Dispose();
@@ -578,6 +609,11 @@ namespace Orc.FileSystem
                 {
                     DeleteSyncFile();
                 }
+            }
+
+            protected override void DisposeManaged()
+            {
+                Unlock();
             }
 
             private void DeleteSyncFile()
@@ -593,12 +629,7 @@ namespace Orc.FileSystem
                 {
                     Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}'");
                 }
-            }
-
-            protected override void DisposeManaged()
-            {
-                Unlock();
-            }
+            }            
         }
         #endregion
     }

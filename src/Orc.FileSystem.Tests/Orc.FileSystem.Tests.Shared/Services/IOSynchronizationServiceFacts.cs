@@ -21,6 +21,33 @@ namespace Orc.FileSystem.Tests.Services
         public class TheExecuteWritingAsyncMethod
         {
             [Test]
+            [ExpectedException(typeof(IOSynchronizationException))]
+            public async Task WriterWrapsAnyExceptionIntoIOSynchronizationExceptionAsync()
+            {
+                using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotSwallowReaderIOExceptionAsync"))
+                {
+                    var rootDirectory = temporaryFilesContext.GetDirectory("output");
+
+                    var ioSynchronizationService = new IOSynchronizationService(new FileService());
+
+                    var aleadyExecuted = false;
+
+                    await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
+                    {
+                        if (!aleadyExecuted)
+                        {
+                            // preventing continuous loop
+                            aleadyExecuted = true;
+
+                            throw new IOException();
+                        }
+
+                        return true;
+                    });
+                }
+            }
+
+            [Test]
             public async Task AllowsAccessToSameDirectoryBySameProcessAsync()
             {
                 using (var temporaryFilesContext = new TemporaryFilesContext("AllowsAccessToSameDirectoryBySameProcessAsync"))
@@ -67,6 +94,83 @@ namespace Orc.FileSystem.Tests.Services
         [TestFixture]
         public class TheExecuteReadingAsyncMethod
         {
+            [Test]
+            [ExpectedException(typeof(IOSynchronizationException))]
+            public async Task ReaderWrapsAnyExceptionIntoIOSynchronizationExceptionAsync()
+            {
+                using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotSwallowReaderIOExceptionAsync"))
+                {
+                    var rootDirectory = temporaryFilesContext.GetDirectory("output");
+                    var fileName = temporaryFilesContext.GetFile("file1.txt");
+
+                    var ioSynchronizationService = new IOSynchronizationService(new FileService());
+
+                    // write for creating sync file
+                    await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
+                    {
+                        File.WriteAllText(fileName, "12345");
+                        return true;
+                    });
+
+                    var aleadyExecuted = false;
+
+                    await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async x =>
+                    {
+                        if (!aleadyExecuted)
+                        {
+                            // preventing continuous loop
+                            aleadyExecuted = true;
+
+                            throw new IOException();
+                        }
+
+                        return true;
+                    });
+                }
+            }
+
+            [Test]
+            public async Task DoesNotDeleteSyncFileIfEqualsToObservedFilePthAsync()
+            {
+                using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotDeleteSyncFileIfEqualsToObservedFilePthAsync"))
+                {
+                    var fileName = temporaryFilesContext.GetFile("file1.txt");
+
+                    var ioSynchronizationService = new IOSynchronizationWithoutSepatateSyncFileService(new FileService());
+
+                    // ensure syn file exists and data file exists
+                    await ioSynchronizationService.ExecuteWritingAsync(fileName, async x =>
+                    {
+                        File.WriteAllText(fileName, "12345");
+                        return true;
+                    });
+
+                    var syncFile = ioSynchronizationService.GetSyncFileByPath(fileName);
+                    // required thing
+                    Assert.AreEqual(syncFile, fileName);
+
+                    Assert.IsTrue(File.Exists(syncFile));
+
+                    // nested readings
+                    await ioSynchronizationService.ExecuteReadingAsync(fileName, async x =>
+                    {
+                        await ioSynchronizationService.ExecuteReadingAsync(fileName, async y =>
+                        {
+                            Assert.IsTrue(File.Exists(syncFile));
+
+                            return true;
+                        });
+
+                        Assert.IsTrue(File.Exists(syncFile));
+
+                        return true;
+                    });                   
+
+                    // Even now the refresh file should not be removed
+                    Assert.IsTrue(File.Exists(syncFile));
+                }
+            }
+
             [Test]
             public async Task CorrectlyReleasesFileAfterAllNestedScopesHaveBeenReleasedAsync()
             {

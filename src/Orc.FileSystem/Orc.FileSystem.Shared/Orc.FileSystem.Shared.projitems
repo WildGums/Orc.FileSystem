@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\..\SolutionAssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\IOSynchronizationException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\FileInfoExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StreamExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Locking\FileLocker.cs" />
