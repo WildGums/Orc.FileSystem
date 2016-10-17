@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\..\SolutionAssemblyInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IOSynchronizationWithoutSepatateSyncFileService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IOSynchronizationWithoutSeparateSyncFileService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\IOSynchronizationServiceFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TemporaryFilesContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\DummyFacts.cs" />

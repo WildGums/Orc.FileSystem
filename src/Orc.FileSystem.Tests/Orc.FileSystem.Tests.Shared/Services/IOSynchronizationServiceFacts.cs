@@ -130,13 +130,13 @@ namespace Orc.FileSystem.Tests.Services
             }
 
             [Test]
-            public async Task DoesNotDeleteSyncFileIfEqualsToObservedFilePthAsync()
+            public async Task DoesNotDeleteSyncFileIfEqualsToObservedFilePathAsync()
             {
-                using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotDeleteSyncFileIfEqualsToObservedFilePthAsync"))
+                using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotDeleteSyncFileIfEqualsToObservedFilePathAsync"))
                 {
                     var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                    var ioSynchronizationService = new IOSynchronizationWithoutSepatateSyncFileService(new FileService());
+                    var ioSynchronizationService = new IOSynchronizationWithoutSeparateSyncFileService(new FileService());
 
                     // ensure syn file exists and data file exists
                     await ioSynchronizationService.ExecuteWritingAsync(fileName, async x =>
