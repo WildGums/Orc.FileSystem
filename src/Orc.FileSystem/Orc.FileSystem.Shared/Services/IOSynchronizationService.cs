@@ -321,7 +321,9 @@ namespace Orc.FileSystem
             return fileSystemWatcher;
         }
 
+#pragma warning disable AvoidAsyncVoid
         private async void OnFileSystemWatcherChanged(object sender, FileSystemEventArgs e)
+#pragma warning restore AvoidAsyncVoid
         {
             try
             {
