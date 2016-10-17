@@ -42,6 +42,8 @@ namespace Orc.FileSystem
 
         private readonly ConcurrentDictionary<string, Func<string, Task<bool>>> _readingCallbacks = new ConcurrentDictionary<string, Func<string, Task<bool>>>();
         private readonly ConcurrentDictionary<string, Func<string, Task<bool>>> _writingCallbacks = new ConcurrentDictionary<string, Func<string, Task<bool>>>();
+
+        private readonly HashSet<string> _syncFilesInRead = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
         #endregion
 
         #region Constructors
@@ -358,7 +360,7 @@ namespace Orc.FileSystem
             {
                 Log.Error(ex, $"Failed to handle FileSystemWatcher event e.ChangeType: '{e.ChangeType}', e.FullPath: '{e.FullPath}'");
             }
-        }
+        }        
 
         private async Task ExecuteReadingIfPossibleAsync(string path)
         {
@@ -377,6 +379,13 @@ namespace Orc.FileSystem
                     return;
                 }
             }
+
+            if (path.EqualsIgnoreCase(syncFile) && _syncFilesInRead.Contains(syncFile))
+            {
+                return;
+            }
+
+            _syncFilesInRead.Add(syncFile);
 
             bool succeeded;
 
@@ -419,6 +428,10 @@ namespace Orc.FileSystem
                 Log.Warning(ex, $"Reading from '{path}' failed, adding enqueued action back in the queue");
 
                 succeeded = false;
+            }
+            finally
+            {
+                _syncFilesInRead.Remove(syncFile);
             }
 
             if (!succeeded)
