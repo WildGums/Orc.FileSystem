@@ -19,5 +19,7 @@ namespace Orc.FileSystem
         Task ExecuteWritingAsync(string projectLocation, Func<string, Task<bool>> writeAsync);
 
         event EventHandler<PathEventArgs> RefreshRequired;
+        TimeSpan DelayBetweenChecks { get; set; }
+        TimeSpan DelayAfterWriteOperations { get; set; }
     }
 }

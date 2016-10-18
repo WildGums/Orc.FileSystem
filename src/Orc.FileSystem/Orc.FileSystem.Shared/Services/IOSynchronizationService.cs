@@ -24,7 +24,9 @@ namespace Orc.FileSystem
     {
         #region Constants
         private const string DefaultSyncFile = "__ofs.sync";
-        private static readonly TimeSpan DefaultDelay = TimeSpan.FromMilliseconds(500);
+
+        private static readonly TimeSpan DefaultDelayBetweenChecks = TimeSpan.FromMilliseconds(500);
+        private static readonly TimeSpan DefaultDelayAfterWriteOperations = TimeSpan.FromMilliseconds(50);
         #endregion
 
         #region #region Fields
@@ -36,10 +38,12 @@ namespace Orc.FileSystem
         private readonly Dictionary<string, string> _basePathsCache = new Dictionary<string, string>();
 
         private readonly Dictionary<string, FileSystemWatcher> _fileSystemWatchers = new Dictionary<string, FileSystemWatcher>();
-        private readonly Dictionary<string, string> _refreshFileCache = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _syncFilesCache = new Dictionary<string, string>();
 
         private readonly ConcurrentDictionary<string, Func<string, Task<bool>>> _readingCallbacks = new ConcurrentDictionary<string, Func<string, Task<bool>>>();
         private readonly ConcurrentDictionary<string, Func<string, Task<bool>>> _writingCallbacks = new ConcurrentDictionary<string, Func<string, Task<bool>>>();
+
+        private readonly HashSet<string> _syncFilesInRead = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
         #endregion
 
         #region Constructors
@@ -48,10 +52,17 @@ namespace Orc.FileSystem
             Argument.IsNotNull(() => fileService);
 
             _fileService = fileService;
+
+            DelayBetweenChecks = DefaultDelayBetweenChecks;
+            DelayAfterWriteOperations = DefaultDelayAfterWriteOperations;
         }
         #endregion
 
-        #region IProjectIOSynchronizationService members
+        #region IIOSynchronizationService members
+        public TimeSpan DelayBetweenChecks { get; set; }
+
+        public TimeSpan DelayAfterWriteOperations { get; set; }
+
         public event EventHandler<PathEventArgs> RefreshRequired;
 
         public async Task StartWatchingForChangesAsync(string path)
@@ -69,12 +80,10 @@ namespace Orc.FileSystem
                     {
                         Log.Debug($"Start watching path '{path}'");
 
-                        var refreshFile = GetRefreshFileByPath(path);
-                        refreshFile = Path.GetFileName(refreshFile);
+                        var syncFile = GetSyncFileByPath(path);
+                        syncFile = Path.GetFileName(syncFile);
 
-                        DeleteRefreshFile(path);
-
-                        fileSystemWatcher = CreateFileSystemWatcher(basePath, refreshFile);
+                        fileSystemWatcher = CreateFileSystemWatcher(basePath, syncFile);
                         _fileSystemWatchers[path] = fileSystemWatcher;
                     }
                 }
@@ -94,7 +103,7 @@ namespace Orc.FileSystem
                 using (await _asyncLock.LockAsync())
                 {
                     _basePathsCache.Remove(path);
-                    _refreshFileCache.Remove(path);
+                    _syncFilesCache.Remove(path);
 
                     FileSystemWatcher fileSystemWatcher;
                     if (_fileSystemWatchers.TryGetValue(path, out fileSystemWatcher))
@@ -124,8 +133,7 @@ namespace Orc.FileSystem
 
             try
             {
-                var scopeName = GetScopeName(path, false);
-                using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
+                using (var scopeManager = GetScopeManager(true, path))
                 {
                     var requiresStartReading = true;
 
@@ -159,6 +167,7 @@ namespace Orc.FileSystem
             catch (Exception ex)
             {
                 Log.Error(ex, $"Failed to execute reading task for '{path}'");
+                throw;
             }
         }
 
@@ -168,8 +177,7 @@ namespace Orc.FileSystem
 
             try
             {
-                var scopeName = GetScopeName(path, true);
-                using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
+                using (var scopeManager = GetScopeManager(false, path))
                 {
                     var requiresStartWriting = true;
 
@@ -203,6 +211,7 @@ namespace Orc.FileSystem
             catch (Exception ex)
             {
                 Log.Error(ex, $"Failed to execute writing task for '{path}'");
+                throw;
             }
         }
         #endregion
@@ -227,12 +236,13 @@ namespace Orc.FileSystem
                 {
                     await ExecuteReadingIfPossibleAsync(path);
 
-                    await TaskShim.Delay(DefaultDelay);
+                    await TaskShim.Delay(DelayBetweenChecks);
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, $"Failed to execute pending reading for '{path}'");
+                throw;
             }
         }
 
@@ -246,35 +256,36 @@ namespace Orc.FileSystem
                 {
                     await ExecuteWritingIfPossibleAsync(path);
 
-                    await TaskShim.Delay(DefaultDelay);
+                    await TaskShim.Delay(DelayBetweenChecks);
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, $"Failed to execute pending writing for '{path}'");
+                throw;
             }
         }
 
-        private string GetRefreshFileByPath(string path)
+        protected internal string GetSyncFileByPath(string path)
         {
             Argument.IsNotNullOrWhitespace(() => path);
 
-            string refreshFile;
-            if (_refreshFileCache.TryGetValue(path, out refreshFile))
+            string syncFile;
+            if (_syncFilesCache.TryGetValue(path, out syncFile))
             {
-                return refreshFile;
+                return syncFile;
             }
 
-            refreshFile = ResolveObservedFileName(path);
+            syncFile = ResolveObservedFileName(path);
 
-            _refreshFileCache[path] = refreshFile;
+            _syncFilesCache[path] = syncFile;
 
-            return refreshFile;
+            return syncFile;
         }
 
-        private List<string> GetPathsByRefreshFile(string fullPath)
+        private List<string> GetPathsBySyncFile(string fullPath)
         {
-            return _refreshFileCache.Where(x => x.Value.EqualsIgnoreCase(fullPath))
+            return _syncFilesCache.Where(x => x.Value.EqualsIgnoreCase(fullPath))
                 .Select(x => x.Key).Distinct().ToList();
         }
 
@@ -312,14 +323,16 @@ namespace Orc.FileSystem
             return fileSystemWatcher;
         }
 
+#pragma warning disable AvoidAsyncVoid
         private async void OnFileSystemWatcherChanged(object sender, FileSystemEventArgs e)
+#pragma warning restore AvoidAsyncVoid
         {
             try
             {
                 Log.Debug($"Received file watcher event '{e.FullPath} => {e.ChangeType}'");
 
                 var fileName = e.FullPath;
-                var paths = GetPathsByRefreshFile(fileName);
+                var paths = GetPathsBySyncFile(fileName);
 
                 foreach (var path in paths)
                 {
@@ -347,11 +360,17 @@ namespace Orc.FileSystem
             {
                 Log.Error(ex, $"Failed to handle FileSystemWatcher event e.ChangeType: '{e.ChangeType}', e.FullPath: '{e.FullPath}'");
             }
-        }
+        }        
 
         private async Task ExecuteReadingIfPossibleAsync(string path)
         {
             Func<string, Task<bool>> read;
+
+            var syncFile = GetSyncFileByPath(path);
+            if (!_fileService.Exists(syncFile))
+            {
+                return;
+            }
 
             using (await _asyncLock.LockAsync())
             {
@@ -361,46 +380,50 @@ namespace Orc.FileSystem
                 }
             }
 
-            var refreshFile = GetRefreshFileByPath(path);
-            if (!_fileService.Exists(refreshFile))
+            if (path.EqualsIgnoreCase(syncFile) && _syncFilesInRead.Contains(syncFile))
             {
                 return;
             }
 
-            FileSystemWatcher fileSystemWatcher;
-            _fileSystemWatchers.TryGetValue(path, out fileSystemWatcher);
+            _syncFilesInRead.Add(syncFile);
 
-            var succeeded = true;
-            FileStream fileStream = null;
+            bool succeeded;
 
             try
             {
-                if (!path.EqualsIgnoreCase(refreshFile))
+                using (var scopeManager = GetScopeManager(true, path))
                 {
-                    try
-                    {
-                        // Note: don't use _fileService because we don't want logging in case of failure
-                        fileStream = File.Open(refreshFile, FileMode.Open, FileAccess.Read, FileShare.None);
-                    }
-                    catch (IOException)
-                    {
-                        succeeded = false;
-                    }
-                }
+                    var scopeObject = scopeManager.ScopeObject;
+                    succeeded = scopeObject.Lock();
 
-                if (succeeded)
-                {
-                    Log.Debug($"Executing read actions from path '{path}'");
-
-                    succeeded = await read(path);
-                    if (!succeeded)
+                    if (succeeded)
                     {
-                        Log.Debug($"Failed to execute read actions to path '{path}'");
-                        return;
+                        Log.Debug($"Executing read actions from path '{path}'");
+
+                        try
+                        {
+                            succeeded = await read(path);
+                        }
+                        catch (Exception readException)
+                        {                            
+                            Log.Error(readException, $"Fatal error in executing reading for '{path}': '{readException.Message}'");
+
+                            throw new IOSynchronizationException($"Fatal error in executing reading for '{path}'", readException);
+                        }                        
+
+                        if (!succeeded)
+                        {
+                            Log.Debug($"Failed to execute read actions to path '{path}'");
+                        }
+                        else
+                        {
+                            Log.Debug($"Succeeded to execute read actions to path '{path}'");
+                        }
                     }
                 }
             }
-            catch (Exception ex)
+            // Note: if we will swallow any other exception we will get endless loop
+            catch (IOException ex)
             {
                 Log.Warning(ex, $"Reading from '{path}' failed, adding enqueued action back in the queue");
 
@@ -408,7 +431,7 @@ namespace Orc.FileSystem
             }
             finally
             {
-                fileStream?.Dispose();
+                _syncFilesInRead.Remove(syncFile);
             }
 
             if (!succeeded)
@@ -417,10 +440,6 @@ namespace Orc.FileSystem
                 {
                     _readingCallbacks.TryAdd(path, read);
                 }
-            }
-            else
-            {
-                DeleteRefreshFile(path);
             }
         }
 
@@ -436,57 +455,53 @@ namespace Orc.FileSystem
                 }
             }
 
-            var refreshFile = GetRefreshFileByPath(path);
-
-            var succeeded = true;
-            FileStream fileStream = null;
+            bool succeeded;
 
             try
             {
-                var scopeName = GetScopeName(path, true);
-                using (var scopeManager = ScopeManager<string>.GetScopeManager(scopeName))
+                using (var scopeManager = GetScopeManager(false, path))
                 {
-                    var acquireLock = scopeManager.RefCount <= 1 || !_fileService.Exists(refreshFile);
-                    if (acquireLock)
+                    var scopeObject = scopeManager.ScopeObject;
+                    succeeded = scopeObject.Lock();
+
+                    if (succeeded)
                     {
-                        if (!path.EqualsIgnoreCase(refreshFile))
+                        Log.Debug($"Executing write actions to path '{path}'");
+                        
+                        try
                         {
-                            try
-                            {
-                                // Note: don't use _fileService because we don't want logging in case of failure
-                                fileStream = File.Open(refreshFile, FileMode.Create, FileAccess.Write, FileShare.None);
-                            }
-                            catch (IOException)
-                            {
-                                succeeded = false;
-                            }
+                            succeeded = await write(path);
+                        }
+                        catch (Exception readException)
+                        {
+                            Log.Error(readException, $"Fatal error in executing writing for '{path}': '{readException.Message}'");
+
+                            throw new IOSynchronizationException($"Fatal error in executing writing for '{path}'", readException);
+                        }
+
+                        if (!succeeded)
+                        {
+                            Log.Debug($"Failed to execute write actions to path '{path}'");
+                        }
+                        else
+                        {
+                            var delay = DelayAfterWriteOperations;
+
+                            Log.Debug($"Succeeded to execute write actions to path '{path}', using a delay of '{delay}'");
+
+                            // Sometimes we need a bit of delay in order to write files to disk
+                            await TaskShim.Delay(delay);
+
+                            scopeObject.WriteDummyContent();
                         }
                     }
                 }
-
-                if (succeeded)
-                {
-                    Log.Debug($"Executing write actions to path '{path}'");
-
-                    if (!await write(path))
-                    {
-                        Log.Debug($"Failed to execute write actions to path '{path}'");
-                        return;
-                    }
-
-                    // Note: writing dummy data for FileSystemWatcher
-                    fileStream?.WriteByte(0);
-                }
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
                 Log.Warning(ex, $"Writing to '{path}' failed, adding enqueued action back in the queue");
 
                 succeeded = false;
-            }
-            finally
-            {
-                fileStream?.Dispose();
             }
 
             if (!succeeded)
@@ -504,20 +519,132 @@ namespace Orc.FileSystem
             return scopeName;
         }
 
-        private void DeleteRefreshFile(string path)
+        private ScopeManager<FileLockScope> GetScopeManager(bool isReadScope, string path)
         {
-            var refreshFile = GetRefreshFileByPath(path);
+            var scopeName = GetScopeName(path, !isReadScope);
+            var syncFile = GetSyncFileByPath(path);
 
-            try
+            return !string.Equals(path, syncFile)
+                    ? ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(isReadScope, syncFile, _fileService))
+                    : ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope());
+        }
+        #endregion
+
+        #region Nested classes
+        private class FileLockScope : Disposable
+        {
+            private readonly object _lock = new object();
+            private readonly bool _isReadScope;
+            private readonly string _syncFile;
+            private readonly IFileService _fileService;
+
+            private FileStream _fileStream;
+
+            public FileLockScope()
             {
-                if (_fileService.Exists(refreshFile) && !path.EqualsIgnoreCase(refreshFile))
+                // DummyLock
+            }
+
+            public FileLockScope(bool isReadScope, string syncFile, IFileService fileService)
+            {
+                Argument.IsNotNullOrWhitespace(() => syncFile);
+                Argument.IsNotNull(() => fileService);
+
+                _isReadScope = isReadScope;
+                _syncFile = syncFile;
+                _fileService = fileService;
+            }
+
+            private bool HasStream
+            {
+                get
                 {
-                    _fileService.Delete(refreshFile);
+                    lock (_lock)
+                    {
+                        return _fileStream != null;
+                    }
                 }
             }
-            catch (IOException)
+
+            private bool IsDummyLock => string.IsNullOrWhiteSpace(_syncFile);
+
+            public void WriteDummyContent()
             {
+                if(IsDummyLock)
+                {
+                    return;
+                }
+
+                // Note: writing dummy data for FileSystemWatcher
+                lock (_lock)
+                {
+                    _fileStream?.WriteByte(0);
+                }
             }
+
+            public bool Lock()
+            {
+                lock (_lock)
+                {
+                    if (IsDummyLock || HasStream)
+                    {
+                        return true;
+                    }
+
+                    var succeeded = true;
+
+                    try
+                    {
+                        // Note: don't use _fileService because we don't want logging in case of failure
+                        _fileStream = File.Open(_syncFile, FileMode.Create, FileAccess.Write, FileShare.None);
+                    }
+                    catch (IOException)
+                    {
+                        succeeded = false;
+                    }
+
+                    return succeeded;
+                }
+            }
+
+            public void Unlock()
+            {
+                if (IsDummyLock)
+                {
+                    return;
+                }
+
+                if (_fileStream != null)
+                {
+                    _fileStream.Dispose();
+                    _fileStream = null;
+                }
+
+                if (_isReadScope)
+                {
+                    DeleteSyncFile();
+                }
+            }
+
+            protected override void DisposeManaged()
+            {
+                Unlock();
+            }
+
+            private void DeleteSyncFile()
+            {
+                try
+                {
+                    if (_fileService.Exists(_syncFile))
+                    {
+                        _fileService.Delete(_syncFile);
+                    }
+                }
+                catch (IOException ex)
+                {
+                    Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}'");
+                }
+            }            
         }
         #endregion
     }
