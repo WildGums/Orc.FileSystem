@@ -25,11 +25,11 @@ namespace Orc.FileSystem
         #region Constants
         private const string DefaultSyncFile = "__ofs.sync";
 
-        private static readonly TimeSpan DefaultDelayBetweenChecks = TimeSpan.FromMilliseconds(500);
+        private static readonly TimeSpan DefaultDelayBetweenChecks = TimeSpan.FromMilliseconds(50);
         private static readonly TimeSpan DefaultDelayAfterWriteOperations = TimeSpan.FromMilliseconds(50);
         #endregion
 
-        #region #region Fields
+        #region Fields
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
         private readonly IFileService _fileService;
