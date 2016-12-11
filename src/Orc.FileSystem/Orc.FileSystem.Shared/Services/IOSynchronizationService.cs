@@ -67,12 +67,18 @@ namespace Orc.FileSystem
 
         public IDisposable AcquireReadLock(string path)
         {
-            return GetScopeManager(true, path);
+            var scopeManager = GetScopeManager(true, path);
+            scopeManager.ScopeObject.Lock();
+
+            return scopeManager;
         }
 
         public IDisposable AcquireWriteLock(string path)
         {
-            return GetScopeManager(false, path);
+            var scopeManager = GetScopeManager(false, path);
+            scopeManager.ScopeObject.Lock();
+
+            return scopeManager;
         }
 
         public async Task StartWatchingForChangesAsync(string path)
