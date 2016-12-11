@@ -65,6 +65,16 @@ namespace Orc.FileSystem
 
         public event EventHandler<PathEventArgs> RefreshRequired;
 
+        public IDisposable AcquireReadLock(string path)
+        {
+            return GetScopeManager(true, path);
+        }
+
+        public IDisposable AcquireWriteLock(string path)
+        {
+            return GetScopeManager(false, path);
+        }
+
         public async Task StartWatchingForChangesAsync(string path)
         {
             Argument.IsNotNullOrWhitespace(() => path);
