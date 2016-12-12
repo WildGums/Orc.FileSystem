@@ -22,6 +22,6 @@ namespace Orc.FileSystem
         TimeSpan DelayBetweenChecks { get; set; }
         TimeSpan DelayAfterWriteOperations { get; set; }
         IDisposable AcquireReadLock(string path);
-        IDisposable AcquireWriteLock(string path);
+        IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true);
     }
 }
