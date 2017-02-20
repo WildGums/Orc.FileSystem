@@ -65,6 +65,25 @@ namespace Orc.FileSystem
 
         public event EventHandler<PathEventArgs> RefreshRequired;
 
+        public IDisposable AcquireReadLock(string path)
+        {
+            var scopeManager = GetScopeManager(true, path);
+            scopeManager.ScopeObject.Lock();
+
+            return scopeManager;
+        }
+
+        public IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true)
+        {
+            var scopeManager = GetScopeManager(false, path);
+
+            var scopeObject = scopeManager.ScopeObject;
+            scopeObject.NotifyOnRelease = notifyOnRelease;
+            scopeObject.Lock();
+
+            return scopeManager;
+        }
+
         public async Task StartWatchingForChangesAsync(string path)
         {
             Argument.IsNotNullOrWhitespace(() => path);
@@ -360,7 +379,7 @@ namespace Orc.FileSystem
             {
                 Log.Error(ex, $"Failed to handle FileSystemWatcher event e.ChangeType: '{e.ChangeType}', e.FullPath: '{e.FullPath}'");
             }
-        }        
+        }
 
         private async Task ExecuteReadingIfPossibleAsync(string path)
         {
@@ -405,11 +424,11 @@ namespace Orc.FileSystem
                             succeeded = await read(path);
                         }
                         catch (Exception readException)
-                        {                            
+                        {
                             Log.Error(readException, $"Fatal error in executing reading for '{path}': '{readException.Message}'");
 
                             throw new IOSynchronizationException($"Fatal error in executing reading for '{path}'", readException);
-                        }                        
+                        }
 
                         if (!succeeded)
                         {
@@ -467,7 +486,7 @@ namespace Orc.FileSystem
                     if (succeeded)
                     {
                         Log.Debug($"Executing write actions to path '{path}'");
-                        
+
                         try
                         {
                             succeeded = await write(path);
@@ -568,9 +587,11 @@ namespace Orc.FileSystem
 
             private bool IsDummyLock => string.IsNullOrWhiteSpace(_syncFile);
 
+            public bool NotifyOnRelease { get; set; }
+
             public void WriteDummyContent()
             {
-                if(IsDummyLock)
+                if (IsDummyLock)
                 {
                     return;
                 }
@@ -614,6 +635,11 @@ namespace Orc.FileSystem
                     return;
                 }
 
+                if (NotifyOnRelease)
+                {
+                    WriteDummyContent();
+                }
+
                 if (_fileStream != null)
                 {
                     _fileStream.Dispose();
@@ -644,7 +670,7 @@ namespace Orc.FileSystem
                 {
                     Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}'");
                 }
-            }            
+            }
         }
         #endregion
     }
