@@ -387,11 +387,6 @@ namespace Orc.FileSystem
             Func<string, Task<bool>> read;
 
             var syncFile = GetSyncFileByPath(path);
-            if (!_fileService.Exists(syncFile))
-            {
-                return;
-            }
-
             using (await _asyncLock.LockAsync())
             {
                 if (!_readingCallbacks.TryRemove(path, out read))
