@@ -10,6 +10,7 @@ namespace Orc.FileSystem
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -386,11 +387,6 @@ namespace Orc.FileSystem
             Func<string, Task<bool>> read;
 
             var syncFile = GetSyncFileByPath(path);
-            if (!_fileService.Exists(syncFile))
-            {
-                return;
-            }
-
             using (await _asyncLock.LockAsync())
             {
                 if (!_readingCallbacks.TryRemove(path, out read))
@@ -617,7 +613,9 @@ namespace Orc.FileSystem
                     try
                     {
                         // Note: don't use _fileService because we don't want logging in case of failure
-                        _fileStream = File.Open(_syncFile, FileMode.Create, FileAccess.Write, FileShare.None);
+                        _fileStream = File.Open(_syncFile, FileMode.Create, FileAccess.Write, _isReadScope ? FileShare.Delete : FileShare.None);
+
+                        Log.Info($"Locked sync file '{_syncFile}'");
                     }
                     catch (IOException)
                     {
@@ -639,17 +637,20 @@ namespace Orc.FileSystem
                 {
                     WriteDummyContent();
                 }
+                
+                if (_isReadScope)
+                {
+                    // Note: deleting sync file before releasing, in order to prevent locking by another application
+                    DeleteSyncFile();
+                }
 
                 if (_fileStream != null)
                 {
                     _fileStream.Dispose();
                     _fileStream = null;
-                }
 
-                if (_isReadScope)
-                {
-                    DeleteSyncFile();
-                }
+                    Log.Info($"Released handler of sync file '{_syncFile}'");
+                }                
             }
 
             protected override void DisposeManaged()
@@ -664,11 +665,21 @@ namespace Orc.FileSystem
                     if (_fileService.Exists(_syncFile))
                     {
                         _fileService.Delete(_syncFile);
+
+                        Log.Info($"Deleted sync file '{_syncFile}'");
                     }
                 }
                 catch (IOException ex)
                 {
-                    Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}'");
+                    var processes = FileLockInfo.GetProcessesLockingFile(_syncFile);
+                    if (processes == null || !processes.Any())
+                    {
+                        Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}'");
+                    }
+                    else
+                    {                       
+                        Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}' locked by: {string.Join(", ", processes)}");
+                    }
                 }
             }
         }
