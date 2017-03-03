@@ -599,6 +599,8 @@ namespace Orc.FileSystem
                 }
             }
 
+            private int _lockAttemptCounter;
+
             public bool Lock()
             {
                 lock (_lock)
@@ -608,21 +610,40 @@ namespace Orc.FileSystem
                         return true;
                     }
 
-                    var succeeded = true;
-
                     try
                     {
                         // Note: don't use _fileService because we don't want logging in case of failure
                         _fileStream = File.Open(_syncFile, FileMode.Create, FileAccess.Write, _isReadScope ? FileShare.Delete : FileShare.None);
 
-                        Log.Info($"Locked sync file '{_syncFile}'");
+                        Log.Info($"Locked synchronization file '{_syncFile}'");
                     }
-                    catch (IOException)
+                    catch (IOException ex)
                     {
-                        succeeded = false;
+                        if (_lockAttemptCounter > 0)
+                        {
+                            return false;
+                        }
+
+                        var processes = FileLockInfo.GetProcessesLockingFile(_syncFile);
+                        if (processes == null || !processes.Any())
+                        {
+                            Log.Info(ex, $"First attempt to lock synchronization file '{_syncFile}' was unsuccessful. " +
+                                            "Possibly locked by unknown application. Will keep retrying in the background.");
+                        }
+                        else
+                        {
+                            Log.Info($"First attempt to lock synchronization file '{_syncFile}' was unsuccessful. " +
+                                            $"Locked by: {string.Join(", ", processes)}. Will keep retrying in the background.");
+                        }
+
+                        return false;
+                    }
+                    finally
+                    {
+                        _lockAttemptCounter++;
                     }
 
-                    return succeeded;
+                    return true;
                 }
             }
 
@@ -637,7 +658,7 @@ namespace Orc.FileSystem
                 {
                     WriteDummyContent();
                 }
-                
+
                 if (_isReadScope)
                 {
                     // Note: deleting sync file before releasing, in order to prevent locking by another application
@@ -649,8 +670,10 @@ namespace Orc.FileSystem
                     _fileStream.Dispose();
                     _fileStream = null;
 
-                    Log.Info($"Released handler of sync file '{_syncFile}'");
-                }                
+                    Log.Info($"Released handler of synchronization file '{_syncFile}'");
+                }
+
+                _lockAttemptCounter = 0;
             }
 
             protected override void DisposeManaged()
@@ -666,7 +689,7 @@ namespace Orc.FileSystem
                     {
                         _fileService.Delete(_syncFile);
 
-                        Log.Info($"Deleted sync file '{_syncFile}'");
+                        Log.Info($"Deleted synchronization file '{_syncFile}'");
                     }
                 }
                 catch (IOException ex)
@@ -677,7 +700,7 @@ namespace Orc.FileSystem
                         Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}'");
                     }
                     else
-                    {                       
+                    {
                         Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}' locked by: {string.Join(", ", processes)}");
                     }
                 }
