@@ -148,7 +148,7 @@ namespace Orc.FileSystem
                 _fileStream.Dispose();
                 _fileStream = null;
 
-                Log.Info($"Released handler of synchronization file '{_syncFile}'");
+                Log.Info($"Unlocked synchronization file '{_syncFile}'");
             }
 
             _lockAttemptCounter = 0;
