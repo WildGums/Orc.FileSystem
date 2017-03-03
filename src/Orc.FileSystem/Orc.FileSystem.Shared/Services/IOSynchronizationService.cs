@@ -356,6 +356,9 @@ namespace Orc.FileSystem
 
                 foreach (var path in paths)
                 {
+                    var readingScopeName = GetScopeName(path, false);
+                    var readingScopeExists = ScopeManager<FileLockScope>.ScopeExists(readingScopeName);
+
                     if (_writingCallbacks.ContainsKey(path))
                     {
                         await ExecuteWritingIfPossibleAsync(path);
@@ -370,7 +373,9 @@ namespace Orc.FileSystem
                     {
                         await ExecuteReadingIfPossibleAsync(path);
                     }
-                    else
+
+                    // Note: we should not raise RefreshRequired when reading scope still exists
+                    if (!readingScopeExists)
                     {
                         RefreshRequired?.Invoke(this, new PathEventArgs(path));
                     }
