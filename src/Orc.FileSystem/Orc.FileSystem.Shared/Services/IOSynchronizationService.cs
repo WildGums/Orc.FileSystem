@@ -32,6 +32,7 @@ namespace Orc.FileSystem
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
         private readonly IFileService _fileService;
+        private readonly IDirectoryService _directoryService;
 
         private readonly AsyncLock _asyncLock = new AsyncLock();
         private readonly Dictionary<string, string> _basePathsCache = new Dictionary<string, string>();
@@ -46,11 +47,13 @@ namespace Orc.FileSystem
         #endregion
 
         #region Constructors
-        public IOSynchronizationService(IFileService fileService)
+        public IOSynchronizationService(IFileService fileService, IDirectoryService directoryService)
         {
             Argument.IsNotNull(() => fileService);
+            Argument.IsNotNull(() => directoryService);
 
             _fileService = fileService;
+            _directoryService = directoryService;
 
             DelayBetweenChecks = DefaultDelayBetweenChecks;
             DelayAfterWriteOperations = DefaultDelayAfterWriteOperations;
@@ -317,9 +320,9 @@ namespace Orc.FileSystem
                 return basePath;
             }
 
-            basePath = _fileService.Exists(path)
-                ? Path.GetParentDirectory(path)
-                : path;
+            basePath = _directoryService.Exists(path)
+                ? path
+                : Path.GetParentDirectory(path);
 
             _basePathsCache[path] = basePath;
             return basePath;
