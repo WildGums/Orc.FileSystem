@@ -28,7 +28,8 @@ namespace Orc.FileSystem.Tests.Services
                 {
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
 
-                    var ioSynchronizationService = new IOSynchronizationService(new FileService());
+                    var fileService = new FileService();
+                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                     var aleadyExecuted = false;
 
@@ -56,7 +57,8 @@ namespace Orc.FileSystem.Tests.Services
                     var file1 = temporaryFilesContext.GetFile("output\\file1.txt");
                     var file2 = temporaryFilesContext.GetFile("output\\file2.txt");
 
-                    var ioSynchronizationService = new IOSynchronizationService(new FileService());
+                    var fileService = new FileService();
+                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                     await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
                     {
@@ -79,7 +81,8 @@ namespace Orc.FileSystem.Tests.Services
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
                     var subdirectory = temporaryFilesContext.GetDirectory("output\\subdirectory");
 
-                    var ioSynchronizationService = new IOSynchronizationService(new FileService());
+                    var fileService = new FileService();
+                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                     await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
                     {
@@ -103,7 +106,8 @@ namespace Orc.FileSystem.Tests.Services
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
                     var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                    var ioSynchronizationService = new IOSynchronizationService(new FileService());
+                    var fileService = new FileService();
+                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                     // write for creating sync file
                     await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
@@ -136,7 +140,8 @@ namespace Orc.FileSystem.Tests.Services
                 {
                     var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                    var ioSynchronizationService = new IOSynchronizationWithoutSeparateSyncFileService(new FileService());
+                    var fileService = new FileService();
+                    var ioSynchronizationService = new IOSynchronizationWithoutSeparateSyncFileService(fileService, new DirectoryService(fileService));
 
                     // ensure syn file exists and data file exists
                     await ioSynchronizationService.ExecuteWritingAsync(fileName, async x =>
@@ -179,7 +184,8 @@ namespace Orc.FileSystem.Tests.Services
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
                     var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                    var ioSynchronizationService = new IOSynchronizationService(new FileService());
+                    var fileService = new FileService();
+                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                     // Step 1: Write
                     await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
@@ -220,7 +226,8 @@ namespace Orc.FileSystem.Tests.Services
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
                     var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                    var ioSynchronizationService = new IOSynchronizationService(new FileService());
+                    var fileService = new FileService();
+                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                     // Step 1: Write, do not await
 #pragma warning disable 4014

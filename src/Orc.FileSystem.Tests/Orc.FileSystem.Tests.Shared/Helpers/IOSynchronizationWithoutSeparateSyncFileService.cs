@@ -10,8 +10,8 @@ namespace Orc.FileSystem.Tests
     public class IOSynchronizationWithoutSeparateSyncFileService : IOSynchronizationService
     {
         #region Constructors
-        public IOSynchronizationWithoutSeparateSyncFileService(IFileService fileService)
-            : base(fileService)
+        public IOSynchronizationWithoutSeparateSyncFileService(IFileService fileService, IDirectoryService directoryService)
+            : base(fileService, directoryService)
         {
         }
         #endregion
