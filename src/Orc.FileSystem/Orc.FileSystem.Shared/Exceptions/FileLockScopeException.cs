@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IOSynchronizationException.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
+// <copyright file="FileLockScopeException.cs" company="WildGums">
+//   Copyright (c) 2008 - 2017 WildGums. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -9,15 +9,15 @@ namespace Orc.FileSystem
 {
     using System;
 
-    public class IOSynchronizationException : Exception
+    public class FileLockScopeException : Exception
     {
         #region Constructors
-        public IOSynchronizationException(string message)
+        public FileLockScopeException(string message)
             : base(message)
         {
         }
 
-        public IOSynchronizationException(string message, Exception innerException)
+        public FileLockScopeException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
