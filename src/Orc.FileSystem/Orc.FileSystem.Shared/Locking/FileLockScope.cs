@@ -77,7 +77,7 @@ namespace Orc.FileSystem
             {
                 _fileStream?.WriteByte(0);
             }
-        }
+        }        
 
         public bool Lock()
         {
@@ -97,6 +97,13 @@ namespace Orc.FileSystem
                 }
                 catch (IOException ex)
                 {
+                    var hResult = (uint)ex.GetHResult();
+                    
+                    if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
+                    {
+                        throw Log.ErrorAndCreateException<FileLockScopeException>(ex, $"Failed to lock synchronization file '{_syncFile}'");
+                    }
+
                     if (_lockAttemptCounter > 0)
                     {
                         return false;
@@ -183,6 +190,6 @@ namespace Orc.FileSystem
                 }
             }
         }
-        #endregion
+#endregion
     }
 }
