@@ -7,7 +7,7 @@
 
 namespace Orc.FileSystem
 {
-    // for ful list of error codes see https://msdn.microsoft.com/en-us/library/windows/desktop/ms681382.aspx
+    // for full list of error codes see https://msdn.microsoft.com/en-us/library/windows/desktop/ms681382.aspx
     public static class SystemErrorCodes
     {
         /// <summary>
