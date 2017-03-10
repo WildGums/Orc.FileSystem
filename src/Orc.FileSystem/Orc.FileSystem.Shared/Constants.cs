@@ -13,6 +13,6 @@ namespace Orc.FileSystem
         /// <summary>
         /// The process cannot access the file because it is being used by another process.
         /// </summary>
-        public const uint ERROR_SHARING_VIOLATION = 0x8007_0020;
+        public const uint ERROR_SHARING_VIOLATION = 0x80070020;
     }
 }
