@@ -131,9 +131,7 @@ namespace Orc.FileSystem
                     {
                         Log.Debug($"Stop watching path '{path}'");
 
-                        fileSystemWatcher.Created -= OnFileSystemWatcherChanged;
                         fileSystemWatcher.Changed -= OnFileSystemWatcherChanged;
-                        fileSystemWatcher.Deleted -= OnFileSystemWatcherChanged;
 
                         fileSystemWatcher.EnableRaisingEvents = false;
                         fileSystemWatcher.Dispose();
@@ -332,12 +330,10 @@ namespace Orc.FileSystem
         {
             var fileSystemWatcher = new FileSystemWatcher(basePath, fileSystemWatcherFilter)
             {
-                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName
+                NotifyFilter = NotifyFilters.LastWrite
             };
 
-            fileSystemWatcher.Created += OnFileSystemWatcherChanged;
             fileSystemWatcher.Changed += OnFileSystemWatcherChanged;
-            fileSystemWatcher.Deleted += OnFileSystemWatcherChanged;
 
             fileSystemWatcher.EnableRaisingEvents = true;
 
@@ -365,7 +361,7 @@ namespace Orc.FileSystem
                         await ExecuteWritingIfPossibleAsync(path);
                     }
 
-                    if (e.ChangeType.HasFlag(WatcherChangeTypes.Deleted))
+                    if (e.ChangeType.HasFlag(WatcherChangeTypes.Deleted) || e.ChangeType.HasFlag(WatcherChangeTypes.Created))
                     {
                         continue;
                     }
@@ -446,6 +442,13 @@ namespace Orc.FileSystem
             // Note: if we will swallow any other exception we will get endless loop
             catch (IOException ex)
             {
+                var hResult = (uint)ex.GetHResult();
+                if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
+                {
+                    // Note: no need to try again
+                    throw;
+                }
+
                 Log.Warning(ex, $"Reading from '{path}' failed, adding enqueued action back in the queue");
 
                 succeeded = false;
@@ -502,7 +505,7 @@ namespace Orc.FileSystem
 
                         if (!succeeded)
                         {
-                            Log.Debug($"Failed to execute write actions to path '{path}'");
+                            Log.Info($"Failed to execute write actions to path '{path}', will retry");
                         }
                         else
                         {
@@ -520,6 +523,13 @@ namespace Orc.FileSystem
             }
             catch (IOException ex)
             {
+                var hResult = (uint)ex.GetHResult();
+                if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
+                {
+                    // Note: no need to try again
+                    throw;
+                }
+
                 Log.Warning(ex, $"Writing to '{path}' failed, adding enqueued action back in the queue");
 
                 succeeded = false;
