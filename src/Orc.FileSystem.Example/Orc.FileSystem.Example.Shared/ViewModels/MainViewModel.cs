@@ -18,6 +18,7 @@ namespace Orc.FileSystem.ViewModels
     {
         public MainViewModel()
         {
+            Title = "Orc.FileSystem example";
         }
 
         #region Properties
