@@ -9,6 +9,7 @@ namespace Orc.FileSystem
 {
     using System;
     using System.IO;
+    using System.Linq;
     using Catel;
     using Catel.Logging;
 
@@ -45,6 +46,30 @@ namespace Orc.FileSystem
             {
                 var fileStream = File.Open(fileName, fileMode, fileAccess, fileShare);
                 return fileStream;
+            }
+            catch (IOException ex)
+            {
+                var hResult = (uint) ex.GetHResult();
+
+                var message = $"Failed to open file '{fileName}'";
+                if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
+                {
+                    Log.Error(ex, message);
+
+                    throw;
+                }
+
+                var processes = FileLockInfo.GetProcessesLockingFile(fileName);
+                if (processes == null || !processes.Any())
+                {                    
+                    Log.Error(ex, message);
+
+                    throw;
+                }
+
+                Log.Error(message + $", locked by: {string.Join(", ", processes)}");
+
+                throw;
             }
             catch (Exception ex)
             {
@@ -134,6 +159,39 @@ namespace Orc.FileSystem
             {
                 File.Copy(sourceFileName, destinationFileName, overwrite);
             }
+            catch (IOException ex)
+            {
+                var hResult = (uint)ex.GetHResult();
+
+                var message = $"Failed to copy file '{sourceFileName}' to the '{destinationFileName}'";
+
+                if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
+                {
+                    Log.Error(ex, message);
+
+                    throw;
+                }
+
+                var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
+                if (sourceLockingProcesses != null && sourceLockingProcesses.Any())
+                {
+                    Log.Error(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
+
+                    throw;
+                }
+
+                var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
+                if (destinationLockingProcesses != null && destinationLockingProcesses.Any())
+                {
+                    Log.Error(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
+
+                    throw;
+                }
+
+                Log.Error(ex, message);
+
+                throw;
+            }
             catch (Exception ex)
             {
                 Log.Error(ex, $"Failed to copy file '{sourceFileName}' => '{destinationFileName}'");
@@ -160,6 +218,39 @@ namespace Orc.FileSystem
                 }
 
                 File.Move(sourceFileName, destinationFileName);
+            }
+            catch (IOException ex)
+            {
+                var hResult = (uint)ex.GetHResult();
+
+                var message = $"Failed to move file '{sourceFileName}' to the '{destinationFileName}'";
+
+                if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
+                {
+                    Log.Error(ex, message);
+
+                    throw;
+                }
+
+                var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
+                if (sourceLockingProcesses != null && sourceLockingProcesses.Any())
+                {
+                    Log.Error(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
+
+                    throw;
+                }
+
+                var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
+                if (destinationLockingProcesses != null && destinationLockingProcesses.Any())
+                {
+                    Log.Error(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
+
+                    throw;
+                }
+
+                Log.Error(ex, message);
+
+                throw;
             }
             catch (Exception ex)
             {
@@ -198,6 +289,30 @@ namespace Orc.FileSystem
 
                     File.Delete(fileName);
                 }
+            }
+            catch (IOException ex)
+            {
+                var hResult = (uint)ex.GetHResult();
+
+                var message = $"Failed to delete file '{fileName}'";
+                if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
+                {
+                    Log.Error(ex, message);
+
+                    throw;
+                }
+
+                var processes = FileLockInfo.GetProcessesLockingFile(fileName);
+                if (processes == null || !processes.Any())
+                {
+                    Log.Error(ex, message);
+
+                    throw;
+                }
+
+                Log.Error(message + $", locked by: {string.Join(", ", processes)}");
+
+                throw;
             }
             catch (Exception ex)
             {

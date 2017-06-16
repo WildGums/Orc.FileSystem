@@ -21,30 +21,38 @@ namespace Orc.FileSystem.Tests.Services
         public class TheExecuteWritingAsyncMethod
         {
             [Test]
-            [ExpectedException(typeof(IOSynchronizationException))]
             public async Task WriterWrapsAnyExceptionIntoIOSynchronizationExceptionAsync()
             {
-                using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotSwallowReaderIOExceptionAsync"))
+                try
                 {
-                    var rootDirectory = temporaryFilesContext.GetDirectory("output");
-
-                    var fileService = new FileService();
-                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
-
-                    var aleadyExecuted = false;
-
-                    await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
+                    using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotSwallowReaderIOExceptionAsync"))
                     {
-                        if (!aleadyExecuted)
+                        var rootDirectory = temporaryFilesContext.GetDirectory("output");
+
+                        var fileService = new FileService();
+                        var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+
+                        var aleadyExecuted = false;
+
+                        await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
                         {
-                            // preventing continuous loop
-                            aleadyExecuted = true;
+                            if (!aleadyExecuted)
+                            {
+                                // preventing continuous loop
+                                aleadyExecuted = true;
 
-                            throw new IOException();
-                        }
+                                throw new IOException();
+                            }
 
-                        return true;
-                    });
+                            return true;
+                        });
+                    }
+
+                    Assert.Fail("Expected exception");
+                }
+                catch (Exception ex)
+                {
+                    Assert.IsInstanceOf<IOSynchronizationException>(ex);
                 }
             }
 
@@ -98,38 +106,46 @@ namespace Orc.FileSystem.Tests.Services
         public class TheExecuteReadingAsyncMethod
         {
             [Test]
-            [ExpectedException(typeof(IOSynchronizationException))]
             public async Task ReaderWrapsAnyExceptionIntoIOSynchronizationExceptionAsync()
             {
-                using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotSwallowReaderIOExceptionAsync"))
+                try
                 {
-                    var rootDirectory = temporaryFilesContext.GetDirectory("output");
-                    var fileName = temporaryFilesContext.GetFile("file1.txt");
-
-                    var fileService = new FileService();
-                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
-
-                    // write for creating sync file
-                    await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
+                    using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotSwallowReaderIOExceptionAsync"))
                     {
-                        File.WriteAllText(fileName, "12345");
-                        return true;
-                    });
+                        var rootDirectory = temporaryFilesContext.GetDirectory("output");
+                        var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                    var aleadyExecuted = false;
+                        var fileService = new FileService();
+                        var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
-                    await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async x =>
-                    {
-                        if (!aleadyExecuted)
+                        // write for creating sync file
+                        await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
                         {
-                            // preventing continuous loop
-                            aleadyExecuted = true;
+                            File.WriteAllText(fileName, "12345");
+                            return true;
+                        });
 
-                            throw new IOException();
-                        }
+                        var aleadyExecuted = false;
 
-                        return true;
-                    });
+                        await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async x =>
+                        {
+                            if (!aleadyExecuted)
+                            {
+                                // preventing continuous loop
+                                aleadyExecuted = true;
+
+                                throw new IOException();
+                            }
+
+                            return true;
+                        });
+                    }
+
+                    Assert.Fail("Expected exception");
+                }
+                catch (Exception ex)
+                {
+                    Assert.IsInstanceOf<IOSynchronizationException>(ex);
                 }
             }
 
@@ -169,7 +185,7 @@ namespace Orc.FileSystem.Tests.Services
                         Assert.IsTrue(File.Exists(syncFile));
 
                         return true;
-                    });                   
+                    });
 
                     // Even now the refresh file should not be removed
                     Assert.IsTrue(File.Exists(syncFile));
