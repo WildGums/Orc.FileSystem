@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26020.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.NET40", "Orc.FileSystem\Orc.FileSystem.NET40\Orc.FileSystem.NET40.csproj", "{0DB9F3BE-AC58-4D1A-A2E6-D3A1330D4172}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.NET47", "Orc.FileSystem\Orc.FileSystem.NET47\Orc.FileSystem.NET47.csproj", "{0DB9F3BE-AC58-4D1A-A2E6-D3A1330D4172}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}"
 EndProject
@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{1FE0D431-A
 		SolutionAssemblyInfo.cs = SolutionAssemblyInfo.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Tests.NET40", "Orc.FileSystem.Tests\Orc.FileSystem.Tests.NET40\Orc.FileSystem.Tests.NET40.csproj", "{8BED1CAA-00FC-4278-BE83-F72CCD52C977}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Tests.NET47", "Orc.FileSystem.Tests\Orc.FileSystem.Tests.NET47\Orc.FileSystem.Tests.NET47.csproj", "{8BED1CAA-00FC-4278-BE83-F72CCD52C977}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0787DFC6-AB24-4D00-A8A4-FF203DC7D080}"
 EndProject
@@ -30,7 +30,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Tests.NET45"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Example", "Example", "{672BFA2E-9F93-496F-B188-40579FB5D301}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Example.NET40", "Orc.FileSystem.Example\Orc.FileSystem.Example.NET40\Orc.FileSystem.Example.NET40.csproj", "{3C4AD2A8-7EBD-4C4A-84AF-8BDA996F9D16}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Example.NET47", "Orc.FileSystem.Example\Orc.FileSystem.Example.NET47\Orc.FileSystem.Example.NET47.csproj", "{3C4AD2A8-7EBD-4C4A-84AF-8BDA996F9D16}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Orc.FileSystem.Example.Shared", "Orc.FileSystem.Example\Orc.FileSystem.Example.Shared\Orc.FileSystem.Example.Shared.shproj", "{CC0A33E1-6BEF-4E55-9A16-68A212B5D191}"
 EndProject
