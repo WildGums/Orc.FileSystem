@@ -11,7 +11,9 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\..\SolutionAssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\..\GlobalSuppressions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalInitialization.approvaltests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\IOSynchronizationWithoutSeparateSyncFileService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PublicApiFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\IOSynchronizationServiceFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TemporaryFilesContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\DummyFacts.cs" />

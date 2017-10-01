@@ -123,3 +123,4 @@ Desktop.ini
 # mstest test results
 TestResults
 *.sqlite
+src/.vs/
