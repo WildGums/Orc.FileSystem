@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26020.0
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.NET47", "Orc.FileSystem\Orc.FileSystem.NET47\Orc.FileSystem.NET47.csproj", "{0DB9F3BE-AC58-4D1A-A2E6-D3A1330D4172}"
 EndProject
@@ -41,6 +41,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Tests.NET46", "Orc.FileSystem.Tests\Orc.FileSystem.Tests.NET46\Orc.FileSystem.Tests.NET46.csproj", "{4186AE1F-E39D-40C7-A402-A0163996B724}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Example.NET46", "Orc.FileSystem.Example\Orc.FileSystem.Example.NET46\Orc.FileSystem.Example.NET46.csproj", "{A1948D04-8813-408D-9628-BFB0169CE70A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.NS20", "Orc.FileSystem.NS20\Orc.FileSystem.NS20.csproj", "{0F1ED6B3-1351-433F-8A21-C270278FB86B}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -98,6 +100,10 @@ Global
 		{A1948D04-8813-408D-9628-BFB0169CE70A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1948D04-8813-408D-9628-BFB0169CE70A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1948D04-8813-408D-9628-BFB0169CE70A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F1ED6B3-1351-433F-8A21-C270278FB86B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F1ED6B3-1351-433F-8A21-C270278FB86B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F1ED6B3-1351-433F-8A21-C270278FB86B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F1ED6B3-1351-433F-8A21-C270278FB86B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -118,5 +124,9 @@ Global
 		{BCE1416C-1224-4DEA-BE77-F881EFE9659A} = {0787DFC6-AB24-4D00-A8A4-FF203DC7D080}
 		{4186AE1F-E39D-40C7-A402-A0163996B724} = {D3EA1078-BF3D-4709-871C-AAFF70B95045}
 		{A1948D04-8813-408D-9628-BFB0169CE70A} = {672BFA2E-9F93-496F-B188-40579FB5D301}
+		{0F1ED6B3-1351-433F-8A21-C270278FB86B} = {0787DFC6-AB24-4D00-A8A4-FF203DC7D080}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF55400B-59C5-41B1-8651-8218BCDC7EA0}
 	EndGlobalSection
 EndGlobal
