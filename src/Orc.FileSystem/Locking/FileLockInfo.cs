@@ -48,7 +48,7 @@ namespace Orc.FileSystem
         /// <returns>The function can return one of the system error codes that  
         /// are defined in Winerror.h 
         /// </returns> 
-        [DllImport("rstrtmgr.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int RmRegisterResources(uint pSessionHandle,
             UInt32 nFiles, string[] rgsFilenames,
             UInt32 nApplications,
@@ -69,7 +69,7 @@ namespace Orc.FileSystem
         /// A null-terminated string that contains the session key to the new session. 
         /// </param> 
         /// <returns></returns> 
-        [DllImport("rstrtmgr.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int RmStartSession(out uint pSessionHandle, int dwSessionFlags,
             string strSessionKey);
 
@@ -87,7 +87,7 @@ namespace Orc.FileSystem
         /// The function can return one of the system error codes 
         /// that are defined in Winerror.h. 
         /// </returns> 
-        [DllImport("rstrtmgr.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int RmEndSession(uint pSessionHandle);
 
         /// <summary> 
@@ -114,7 +114,7 @@ namespace Orc.FileSystem
         /// enumeration that describes the reason a system restart is needed. 
         /// </param> 
         /// <returns></returns> 
-        [DllImport("rstrtmgr.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int RmGetList(uint dwSessionHandle, out uint pnProcInfoNeeded,
             ref uint pnProcInfo,
             [In, Out] RM_PROCESS_INFO[] rgAffectedApps,
@@ -205,7 +205,7 @@ namespace Orc.FileSystem
         /// <summary> 
         /// Describes an application that is to be registered with the Restart Manager. 
         /// </summary> 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         private struct RM_PROCESS_INFO
         {
             // Contains an RM_UNIQUE_PROCESS structure that uniquely identifies the 

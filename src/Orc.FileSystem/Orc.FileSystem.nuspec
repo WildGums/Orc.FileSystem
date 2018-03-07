@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Orc.FileSystem</id>
+    <version></version>
+    <title>Orc.FileSystem</title>
+    <authors>WildGums</authors>
+    <owners>WildGums</owners>
+
+	<description>
+	  File system access using services and automatic logging.
+	</description>
+	<summary>
+	</summary>
+
+	<tags></tags>
+
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <copyright>Copyright WildGums 2015 - 2018</copyright>
+
+	<language>en-US</language>
+	<projectUrl>https://github.com/WildGums/Orc.FileSystem</projectUrl>
+	<!--<licenseUrl>http://catel.codeplex.com/license</licenseUrl>-->
+	<!--<iconUrl>http://www.catenalogic.com/catel.png</iconUrl>-->
+    
+    <dependencies>
+      <dependency id="Catel.Core" version="[replaced]" />
+    </dependencies>
+  </metadata>
+</package>

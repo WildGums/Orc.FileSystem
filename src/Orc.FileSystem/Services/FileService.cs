@@ -137,7 +137,7 @@ namespace Orc.FileSystem
 
                 using (var fileStream = File.Open(fileName, finalFileMode, fileAccess, fileShare))
                 {
-                    fileStream.Close();
+                    // Open for test
                 }
 
                 return true;

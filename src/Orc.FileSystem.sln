@@ -2,8 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.NET47", "Orc.FileSystem\Orc.FileSystem.NET47\Orc.FileSystem.NET47.csproj", "{0DB9F3BE-AC58-4D1A-A2E6-D3A1330D4172}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{1FE0D431-A761-4239-B2D6-D32C70723FD2}"
@@ -20,13 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0787DFC6-A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D3EA1078-BF3D-4709-871C-AAFF70B95045}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Orc.FileSystem.Shared", "Orc.FileSystem\Orc.FileSystem.Shared\Orc.FileSystem.Shared.shproj", "{AA7DD154-24C0-432F-B84D-A28B04217A16}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Orc.FileSystem.Tests.Shared", "Orc.FileSystem.Tests\Orc.FileSystem.Tests.Shared\Orc.FileSystem.Tests.Shared.shproj", "{469B3F1D-C0E3-4D93-B3D9-327F2FDD7C47}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.NET45", "Orc.FileSystem\Orc.FileSystem.NET45\Orc.FileSystem.NET45.csproj", "{C90C3847-14C8-4E7F-B792-0B4264431137}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Tests.NET45", "Orc.FileSystem.Tests\Orc.FileSystem.Tests.NET45\Orc.FileSystem.Tests.NET45.csproj", "{86A560AF-0915-4C66-B12F-688019F1F94A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Example", "Example", "{672BFA2E-9F93-496F-B188-40579FB5D301}"
 EndProject
@@ -34,64 +26,34 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Example.NET4
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Orc.FileSystem.Example.Shared", "Orc.FileSystem.Example\Orc.FileSystem.Example.Shared\Orc.FileSystem.Example.Shared.shproj", "{CC0A33E1-6BEF-4E55-9A16-68A212B5D191}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Example.NET45", "Orc.FileSystem.Example\Orc.FileSystem.Example.NET45\Orc.FileSystem.Example.NET45.csproj", "{F2192B16-DF0D-457D-B35F-191D94C11A10}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.NET46", "Orc.FileSystem\Orc.FileSystem.NET46\Orc.FileSystem.NET46.csproj", "{BCE1416C-1224-4DEA-BE77-F881EFE9659A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Tests.NET46", "Orc.FileSystem.Tests\Orc.FileSystem.Tests.NET46\Orc.FileSystem.Tests.NET46.csproj", "{4186AE1F-E39D-40C7-A402-A0163996B724}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.Example.NET46", "Orc.FileSystem.Example\Orc.FileSystem.Example.NET46\Orc.FileSystem.Example.NET46.csproj", "{A1948D04-8813-408D-9628-BFB0169CE70A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.FileSystem.NS20", "Orc.FileSystem.NS20\Orc.FileSystem.NS20.csproj", "{0F1ED6B3-1351-433F-8A21-C270278FB86B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orc.FileSystem", "Orc.FileSystem\Orc.FileSystem.csproj", "{6AFB2ED7-711A-4E64-AD45-7C37ED6F8879}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Orc.FileSystem\Orc.FileSystem.Shared\Orc.FileSystem.Shared.projitems*{0db9f3be-ac58-4d1a-a2e6-d3a1330d4172}*SharedItemsImports = 4
 		Orc.FileSystem.Example\Orc.FileSystem.Example.Shared\Orc.FileSystem.Example.Shared.projitems*{3c4ad2a8-7ebd-4c4a-84af-8bda996f9d16}*SharedItemsImports = 4
 		Orc.FileSystem.Tests\Orc.FileSystem.Tests.Shared\Orc.FileSystem.Tests.Shared.projitems*{4186ae1f-e39d-40c7-a402-a0163996b724}*SharedItemsImports = 4
 		Orc.FileSystem.Tests\Orc.FileSystem.Tests.Shared\Orc.FileSystem.Tests.Shared.projitems*{469b3f1d-c0e3-4d93-b3d9-327f2fdd7c47}*SharedItemsImports = 13
-		Orc.FileSystem.Tests\Orc.FileSystem.Tests.Shared\Orc.FileSystem.Tests.Shared.projitems*{86a560af-0915-4c66-b12f-688019f1f94a}*SharedItemsImports = 4
 		Orc.FileSystem.Tests\Orc.FileSystem.Tests.Shared\Orc.FileSystem.Tests.Shared.projitems*{8bed1caa-00fc-4278-be83-f72ccd52c977}*SharedItemsImports = 4
 		Orc.FileSystem.Example\Orc.FileSystem.Example.Shared\Orc.FileSystem.Example.Shared.projitems*{a1948d04-8813-408d-9628-bfb0169ce70a}*SharedItemsImports = 4
-		Orc.FileSystem\Orc.FileSystem.Shared\Orc.FileSystem.Shared.projitems*{aa7dd154-24c0-432f-b84d-a28b04217a16}*SharedItemsImports = 13
-		Orc.FileSystem\Orc.FileSystem.Shared\Orc.FileSystem.Shared.projitems*{bce1416c-1224-4dea-be77-f881efe9659a}*SharedItemsImports = 4
-		Orc.FileSystem\Orc.FileSystem.Shared\Orc.FileSystem.Shared.projitems*{c90c3847-14c8-4e7f-b792-0b4264431137}*SharedItemsImports = 4
 		Orc.FileSystem.Example\Orc.FileSystem.Example.Shared\Orc.FileSystem.Example.Shared.projitems*{cc0a33e1-6bef-4e55-9a16-68a212b5d191}*SharedItemsImports = 13
-		Orc.FileSystem.Example\Orc.FileSystem.Example.Shared\Orc.FileSystem.Example.Shared.projitems*{f2192b16-df0d-457d-b35f-191d94c11a10}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0DB9F3BE-AC58-4D1A-A2E6-D3A1330D4172}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0DB9F3BE-AC58-4D1A-A2E6-D3A1330D4172}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0DB9F3BE-AC58-4D1A-A2E6-D3A1330D4172}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0DB9F3BE-AC58-4D1A-A2E6-D3A1330D4172}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8BED1CAA-00FC-4278-BE83-F72CCD52C977}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8BED1CAA-00FC-4278-BE83-F72CCD52C977}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BED1CAA-00FC-4278-BE83-F72CCD52C977}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8BED1CAA-00FC-4278-BE83-F72CCD52C977}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C90C3847-14C8-4E7F-B792-0B4264431137}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C90C3847-14C8-4E7F-B792-0B4264431137}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C90C3847-14C8-4E7F-B792-0B4264431137}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C90C3847-14C8-4E7F-B792-0B4264431137}.Release|Any CPU.Build.0 = Release|Any CPU
-		{86A560AF-0915-4C66-B12F-688019F1F94A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{86A560AF-0915-4C66-B12F-688019F1F94A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{86A560AF-0915-4C66-B12F-688019F1F94A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{86A560AF-0915-4C66-B12F-688019F1F94A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3C4AD2A8-7EBD-4C4A-84AF-8BDA996F9D16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3C4AD2A8-7EBD-4C4A-84AF-8BDA996F9D16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C4AD2A8-7EBD-4C4A-84AF-8BDA996F9D16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C4AD2A8-7EBD-4C4A-84AF-8BDA996F9D16}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F2192B16-DF0D-457D-B35F-191D94C11A10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F2192B16-DF0D-457D-B35F-191D94C11A10}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F2192B16-DF0D-457D-B35F-191D94C11A10}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F2192B16-DF0D-457D-B35F-191D94C11A10}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BCE1416C-1224-4DEA-BE77-F881EFE9659A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BCE1416C-1224-4DEA-BE77-F881EFE9659A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BCE1416C-1224-4DEA-BE77-F881EFE9659A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BCE1416C-1224-4DEA-BE77-F881EFE9659A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4186AE1F-E39D-40C7-A402-A0163996B724}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4186AE1F-E39D-40C7-A402-A0163996B724}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4186AE1F-E39D-40C7-A402-A0163996B724}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -100,31 +62,25 @@ Global
 		{A1948D04-8813-408D-9628-BFB0169CE70A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1948D04-8813-408D-9628-BFB0169CE70A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1948D04-8813-408D-9628-BFB0169CE70A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0F1ED6B3-1351-433F-8A21-C270278FB86B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0F1ED6B3-1351-433F-8A21-C270278FB86B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0F1ED6B3-1351-433F-8A21-C270278FB86B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0F1ED6B3-1351-433F-8A21-C270278FB86B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AFB2ED7-711A-4E64-AD45-7C37ED6F8879}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AFB2ED7-711A-4E64-AD45-7C37ED6F8879}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AFB2ED7-711A-4E64-AD45-7C37ED6F8879}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AFB2ED7-711A-4E64-AD45-7C37ED6F8879}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{0DB9F3BE-AC58-4D1A-A2E6-D3A1330D4172} = {0787DFC6-AB24-4D00-A8A4-FF203DC7D080}
 		{8BED1CAA-00FC-4278-BE83-F72CCD52C977} = {D3EA1078-BF3D-4709-871C-AAFF70B95045}
 		{0787DFC6-AB24-4D00-A8A4-FF203DC7D080} = {A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}
 		{D3EA1078-BF3D-4709-871C-AAFF70B95045} = {A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}
-		{AA7DD154-24C0-432F-B84D-A28B04217A16} = {0787DFC6-AB24-4D00-A8A4-FF203DC7D080}
 		{469B3F1D-C0E3-4D93-B3D9-327F2FDD7C47} = {D3EA1078-BF3D-4709-871C-AAFF70B95045}
-		{C90C3847-14C8-4E7F-B792-0B4264431137} = {0787DFC6-AB24-4D00-A8A4-FF203DC7D080}
-		{86A560AF-0915-4C66-B12F-688019F1F94A} = {D3EA1078-BF3D-4709-871C-AAFF70B95045}
 		{672BFA2E-9F93-496F-B188-40579FB5D301} = {A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}
 		{3C4AD2A8-7EBD-4C4A-84AF-8BDA996F9D16} = {672BFA2E-9F93-496F-B188-40579FB5D301}
 		{CC0A33E1-6BEF-4E55-9A16-68A212B5D191} = {672BFA2E-9F93-496F-B188-40579FB5D301}
-		{F2192B16-DF0D-457D-B35F-191D94C11A10} = {672BFA2E-9F93-496F-B188-40579FB5D301}
-		{BCE1416C-1224-4DEA-BE77-F881EFE9659A} = {0787DFC6-AB24-4D00-A8A4-FF203DC7D080}
 		{4186AE1F-E39D-40C7-A402-A0163996B724} = {D3EA1078-BF3D-4709-871C-AAFF70B95045}
 		{A1948D04-8813-408D-9628-BFB0169CE70A} = {672BFA2E-9F93-496F-B188-40579FB5D301}
-		{0F1ED6B3-1351-433F-8A21-C270278FB86B} = {0787DFC6-AB24-4D00-A8A4-FF203DC7D080}
+		{6AFB2ED7-711A-4E64-AD45-7C37ED6F8879} = {0787DFC6-AB24-4D00-A8A4-FF203DC7D080}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF55400B-59C5-41B1-8651-8218BCDC7EA0}

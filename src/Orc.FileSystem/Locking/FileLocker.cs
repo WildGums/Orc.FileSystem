@@ -15,21 +15,20 @@ namespace Orc.FileSystem
     using Catel;
     using Catel.Logging;
     using Catel.Threading;
-    using Timer = System.Timers.Timer;
 
     public class FileLocker : IDisposable
     {
         #region Fields
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-        private static readonly Dictionary<string, FileStream> Locks = new Dictionary<string, FileStream>(StringComparer.InvariantCultureIgnoreCase);
-        private static readonly Dictionary<string, int> LockCounts = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        private static readonly Dictionary<string, FileStream> Locks = new Dictionary<string, FileStream>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, int> LockCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private static readonly AsyncLock AsyncLock = new AsyncLock();
 
         private readonly FileLocker _existingLocker;
         private readonly int _uniqueId = UniqueIdentifierHelper.GetUniqueIdentifier<FileLocker>();
 
-        private readonly HashSet<string> _internalLocks = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly HashSet<string> _internalLocks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private bool _isDisposed;
         #endregion
@@ -71,7 +70,7 @@ namespace Orc.FileSystem
 
             using (await AsyncLock.LockAsync())
             {
-                var newLockFiles = files.Where(x => !x.EndsWith(".lock", StringComparison.InvariantCultureIgnoreCase)).Select(x => x + ".lock");
+                var newLockFiles = files.Where(x => !x.EndsWith(".lock", StringComparison.OrdinalIgnoreCase)).Select(x => x + ".lock");
                 string[] fileNames;
 
                 lock (Locks)
@@ -80,7 +79,7 @@ namespace Orc.FileSystem
 
                     // Note: instead of adding new locked files better to release already locked ones and lock them again combined with the new ones
                     //       I think it should prevent hangings in concurrent applications
-                    fileNames = newLockFiles.Union(_internalLocks, StringComparer.InvariantCultureIgnoreCase).ToArray();
+                    fileNames = newLockFiles.Union(_internalLocks, StringComparer.OrdinalIgnoreCase).ToArray();
                     ReleaseLockedFiles();
                 }
 
@@ -91,56 +90,48 @@ namespace Orc.FileSystem
                 }
 
                 var continueLoop = true;
-                var timer = new Timer
-                {
-                    Interval = timeout.TotalMilliseconds
-                };
 
-                timer.Elapsed += (sender, args) =>
+                var timerHandler = new TimerCallback(x =>
                 {
-                    timer.Stop();
                     continueLoop = false;
 
                     Log.Warning("Locking files has interrupted due to timeout");
-                };
+                });
 
-                timer.Start();
-
-                while (continueLoop)
+                using (var timer = new Timer(timerHandler, null, timeout, Timeout.InfiniteTimeSpan))
                 {
-                    var lockedFiles = TryCreateAndLockFiles(fileNames);
-                    if (lockedFiles == null && continueLoop)
+                    while (continueLoop)
                     {
-                        await TaskShim.Delay(10);
-                        continue;
-                    }
-
-                    if (lockedFiles == null)
-                    {
-                        continue;
-                    }
-
-                    timer.Stop();
-
-                    lock (Locks)
-                    {
-                        foreach (var fileName in fileNames)
+                        var lockedFiles = TryCreateAndLockFiles(fileNames);
+                        if (lockedFiles == null && continueLoop)
                         {
-                            _internalLocks.Add(fileName);
-
-                            int count;
-                            LockCounts.TryGetValue(fileName, out count);
-                            count++;
-                            LockCounts[fileName] = count;
-
-                            FileStream stream;
-                            if (lockedFiles.TryGetValue(fileName, out stream) && stream != null)
-                            {
-                                Locks[fileName] = stream;
-                            }
+                            await TaskShim.Delay(10);
+                            continue;
                         }
 
-                        continueLoop = false;
+                        if (lockedFiles == null)
+                        {
+                            continue;
+                        }
+
+                        lock (Locks)
+                        {
+                            foreach (var fileName in fileNames)
+                            {
+                                _internalLocks.Add(fileName);
+
+                                LockCounts.TryGetValue(fileName, out var count);
+                                count++;
+                                LockCounts[fileName] = count;
+
+                                if (lockedFiles.TryGetValue(fileName, out var stream) && stream != null)
+                                {
+                                    Locks[fileName] = stream;
+                                }
+                            }
+
+                            continueLoop = false;
+                        }
                     }
                 }
             }
@@ -163,7 +154,6 @@ namespace Orc.FileSystem
                 {
                     foreach (var fileStream in result.Values.Where(x => x != null))
                     {
-                        fileStream.Close();
                         fileStream.Dispose();
                     }
 
@@ -176,7 +166,6 @@ namespace Orc.FileSystem
                 {
                     foreach (var fileStream in result.Values.Where(x => x != null))
                     {
-                        fileStream.Close();
                         fileStream.Dispose();
                     }
 
@@ -197,8 +186,7 @@ namespace Orc.FileSystem
 
                 foreach (var lockFile in _internalLocks.ToList())
                 {
-                    int count;
-                    LockCounts.TryGetValue(lockFile, out count);
+                    LockCounts.TryGetValue(lockFile, out var count);
 
                     _internalLocks.Remove(lockFile);
 
@@ -207,10 +195,8 @@ namespace Orc.FileSystem
                         count--;
                     }
 
-                    FileStream lockStream;
-                    if (count <= 0 && Locks.TryGetValue(lockFile, out lockStream))
+                    if (count <= 0 && Locks.TryGetValue(lockFile, out var lockStream))
                     {
-                        lockStream.Close();
                         lockStream.Dispose();
 
                         Locks.Remove(lockFile);

@@ -11,24 +11,21 @@ namespace Orc.FileSystem
     using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
-    using System.Timers;
+    using System.Threading;
 
     public static class FileInfoExtensions
     {
+        private const int TimerTickIntervalInMilliseconds = 50;
+
         #region Methods
-        public static Task EnsureFilesNotBusyAsync(this IEnumerable<FileInfo> files)
+        public static async Task EnsureFilesNotBusyAsync(this IEnumerable<FileInfo> files)
         {
             var tcs = new TaskCompletionSource<object>();
 
-            var timer = new Timer
-            {
-                Interval = 50
-            };
+            Timer timer = null;
 
-            timer.Elapsed += (sender, args) =>
+            var handler = new TimerCallback(x =>
             {
-                timer.Stop();
-
                 foreach (var file in files)
                 {
                     try
@@ -45,8 +42,7 @@ namespace Orc.FileSystem
                     }
                     catch (IOException)
                     {
-                        timer.Start();
-                        return;
+                        timer.Change(TimerTickIntervalInMilliseconds, Timeout.Infinite);
                     }
                     catch (Exception ex)
                     {
@@ -56,11 +52,12 @@ namespace Orc.FileSystem
                 }
 
                 tcs.TrySetResult(null);
-            };
+            });
 
-            timer.Start();
-
-            return tcs.Task;
+            using (timer = new Timer(handler, null, TimerTickIntervalInMilliseconds, Timeout.Infinite))
+            {
+                await tcs.Task;
+            }
         }
         #endregion
     }

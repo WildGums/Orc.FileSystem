@@ -196,12 +196,6 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Orc.FileSystem\Orc.FileSystem.NET47\Orc.FileSystem.NET47.csproj">
-      <Project>{0db9f3be-ac58-4d1a-a2e6-d3a1330d4172}</Project>
-      <Name>Orc.FileSystem.NET40</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -213,6 +207,12 @@
     <Analyzer Include="..\..\..\lib\AsyncUsageAnalyzers.1.0.0-alpha003\analyzers\dotnet\AsyncUsageAnalyzers.dll" />
     <Analyzer Include="..\..\..\lib\WpfAnalyzers.2.1.2.0\analyzers\dotnet\cs\WpfAnalyzers.Analyzers.dll" />
     <Analyzer Include="..\..\..\lib\WpfAnalyzers.2.1.2.0\analyzers\dotnet\cs\WpfAnalyzers.CodeFixes.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Orc.FileSystem\Orc.FileSystem.csproj">
+      <Project>{6afb2ed7-711a-4e64-ad45-7c37ed6f8879}</Project>
+      <Name>Orc.FileSystem</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
