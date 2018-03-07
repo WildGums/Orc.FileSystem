@@ -9,7 +9,7 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageId>Orc.FileSystem</PackageId>
-    <PackageVersion>1.0.0-unstable0123</PackageVersion>
+    <PackageVersion>1.0.0-alpha0001</PackageVersion>
     <Authors>WildGums</Authors>
     <Description>File system access using services and automatic logging.</Description>
     <PackageProjectUrl>https://github.com/WildGums/Orc.FileSystem</PackageProjectUrl>
