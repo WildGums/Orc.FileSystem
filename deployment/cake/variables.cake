@@ -6,7 +6,7 @@ var target = GetContinuaCIVariable("Target", "Default");
 var versionMajorMinorPatch = GetContinuaCIVariable("GitVersion_MajorMinorPatch", "1.0.0");
 var versionFullSemVer = GetContinuaCIVariable("GitVersion_FullSemVer", "1.0.0-alpha.1");
 var versionNuGet = GetContinuaCIVariable("GitVersion_NuGetVersion", "1.0.0-alpha0001");
-var solutionName = GetContinuaCIVariable("SolutionName", projectName);
+var solutionName = GetContinuaCIVariable("SolutionName", string.Format("{0}.sln", projectName));
 var configurationName = GetContinuaCIVariable("ConfigurationName", "Release");
 var outputRootDirectory = GetContinuaCIVariable("OutputRootDirectory", string.Format("./output/{0}", configurationName));
 
@@ -15,7 +15,7 @@ var repositoryBranchName = GetContinuaCIVariable("RepositoryBranchName", string.
 var repositoryCommitId = GetContinuaCIVariable("RepositoryCommitId", string.Empty);
 
 var solutionAssemblyInfoFileName = "./src/SolutionAssemblyInfo.cs";
-var solutionFileName = string.Format("./src/{0}.sln", solutionName);
+var solutionFileName = string.Format("./src/{0}", solutionName);
 var platforms = new Dictionary<string, PlatformTarget>();
 platforms["AnyCPU"] = PlatformTarget.MSIL;
 //platforms["x86"] = PlatformTarget.x86;
