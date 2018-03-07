@@ -1,6 +1,28 @@
 Information("Using output directory '{0}'", outputRootDirectory);
 
+//-------------------------------------------------------------
+
+Task("RestorePackages")
+	.Does(() =>
+{
+	var solutions = GetFiles("./**/*.sln");
+	
+	foreach(var solution in solutions)
+	{
+		Information("Restoring packages for {0}", solution);
+		
+		NuGetRestore(solution);
+	}
+});
+
+//-------------------------------------------------------------
+
+// Note: it might look weird that this is dependent on restore packages,
+// but to clean, the msbuild projects must be able to load. However, they need
+// some targets files that come in via packages
+
 Task("Clean")
+    .IsDependentOn("RestorePackages")
 	.Does(() => 
 {
 	if (DirectoryExists(outputRootDirectory))
@@ -47,25 +69,9 @@ Task("UpdateInfo")
 
 //-------------------------------------------------------------
 
-Task("RestorePackages")
-	.Does(() =>
-{
-	var solutions = GetFiles("./**/*.sln");
-	
-	foreach(var solution in solutions)
-	{
-		Information("Restoring packages for {0}", solution);
-		
-		NuGetRestore(solution);
-	}
-});
-
-//-------------------------------------------------------------
-
 Task("Build")
 	.IsDependentOn("Clean")
 	.IsDependentOn("UpdateInfo")
-	.IsDependentOn("RestorePackages")
 	.Does(() =>
 {
 	var msBuildSettings = new MSBuildSettings {
