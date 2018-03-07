@@ -24,8 +24,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\output\debug\NET40\Orc.FileSystem.Tests\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NET;NET40</DefineConstants>
+    <OutputPath>..\..\..\output\debug\NET47\Orc.FileSystem.Tests\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NET;NET47</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
@@ -38,8 +38,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\output\release\NET40\Orc.FileSystem.Tests\</OutputPath>
-    <DefineConstants>TRACE;NET;NET40</DefineConstants>
+    <OutputPath>..\..\..\output\release\NET7\Orc.FileSystem.Tests\</OutputPath>
+    <DefineConstants>TRACE;NET;NET47</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>

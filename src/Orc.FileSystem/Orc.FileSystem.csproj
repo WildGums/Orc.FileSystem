@@ -8,6 +8,15 @@
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageId>Orc.FileSystem</PackageId>
+    <PackageVersion>1.0.0-unstable0123</PackageVersion>
+    <Authors>WildGums</Authors>
+    <Description>File system access using services and automatic logging.</Description>
+    <PackageProjectUrl>https://github.com/WildGums/Orc.FileSystem</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/WildGums/Orc.FileSystem/blob/develop/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/WildGums/Orc.FileSystem</RepositoryUrl>
+    <PackageTags>file;directory;io</PackageTags>
+    <PackageOutputPath>$(ProjectDir)..\..\output\$(ConfigurationName)\</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
