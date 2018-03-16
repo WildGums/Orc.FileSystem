@@ -2,15 +2,12 @@
 [assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute("Orc.FileSystem.Tests")]
 [assembly: System.Runtime.InteropServices.ComVisibleAttribute(false)]
 [assembly: System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.6", FrameworkDisplayName=".NET Framework 4.6")]
-
-
 public class static ModuleInitializer
 {
     public static void Initialize() { }
 }
 namespace Orc.FileSystem
 {
-    
     public class DirectoryService : Orc.FileSystem.IDirectoryService
     {
         public DirectoryService(Orc.FileSystem.IFileService fileService) { }

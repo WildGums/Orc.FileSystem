@@ -21,10 +21,7 @@ namespace ApiApprover
 
             public AssemblyPathNamer(string assemblyPath)
             {
-                var fileName = Path.GetFileNameWithoutExtension(assemblyPath);
-                var targetFx = TargetFrameworkResolver.Current;
-
-                name = $"{fileName}.{targetFx}";
+                name = Path.GetFileNameWithoutExtension(assemblyPath);
             }
 
             public override string Name
