@@ -6,7 +6,7 @@
     <SharedGUID>cc0a33e1-6bef-4e55-9a16-68a212b5d191</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Orc.FileSystem</Import_RootNamespace>
+    <Import_RootNamespace>Orc.FileSystem.Example</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <ApplicationDefinition Include="$(MSBuildThisFileDirectory)App.xaml">
