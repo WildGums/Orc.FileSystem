@@ -73,7 +73,11 @@ namespace Orc.FileSystem
         string[] GetFiles(string path, string searchPattern = "", System.IO.SearchOption searchOption = 0);
         void Move(string sourcePath, string destinationPath);
     }
-    public class static IDirectoryServiceExtensions { }
+    public class static IDirectoryServiceExtensions
+    {
+        public static ulong GetSize(this Orc.FileSystem.IDirectoryService directoryService, string path) { }
+        public static bool IsEmpty(this Orc.FileSystem.IDirectoryService directoryService, string path) { }
+    }
     public interface IFileService
     {
         bool CanOpen(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3);
