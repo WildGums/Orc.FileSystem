@@ -4,6 +4,7 @@
     <AssemblyName>Orc.FileSystem.Example.NET</AssemblyName>
     <RootNamespace>Orc.FileSystem.Example</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
+    <SonarQubeExclude>true</SonarQubeExclude>
   </PropertyGroup>
 
   <PropertyGroup>
