@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net46;net47;uap10.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net46;net47;netstandard2.0</TargetFrameworks>
     <AssemblyName>Orc.FileSystem</AssemblyName>
     <RootNamespace>Orc.FileSystem</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
@@ -10,6 +10,11 @@
     <PackageTags>orc;file;directory</PackageTags>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- SonarQube requires a project guid -->
+    <ProjectGuid>360C62C6-7905-46D0-8B93-ABD90857E478</ProjectGuid>
+  </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.5.4" PrivateAssets="all" />
     <PackageReference Include="Catel.Core" Version="5.5.0-beta0000" />
