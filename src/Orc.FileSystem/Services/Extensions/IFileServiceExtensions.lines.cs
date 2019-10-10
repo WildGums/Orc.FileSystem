@@ -25,7 +25,7 @@ namespace Orc.FileSystem
 
             try
             {
-                using (var stream = fileService.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var stream = fileService.OpenRead(fileName))
                 {
                     Log.Debug($"Reading all lines from '{fileName}'");
 
@@ -53,7 +53,7 @@ namespace Orc.FileSystem
 
             try
             {
-                using (var stream = fileService.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var stream = fileService.OpenRead(fileName))
                 {
                     Log.Debug($"Reading all lines from '{fileName}'");
 
