@@ -21,14 +21,14 @@ namespace Orc.FileSystem
         {
             Argument.IsNotNull(() => fileService);
 
-            return fileService.CanOpen(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return fileService.CanOpen(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         }
 
         public static FileStream OpenRead(this IFileService fileService, string fileName)
         {
             Argument.IsNotNull(() => fileService);
 
-            return fileService.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return fileService.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         }
 
         public static bool CanOpenWrite(this IFileService fileService, string fileName)
