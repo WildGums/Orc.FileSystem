@@ -26,9 +26,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Example", "Example", "{672B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orc.FileSystem", "Orc.FileSystem\Orc.FileSystem.csproj", "{6AFB2ED7-711A-4E64-AD45-7C37ED6F8879}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Orc.FileSystem.Example.Shared", "Orc.FileSystem.Example.Shared\Orc.FileSystem.Example.Shared.shproj", "{CC0A33E1-6BEF-4E55-9A16-68A212B5D191}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orc.FileSystem.Example.NET", "Orc.FileSystem.Example.NET\Orc.FileSystem.Example.NET.csproj", "{043839D7-98CA-4E16-B7D6-0647C68C7CFB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orc.FileSystem.Example", "Orc.FileSystem.Example\Orc.FileSystem.Example.csproj", "{043839D7-98CA-4E16-B7D6-0647C68C7CFB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orc.FileSystem.Tests", "Orc.FileSystem.Tests\Orc.FileSystem.Tests.csproj", "{8B2140EB-431C-497F-AE36-02DE53C9641E}"
 EndProject
