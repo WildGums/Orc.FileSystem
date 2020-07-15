@@ -121,7 +121,7 @@ namespace Orc.FileSystem.Tests.Services
                         // write for creating sync file
                         await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
                         {
-                            File.WriteAllText(fileName, "12345");
+                            await File.WriteAllTextAsync(fileName, "12345");
                             return true;
                         });
 
@@ -162,7 +162,7 @@ namespace Orc.FileSystem.Tests.Services
                     // ensure syn file exists and data file exists
                     await ioSynchronizationService.ExecuteWritingAsync(fileName, async x =>
                     {
-                        File.WriteAllText(fileName, "12345");
+                        await File.WriteAllTextAsync(fileName, "12345");
                         return true;
                     });
 
@@ -206,7 +206,7 @@ namespace Orc.FileSystem.Tests.Services
                     // Step 1: Write
                     await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
                     {
-                        File.WriteAllText(fileName, "12345");
+                        await File.WriteAllTextAsync(fileName, "12345");
                         return true;
                     });
 
@@ -250,7 +250,7 @@ namespace Orc.FileSystem.Tests.Services
                     ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
 #pragma warning restore 4014
                     {
-                        File.WriteAllText(fileName, "12345");
+                        await File.WriteAllTextAsync(fileName, "12345");
 
                         await TaskShim.Delay(2500);
 
