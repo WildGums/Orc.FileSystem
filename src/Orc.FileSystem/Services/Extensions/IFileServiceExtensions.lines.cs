@@ -74,6 +74,7 @@ namespace Orc.FileSystem
             }
         }
 
+        [ObsoleteEx(RemoveInVersion = "5.0", TreatAsErrorFromVersion = "4.1")]
         public static void WriteAllLines(this IFileService fileService, string fileName, string[] lines)
         {
             WriteAllLines(fileService, fileName, (IEnumerable<string>)lines);

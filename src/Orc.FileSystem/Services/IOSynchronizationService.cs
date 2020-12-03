@@ -146,20 +146,20 @@ namespace Orc.FileSystem
             }
         }
 
-        public async Task ExecuteReadingAsync(string path, Func<string, Task<bool>> readAsync)
+        public async Task ExecuteReadingAsync(string projectLocation, Func<string, Task<bool>> readAsync)
         {
-            Argument.IsNotNullOrWhitespace(() => path);
+            Argument.IsNotNullOrWhitespace(() => projectLocation);
 
             try
             {
-                using (var scopeManager = GetScopeManager(true, path))
+                using (var scopeManager = GetScopeManager(true, projectLocation))
                 {
                     var requiresStartReading = true;
 
                     Action action = () =>
                     {
-                        requiresStartReading = !_readingCallbacks.ContainsKey(path);
-                        _readingCallbacks[path] = readAsync;
+                        requiresStartReading = !_readingCallbacks.ContainsKey(projectLocation);
+                        _readingCallbacks[projectLocation] = readAsync;
                     };
 
                     // If scope ref count <= 1, we are the first in this process to access this path
@@ -179,31 +179,31 @@ namespace Orc.FileSystem
 
                     if (requiresStartReading)
                     {
-                        await ExecutePendingReadingAsync(path);
+                        await ExecutePendingReadingAsync(projectLocation);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to execute reading task for '{path}'");
+                Log.Error(ex, $"Failed to execute reading task for '{projectLocation}'");
                 throw;
             }
         }
 
-        public async Task ExecuteWritingAsync(string path, Func<string, Task<bool>> writeAsync)
+        public async Task ExecuteWritingAsync(string projectLocation, Func<string, Task<bool>> writeAsync)
         {
-            Argument.IsNotNullOrWhitespace(() => path);
+            Argument.IsNotNullOrWhitespace(() => projectLocation);
 
             try
             {
-                using (var scopeManager = GetScopeManager(false, path))
+                using (var scopeManager = GetScopeManager(false, projectLocation))
                 {
                     var requiresStartWriting = true;
 
                     Action action = () =>
                     {
-                        requiresStartWriting = !_writingCallbacks.ContainsKey(path);
-                        _writingCallbacks[path] = writeAsync;
+                        requiresStartWriting = !_writingCallbacks.ContainsKey(projectLocation);
+                        _writingCallbacks[projectLocation] = writeAsync;
                     };
 
                     // If scope ref count <= 1, we are the first in this process to access this path
@@ -223,13 +223,13 @@ namespace Orc.FileSystem
 
                     if (requiresStartWriting)
                     {
-                        await ExecutePendingWritingAsync(path);
+                        await ExecutePendingWritingAsync(projectLocation);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to execute writing task for '{path}'");
+                Log.Error(ex, $"Failed to execute writing task for '{projectLocation}'");
                 throw;
             }
         }

@@ -75,8 +75,6 @@ namespace Orc.FileSystem
 
                 lock (Locks)
                 {
-                    //fileNames = newLockFiles.Except(_internalLocks,  StringComparer.InvariantCultureIgnoreCase).ToArray();
-
                     // Note: instead of adding new locked files better to release already locked ones and lock them again combined with the new ones
                     //       I think it should prevent hangings in concurrent applications
                     fileNames = newLockFiles.Union(_internalLocks, StringComparer.OrdinalIgnoreCase).ToArray();

@@ -15,7 +15,7 @@ namespace Orc.FileSystem
         Task StartWatchingForChangesAsync(string path);
         Task StopWatchingForChangesAsync(string path);
 
-        Task ExecuteReadingAsync(string path, Func<string, Task<bool>> readAsync);
+        Task ExecuteReadingAsync(string projectLocation, Func<string, Task<bool>> readAsync);
         Task ExecuteWritingAsync(string projectLocation, Func<string, Task<bool>> writeAsync);
 
         event EventHandler<PathEventArgs> RefreshRequired;

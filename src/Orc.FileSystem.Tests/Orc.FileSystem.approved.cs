@@ -1,6 +1,6 @@
 ﻿[assembly: System.Resources.NeutralResourcesLanguage("en-US")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Orc.FileSystem.Tests")]
-[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v3.1", FrameworkDisplayName="")]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v5.0", FrameworkDisplayName="")]
 public static class ModuleInitializer
 {
     public static void Initialize() { }
@@ -40,9 +40,12 @@ namespace Orc.FileSystem
         public void Unlock() { }
         public void WriteDummyContent() { }
     }
+    [System.Serializable]
     public class FileLockScopeException : System.Exception
     {
+        public FileLockScopeException() { }
         public FileLockScopeException(string message) { }
+        protected FileLockScopeException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
         public FileLockScopeException(string message, System.Exception innerException) { }
     }
     public class FileLocker : System.IDisposable
@@ -103,6 +106,8 @@ namespace Orc.FileSystem
         public static void WriteAllBytes(this Orc.FileSystem.IFileService fileService, string fileName, byte[] bytes) { }
         public static System.Threading.Tasks.Task WriteAllBytesAsync(this Orc.FileSystem.IFileService fileService, string fileName, byte[] bytes) { }
         public static void WriteAllLines(this Orc.FileSystem.IFileService fileService, string fileName, System.Collections.Generic.IEnumerable<string> lines) { }
+        [System.Obsolete("Will be treated as an error from version 4.1.0. Will be removed in version 5.0.0." +
+            "", false)]
         public static void WriteAllLines(this Orc.FileSystem.IFileService fileService, string fileName, string[] lines) { }
         public static System.Threading.Tasks.Task WriteAllLinesAsync(this Orc.FileSystem.IFileService fileService, string fileName, System.Collections.Generic.IEnumerable<string> lines) { }
         public static System.Threading.Tasks.Task WriteAllLinesAsync(this Orc.FileSystem.IFileService fileService, string fileName, string[] lines) { }
@@ -116,14 +121,17 @@ namespace Orc.FileSystem
         event System.EventHandler<Orc.FileSystem.PathEventArgs> RefreshRequired;
         System.IDisposable AcquireReadLock(string path);
         System.IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true);
-        System.Threading.Tasks.Task ExecuteReadingAsync(string path, System.Func<string, System.Threading.Tasks.Task<bool>> readAsync);
+        System.Threading.Tasks.Task ExecuteReadingAsync(string projectLocation, System.Func<string, System.Threading.Tasks.Task<bool>> readAsync);
         System.Threading.Tasks.Task ExecuteWritingAsync(string projectLocation, System.Func<string, System.Threading.Tasks.Task<bool>> writeAsync);
         System.Threading.Tasks.Task StartWatchingForChangesAsync(string path);
         System.Threading.Tasks.Task StopWatchingForChangesAsync(string path);
     }
+    [System.Serializable]
     public class IOSynchronizationException : System.Exception
     {
+        public IOSynchronizationException() { }
         public IOSynchronizationException(string message) { }
+        public IOSynchronizationException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
         public IOSynchronizationException(string message, System.Exception innerException) { }
     }
     public class IOSynchronizationService : Orc.FileSystem.IIOSynchronizationService
@@ -134,8 +142,8 @@ namespace Orc.FileSystem
         public event System.EventHandler<Orc.FileSystem.PathEventArgs> RefreshRequired;
         public System.IDisposable AcquireReadLock(string path) { }
         public System.IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true) { }
-        public System.Threading.Tasks.Task ExecuteReadingAsync(string path, System.Func<string, System.Threading.Tasks.Task<bool>> readAsync) { }
-        public System.Threading.Tasks.Task ExecuteWritingAsync(string path, System.Func<string, System.Threading.Tasks.Task<bool>> writeAsync) { }
+        public System.Threading.Tasks.Task ExecuteReadingAsync(string projectLocation, System.Func<string, System.Threading.Tasks.Task<bool>> readAsync) { }
+        public System.Threading.Tasks.Task ExecuteWritingAsync(string projectLocation, System.Func<string, System.Threading.Tasks.Task<bool>> writeAsync) { }
         protected string GetSyncFileByPath(string path) { }
         protected virtual string ResolveObservedFileName(string path) { }
         public System.Threading.Tasks.Task StartWatchingForChangesAsync(string path) { }
