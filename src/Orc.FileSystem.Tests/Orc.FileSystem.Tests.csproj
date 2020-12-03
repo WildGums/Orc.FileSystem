@@ -1,6 +1,6 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFrameworks>net5.0-windows</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <AssemblyName>Orc.FileSystem.Tests</AssemblyName>
     <RootNamespace>Orc.FileSystem.Tests</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
@@ -29,6 +29,7 @@
     </PackageReference>
     <PackageReference Include="Obsolete.Fody" Version="5.2.1" PrivateAssets="all" />
     <PackageReference Include="PublicApiGenerator" Version="10.2.0" PrivateAssets="all" />
+    <PackageReference Include="System.Security.Permissions" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
