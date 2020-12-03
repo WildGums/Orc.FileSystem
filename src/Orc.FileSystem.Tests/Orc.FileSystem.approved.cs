@@ -106,8 +106,7 @@ namespace Orc.FileSystem
         public static void WriteAllBytes(this Orc.FileSystem.IFileService fileService, string fileName, byte[] bytes) { }
         public static System.Threading.Tasks.Task WriteAllBytesAsync(this Orc.FileSystem.IFileService fileService, string fileName, byte[] bytes) { }
         public static void WriteAllLines(this Orc.FileSystem.IFileService fileService, string fileName, System.Collections.Generic.IEnumerable<string> lines) { }
-        [System.Obsolete("Will be treated as an error from version 4.1.0. Will be removed in version 5.0.0." +
-            "", false)]
+        [System.Obsolete("Will be removed in version 5.0.0.", true)]
         public static void WriteAllLines(this Orc.FileSystem.IFileService fileService, string fileName, string[] lines) { }
         public static System.Threading.Tasks.Task WriteAllLinesAsync(this Orc.FileSystem.IFileService fileService, string fileName, System.Collections.Generic.IEnumerable<string> lines) { }
         public static System.Threading.Tasks.Task WriteAllLinesAsync(this Orc.FileSystem.IFileService fileService, string fileName, string[] lines) { }
