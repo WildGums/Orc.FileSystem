@@ -8,10 +8,17 @@
 namespace Orc.FileSystem
 {
     using System;
+    using System.Runtime.Serialization;
 
+    [Serializable]
     public class IOSynchronizationException : Exception
     {
         #region Constructors
+        public IOSynchronizationException()
+        {
+
+        }
+
         public IOSynchronizationException(string message)
             : base(message)
         {
@@ -20,6 +27,12 @@ namespace Orc.FileSystem
         public IOSynchronizationException(string message, Exception innerException)
             : base(message, innerException)
         {
+        }
+
+        public IOSynchronizationException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+
         }
         #endregion
     }

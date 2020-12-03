@@ -13,7 +13,7 @@ namespace Orc.FileSystem
 
     public static class FileLockInfo
     {
-        private static ILog Log = LogManager.GetCurrentClassLogger();
+        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
         #region Constants
         // maximum character count of application friendly name. 
@@ -129,7 +129,7 @@ namespace Orc.FileSystem
             if (res != 0)
             {
                 Log.Warning($"Failed to get processes locking file '{fileName}': Could not start new Restart Manager session");
-                return null;
+                return new string[] { };
             }
 
             try
@@ -146,7 +146,7 @@ namespace Orc.FileSystem
                 if (res != 0)
                 {
                     Log.Warning($"Failed to get processes locking file '{fileName}': Could not register resource to a Restart Manager session");
-                    return null;
+                    return new string[] { };
                 }
 
                 res = RmGetList(handle, out pnProcInfoNeeded, ref pnProcInfo, processInfo, ref lpdwRebootReasons);
@@ -155,7 +155,7 @@ namespace Orc.FileSystem
                     var result = new string[pnProcInfo];
                     for (var i = 0; i < pnProcInfo; i++)
                     {
-                        result[i] = processInfo[i].strAppName;
+                        result[i] = processInfo[i].AppName;
                     }
 
                     return result;
@@ -170,7 +170,7 @@ namespace Orc.FileSystem
                 RmEndSession(handle);
             }
 
-            return null;
+            return new string[] { };
         }
         #endregion
 
@@ -215,11 +215,11 @@ namespace Orc.FileSystem
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCH_RM_MAX_APP_NAME + 1)]
             // If the process is a service, this parameter returns the  
             // long name for the service. 
-            public readonly string strAppName;
+            public readonly string AppName;
 
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCH_RM_MAX_SVC_NAME + 1)]
             // If the process is a service, this is the short name for the service. 
-            public readonly string strServiceShortName;
+            public readonly string ServiceShortName;
 
             // Contains an RM_APP_TYPE enumeration value. 
             public readonly RM_APP_TYPE ApplicationType;
@@ -229,7 +229,7 @@ namespace Orc.FileSystem
             public readonly uint TSSessionId;
             // TRUE if the application can be restarted by the  
             // Restart Manager; otherwise, FALSE. 
-            [MarshalAs(UnmanagedType.Bool)] public readonly bool bRestartable;
+            [MarshalAs(UnmanagedType.Bool)] public readonly bool Restartable;
         }
         #endregion
 
@@ -243,7 +243,7 @@ namespace Orc.FileSystem
         private struct RM_UNIQUE_PROCESS
         {
             // The product identifier (PID). 
-            public readonly int dwProcessId;
+            public readonly int ProcessId;
             // The creation time of the process. 
             public readonly System.Runtime.InteropServices.ComTypes.FILETIME ProcessStartTime;
         }

@@ -112,10 +112,6 @@ namespace Orc.FileSystem
                         break;
 
                     case FileMode.Truncate:
-                        finalFileMode = FileMode.Append;
-                        fileMustExist = true;
-                        break;
-
                     case FileMode.Append:
                         finalFileMode = FileMode.Append;
                         fileMustExist = true;
