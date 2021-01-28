@@ -143,10 +143,8 @@ namespace Orc.FileSystem
             {
                 try
                 {
-                    var fileStream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                    result[fileName] = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
                     File.SetAttributes(fileName, FileAttributes.Hidden);
-
-                    result[fileName] = fileStream;
                 }
                 catch (IOException)
                 {
