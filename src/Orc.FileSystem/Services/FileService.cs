@@ -312,7 +312,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to delete file '{fileName}'");
+                Log.Warning(ex, $"Failed to delete file '{fileName}'");
 
                 throw;
             }
