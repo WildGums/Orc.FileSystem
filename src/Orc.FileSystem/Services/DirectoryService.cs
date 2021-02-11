@@ -126,7 +126,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to delete directory '{path}'");
+                Log.Warning(ex, $"Failed to delete directory '{path}'");
 
                 throw;
             }
