@@ -21,7 +21,7 @@ namespace Orc.FileSystem
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
-            Log.Debug($"Creating file '{fileName}'");
+            Log.DebugIfAttached($"Creating file '{fileName}'");
 
             try
             {
@@ -40,7 +40,7 @@ namespace Orc.FileSystem
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
-            Log.Debug($"Opening file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
+            Log.DebugIfAttached($"Opening file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
 
             try
             {
@@ -83,7 +83,7 @@ namespace Orc.FileSystem
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
-            Log.Debug($"Checking for possibility to open file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
+            Log.DebugIfAttached($"Checking for possibility to open file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
 
             try
             {
@@ -149,7 +149,7 @@ namespace Orc.FileSystem
             Argument.IsNotNullOrWhitespace(() => sourceFileName);
             Argument.IsNotNullOrWhitespace(() => destinationFileName);
 
-            Log.Debug($"Copying file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
+            Log.DebugIfAttached($"Copying file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
 
             try
             {
@@ -201,7 +201,7 @@ namespace Orc.FileSystem
             Argument.IsNotNullOrWhitespace(() => sourceFileName);
             Argument.IsNotNullOrWhitespace(() => destinationFileName);
 
-            Log.Debug($"Moving file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
+            Log.DebugIfAttached($"Moving file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
 
             try
             {
@@ -281,7 +281,7 @@ namespace Orc.FileSystem
             {
                 if (File.Exists(fileName))
                 {
-                    Log.Debug($"Deleting file '{fileName}'");
+                    Log.DebugIfAttached($"Deleting file '{fileName}'");
 
                     File.Delete(fileName);
                 }
