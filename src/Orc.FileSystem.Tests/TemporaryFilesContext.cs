@@ -39,7 +39,7 @@ namespace Orc.FileSystem.Tests
         #region IDisposable Members
         public void Dispose()
         {
-            Log.Info("Deleting temporary files from '{0}'", _rootDirectory);
+            Log.Debug("Deleting temporary files from '{0}'", _rootDirectory);
 
             try
             {

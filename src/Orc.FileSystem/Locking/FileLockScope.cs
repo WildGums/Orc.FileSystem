@@ -93,7 +93,7 @@ namespace Orc.FileSystem
                     // Note: don't use _fileService because we don't want logging in case of failure
                     _fileStream = File.Open(_syncFile, FileMode.Create, FileAccess.Write, _isReadScope ? FileShare.Delete : FileShare.None);
 
-                    Log.Info($"Locked synchronization file '{_syncFile}'");
+                    Log.Debug($"Locked synchronization file '{_syncFile}'");
                 }
                 catch (IOException ex)
                 {
@@ -112,12 +112,12 @@ namespace Orc.FileSystem
                     var processes = FileLockInfo.GetProcessesLockingFile(_syncFile);
                     if (processes == null || !processes.Any())
                     {
-                        Log.Info(ex, $"First attempt to lock synchronization file '{_syncFile}' was unsuccessful. " +
+                        Log.Debug(ex, $"First attempt to lock synchronization file '{_syncFile}' was unsuccessful. " +
                                      "Possibly locked by unknown application. Will keep retrying in the background.");
                     }
                     else
                     {
-                        Log.Info($"First attempt to lock synchronization file '{_syncFile}' was unsuccessful. " +
+                        Log.Debug($"First attempt to lock synchronization file '{_syncFile}' was unsuccessful. " +
                                  $"Locked by: {string.Join(", ", processes)}. Will keep retrying in the background.");
                     }
 
@@ -155,7 +155,7 @@ namespace Orc.FileSystem
                 _fileStream.Dispose();
                 _fileStream = null;
 
-                Log.Info($"Unlocked synchronization file '{_syncFile}'");
+                Log.Debug($"Unlocked synchronization file '{_syncFile}'");
             }
 
             _lockAttemptCounter = 0;
@@ -174,7 +174,7 @@ namespace Orc.FileSystem
                 {
                     _fileService.Delete(_syncFile);
 
-                    Log.Info($"Deleted synchronization file '{_syncFile}'");
+                    Log.Debug($"Deleted synchronization file '{_syncFile}'");
                 }
             }
             catch (IOException ex)
