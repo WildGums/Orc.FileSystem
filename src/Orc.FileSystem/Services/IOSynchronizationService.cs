@@ -505,7 +505,7 @@ namespace Orc.FileSystem
 
                         if (!succeeded)
                         {
-                            Log.Info($"Failed to execute write actions to path '{path}', will retry");
+                            Log.Debug($"Failed to execute write actions to path '{path}', will retry");
                         }
                         else
                         {
