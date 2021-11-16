@@ -1,6 +1,6 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0-windows</TargetFrameworks>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <AssemblyName>Orc.FileSystem.Example</AssemblyName>
     <RootNamespace>Orc.FileSystem.Example</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>

@@ -10,22 +10,31 @@ namespace Orc.FileSystem
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.IO.Abstractions;
     using System.Linq;
     using System.Threading.Tasks;
     using Catel;
     using Catel.Logging;
     using Catel.Threading;
 
-    public class FileLocker : IDisposable
+    public interface IFileLocker
+    {
+        Task LockFilesAsync(params string[] files);
+        Task LockFilesAsync(TimeSpan timeout, params string[] files);
+        void ReleaseLockedFiles();
+    }
+
+    public class FileLocker : IDisposable, IFileLocker
     {
         #region Fields
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-        private static readonly Dictionary<string, FileStream> Locks = new Dictionary<string, FileStream>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, Stream> Locks = new Dictionary<string, Stream>(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, int> LockCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private static readonly AsyncLock AsyncLock = new AsyncLock();
 
         private readonly FileLocker _existingLocker;
+        private readonly IFile _file;
         private readonly int _uniqueId = UniqueIdentifierHelper.GetUniqueIdentifier<FileLocker>();
 
         private readonly HashSet<string> _internalLocks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -34,9 +43,10 @@ namespace Orc.FileSystem
         #endregion
 
         #region Constructors
-        public FileLocker(FileLocker existingLocker)
+        public FileLocker(FileLocker existingLocker, IFileSystem fileSystem)
         {
             _existingLocker = existingLocker;
+            _file = fileSystem.File;
         }
         #endregion
 
@@ -62,7 +72,7 @@ namespace Orc.FileSystem
 
         public async Task LockFilesAsync(TimeSpan timeout, params string[] files)
         {
-            if (_existingLocker != null)
+            if (_existingLocker is not null)
             {
                 await _existingLocker.LockFilesAsync(timeout, files);
                 return;
@@ -101,13 +111,13 @@ namespace Orc.FileSystem
                     while (continueLoop)
                     {
                         var lockedFiles = TryCreateAndLockFiles(fileNames);
-                        if (lockedFiles == null && continueLoop)
+                        if (lockedFiles is null && continueLoop)
                         {
                             await TaskShim.Delay(10);
                             continue;
                         }
 
-                        if (lockedFiles == null)
+                        if (lockedFiles is null)
                         {
                             continue;
                         }
@@ -122,7 +132,7 @@ namespace Orc.FileSystem
                                 count++;
                                 LockCounts[fileName] = count;
 
-                                if (lockedFiles.TryGetValue(fileName, out var stream) && stream != null)
+                                if (lockedFiles.TryGetValue(fileName, out var stream) && stream is not null)
                                 {
                                     Locks[fileName] = stream;
                                 }
@@ -135,20 +145,20 @@ namespace Orc.FileSystem
             }
         }
 
-        private static Dictionary<string, FileStream> TryCreateAndLockFiles(string[] fileNames)
+        private Dictionary<string, Stream> TryCreateAndLockFiles(string[] fileNames)
         {
-            var result = new Dictionary<string, FileStream>();
+            var result = new Dictionary<string, Stream>();
 
             foreach (var fileName in fileNames)
             {
                 try
                 {
-                    result[fileName] = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-                    File.SetAttributes(fileName, FileAttributes.Hidden);
+                    result[fileName] = _file.Open(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                    _file.SetAttributes(fileName, FileAttributes.Hidden);
                 }
                 catch (IOException)
                 {
-                    foreach (var fileStream in result.Values.Where(x => x != null))
+                    foreach (var fileStream in result.Values.Where(x => x is not null))
                     {
                         fileStream.Dispose();
                     }
@@ -160,7 +170,7 @@ namespace Orc.FileSystem
                 }
                 catch (Exception)
                 {
-                    foreach (var fileStream in result.Values.Where(x => x != null))
+                    foreach (var fileStream in result.Values.Where(x => x is not null))
                     {
                         fileStream.Dispose();
                     }
@@ -174,7 +184,7 @@ namespace Orc.FileSystem
             return result;
         }
 
-        private void ReleaseLockedFiles()
+        public void ReleaseLockedFiles()
         {
             lock (Locks)
             {
@@ -200,11 +210,11 @@ namespace Orc.FileSystem
                         Log.Debug($"'{lockFile}' released");
                     }
 
-                    if (count <= 0 && File.Exists(lockFile))
+                    if (count <= 0 && _file.Exists(lockFile))
                     {
                         try
                         {
-                            File.Delete(lockFile);
+                            _file.Delete(lockFile);
 
                             Log.Debug($"'{lockFile}' deleted");
                         }

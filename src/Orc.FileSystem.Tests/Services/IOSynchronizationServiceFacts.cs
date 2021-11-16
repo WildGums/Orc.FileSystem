@@ -9,6 +9,7 @@ namespace Orc.FileSystem.Tests.Services
 {
     using System;
     using System.IO;
+    using System.IO.Abstractions.TestingHelpers;
     using System.Threading.Tasks;
     using Catel.Threading;
     using NUnit.Framework;
@@ -29,7 +30,7 @@ namespace Orc.FileSystem.Tests.Services
                     {
                         var rootDirectory = temporaryFilesContext.GetDirectory("output");
 
-                        var fileService = new FileService();
+                        var fileService = new FileService(new MockFileSystem());
                         var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                         var aleadyExecuted = false;
@@ -65,7 +66,7 @@ namespace Orc.FileSystem.Tests.Services
                     var file1 = temporaryFilesContext.GetFile("output\\file1.txt");
                     var file2 = temporaryFilesContext.GetFile("output\\file2.txt");
 
-                    var fileService = new FileService();
+                    var fileService = new FileService(new MockFileSystem());
                     var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                     await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
@@ -89,7 +90,7 @@ namespace Orc.FileSystem.Tests.Services
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
                     var subdirectory = temporaryFilesContext.GetDirectory("output\\subdirectory");
 
-                    var fileService = new FileService();
+                    var fileService = new FileService(new MockFileSystem());
                     var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                     await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
@@ -115,7 +116,7 @@ namespace Orc.FileSystem.Tests.Services
                         var rootDirectory = temporaryFilesContext.GetDirectory("output");
                         var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                        var fileService = new FileService();
+                        var fileService = new FileService(new MockFileSystem());
                         var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                         // write for creating sync file
@@ -156,7 +157,7 @@ namespace Orc.FileSystem.Tests.Services
                 {
                     var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                    var fileService = new FileService();
+                    var fileService = new FileService(new MockFileSystem());
                     var ioSynchronizationService = new IOSynchronizationWithoutSeparateSyncFileService(fileService, new DirectoryService(fileService));
 
                     // ensure syn file exists and data file exists
@@ -200,7 +201,7 @@ namespace Orc.FileSystem.Tests.Services
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
                     var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                    var fileService = new FileService();
+                    var fileService = new FileService(new MockFileSystem());
                     var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                     // Step 1: Write
@@ -242,7 +243,7 @@ namespace Orc.FileSystem.Tests.Services
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
                     var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                    var fileService = new FileService();
+                    var fileService = new FileService(new MockFileSystem());
                     var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
                     // Step 1: Write, do not await

@@ -3,6 +3,7 @@
     using System.Diagnostics;
     using Catel.Logging;
 
+    // ReSharper disable once InconsistentNaming
     internal static class ILogExtensions
     {
         #region Constants

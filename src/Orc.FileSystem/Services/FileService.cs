@@ -9,34 +9,35 @@ namespace Orc.FileSystem
 {
     using System;
     using System.IO;
+    using System.IO.Abstractions;
     using System.Linq;
     using Catel;
     using Catel.Logging;
 
-    public class FileService : IFileService
+    public class FileService : IFileService, Services.FileService
     {
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+        
+        private readonly IFile _file;
 
-        public FileStream Create(string fileName)
+        public FileService(IFileSystem fileSystem)
         {
-            Argument.IsNotNullOrWhitespace(() => fileName);
-
-            Log.DebugIfAttached($"Creating file '{fileName}'");
-
-            try
-            {
-                var fileStream = File.Create(fileName);
-                return fileStream;
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, $"Failed to create file '{fileName}'");
-
-                throw;
-            }
+            Argument.IsNotNull(() => fileSystem);
+            
+            _file = fileSystem.File;
+        }
+        
+        FileStream IFileService.Create(string fileName)
+        {
+            return Create(fileName) as FileStream;
         }
 
-        public FileStream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+        FileStream IFileService.Open(string fileName, FileMode fileMode, FileAccess fileAccess, FileShare fileShare)
+        {
+            return Open(fileName, fileMode, fileAccess, fileShare) as FileStream;
+        }
+
+        public Stream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -44,8 +45,8 @@ namespace Orc.FileSystem
 
             try
             {
-                var fileStream = File.Open(fileName, fileMode, fileAccess, fileShare);
-                return fileStream;
+                var stream = _file.Open(fileName, fileMode, fileAccess, fileShare);
+                return stream;
             }
             catch (IOException ex)
             {
@@ -60,7 +61,7 @@ namespace Orc.FileSystem
                 }
 
                 var processes = FileLockInfo.GetProcessesLockingFile(fileName);
-                if (processes == null || !processes.Any())
+                if (processes is null || !processes.Any())
                 {                    
                     Log.Error(ex, message);
 
@@ -121,17 +122,17 @@ namespace Orc.FileSystem
                         throw new ArgumentOutOfRangeException(nameof(fileMode), fileMode, null);
                 }
 
-                if (fileMustExist && !File.Exists(fileName))
+                if (fileMustExist && !_file.Exists(fileName))
                 {
                     return false;
                 }
 
-                if (fileMustNotExist && File.Exists(fileName))
+                if (fileMustNotExist && _file.Exists(fileName))
                 {
                     return false;
                 }
 
-                using (var fileStream = File.Open(fileName, finalFileMode, fileAccess, fileShare))
+                using (var fileStream = _file.Open(fileName, finalFileMode, fileAccess, fileShare))
                 {
                     // Open for test
                 }
@@ -144,6 +145,25 @@ namespace Orc.FileSystem
             }
         }
 
+        public Stream Create(string fileName)
+        {
+            Argument.IsNotNullOrWhitespace(() => fileName);
+
+            Log.DebugIfAttached($"Creating file '{fileName}'");
+
+            try
+            {
+                var stream = _file.Create(fileName);
+                return stream;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Failed to create file '{fileName}'");
+
+                throw;
+            }
+        }
+
         public void Copy(string sourceFileName, string destinationFileName, bool overwrite = false)
         {
             Argument.IsNotNullOrWhitespace(() => sourceFileName);
@@ -153,7 +173,7 @@ namespace Orc.FileSystem
 
             try
             {
-                File.Copy(sourceFileName, destinationFileName, overwrite);
+                _file.Copy(sourceFileName, destinationFileName, overwrite);
             }
             catch (IOException ex)
             {
@@ -169,7 +189,7 @@ namespace Orc.FileSystem
                 }
 
                 var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
-                if (sourceLockingProcesses != null && sourceLockingProcesses.Any())
+                if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
                 {
                     Log.Error(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
 
@@ -177,7 +197,7 @@ namespace Orc.FileSystem
                 }
 
                 var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
-                if (destinationLockingProcesses != null && destinationLockingProcesses.Any())
+                if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
                 {
                     Log.Error(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
 
@@ -205,15 +225,15 @@ namespace Orc.FileSystem
 
             try
             {
-                if (File.Exists(sourceFileName))
+                if (_file.Exists(sourceFileName))
                 {
-                    if (File.Exists(destinationFileName) && overwrite)
+                    if (_file.Exists(destinationFileName) && overwrite)
                     {
-                        File.Delete(destinationFileName);
+                        _file.Delete(destinationFileName);
                     }
                 }
 
-                File.Move(sourceFileName, destinationFileName);
+                _file.Move(sourceFileName, destinationFileName);
             }
             catch (IOException ex)
             {
@@ -229,7 +249,7 @@ namespace Orc.FileSystem
                 }
 
                 var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
-                if (sourceLockingProcesses != null && sourceLockingProcesses.Any())
+                if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
                 {
                     Log.Error(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
 
@@ -237,7 +257,7 @@ namespace Orc.FileSystem
                 }
 
                 var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
-                if (destinationLockingProcesses != null && destinationLockingProcesses.Any())
+                if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
                 {
                     Log.Error(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
 
@@ -262,7 +282,7 @@ namespace Orc.FileSystem
 
             try
             {
-                var exists = File.Exists(fileName);
+                var exists = _file.Exists(fileName);
                 return exists;
             }
             catch (Exception ex)
@@ -279,11 +299,11 @@ namespace Orc.FileSystem
 
             try
             {
-                if (File.Exists(fileName))
+                if (_file.Exists(fileName))
                 {
                     Log.DebugIfAttached($"Deleting file '{fileName}'");
 
-                    File.Delete(fileName);
+                    _file.Delete(fileName);
                 }
             }
             catch (IOException ex)
@@ -299,7 +319,7 @@ namespace Orc.FileSystem
                 }
 
                 var processes = FileLockInfo.GetProcessesLockingFile(fileName);
-                if (processes == null || !processes.Any())
+                if (processes is null || !processes.Any())
                 {
                     Log.Error(ex, message);
 

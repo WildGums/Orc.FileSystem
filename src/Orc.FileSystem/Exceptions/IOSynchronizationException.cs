@@ -11,6 +11,7 @@ namespace Orc.FileSystem
     using System.Runtime.Serialization;
 
     [Serializable]
+    // ReSharper disable once InconsistentNaming
     public class IOSynchronizationException : Exception
     {
         #region Constructors

@@ -9,20 +9,34 @@ namespace Orc.FileSystem
 {
     using System;
     using System.IO;
+    using System.IO.Abstractions;
     using Catel;
+    using Catel.IoC;
     using Catel.Logging;
 
     public class DirectoryService : IDirectoryService
     {
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-        private readonly IFileService _fileService;
+        private readonly IFile _file;
+        private readonly IDirectory _directory;
+        private readonly IPath _path;
+        public DirectoryService(IFileSystem fileSystem)
+        {
+            Argument.IsNotNull(() => fileSystem);
 
+            _file = fileSystem.File;
+            _directory = fileSystem.Directory;
+            _path = fileSystem.Path;
+        }
+        
+        [ObsoleteEx]
         public DirectoryService(IFileService fileService)
         {
             Argument.IsNotNull(() => fileService);
 
-            _fileService = fileService;
+            var serviceLocator = fileService.GetServiceLocator();
+            _file = serviceLocator.ResolveType<IFileSystem>().File;
         }
 
         public string Create(string path)
@@ -31,11 +45,11 @@ namespace Orc.FileSystem
 
             try
             {
-                if (!Directory.Exists(path))
+                if (!_directory.Exists(path))
                 {
                     Log.Debug($"Creating directory '{path}'");
 
-                    var info = Directory.CreateDirectory(path);
+                    var info = _directory.CreateDirectory(path);
                     path = info.FullName;
                 }
 
@@ -58,7 +72,7 @@ namespace Orc.FileSystem
             {
                 Log.Debug($"Moving directory '{sourcePath}' => '{destinationPath}'");
 
-                Directory.Move(sourcePath, destinationPath);
+                _directory.Move(sourcePath, destinationPath);
             }
             catch (Exception ex)
             {
@@ -85,16 +99,16 @@ namespace Orc.FileSystem
             var files = GetFiles(sourcePath);
             foreach (var file in files)
             {
-                var fileName = Path.GetFileName(file);
-                var destinationFileName = Path.Combine(destinationPath, fileName);
+                var fileName = _path.GetFileName(file);
+                var destinationFileName = _path.Combine(destinationPath, fileName);
 
-                if (File.Exists(destinationFileName) && !overwriteExisting)
+                if (_file.Exists(destinationFileName) && !overwriteExisting)
                 {
                     Log.Debug($"Skipping copying of '{file}', file already exists in target directory");
                     continue;
                 }
 
-                _fileService.Copy(file, destinationFileName, overwriteExisting);
+                _file.Copy(file, destinationFileName, overwriteExisting);
             }
 
             if (copySubDirs)
@@ -103,8 +117,8 @@ namespace Orc.FileSystem
 
                 foreach (var subDirectory in subDirectories)
                 {
-                    var subDirectoryName = Path.GetDirectoryName(subDirectory);
-                    var destinationSubDirectory = Path.Combine(destinationPath, subDirectoryName);
+                    var subDirectoryName = _path.GetDirectoryName(subDirectory);
+                    var destinationSubDirectory = _path.Combine(destinationPath, subDirectoryName);
 
                     Copy(subDirectory, destinationSubDirectory, copySubDirs, overwriteExisting);
                 }
@@ -117,11 +131,11 @@ namespace Orc.FileSystem
 
             try
             {
-                if (Directory.Exists(path))
+                if (_directory.Exists(path))
                 {
                     Log.Debug($"Deleting directory '{path}', recursive: '{recursive}'");
 
-                    Directory.Delete(path, recursive);
+                    _directory.Delete(path, recursive);
                 }
             }
             catch (Exception ex)
@@ -138,7 +152,7 @@ namespace Orc.FileSystem
 
             try
             {
-                var exists = Directory.Exists(path);
+                var exists = _directory.Exists(path);
                 return exists;
             }
             catch (Exception ex)
@@ -162,7 +176,7 @@ namespace Orc.FileSystem
 
                 Log.Debug($"Getting directories inside '{path}', searchPattern: '{searchPattern}', searchOption: '{searchOption}'");
 
-                var directories = Directory.GetDirectories(path, searchPattern, searchOption);
+                var directories = _directory.GetDirectories(path, searchPattern, searchOption);
                 return directories;
             }
             catch (Exception ex)
@@ -186,7 +200,7 @@ namespace Orc.FileSystem
 
                 Log.Debug($"Getting files inside '{path}', searchPattern: '{searchPattern}', searchOption: '{searchOption}'");
 
-                var files = Directory.GetFiles(path, searchPattern, searchOption);
+                var files = _directory.GetFiles(path, searchPattern, searchOption);
                 return files;
             }
             catch (Exception ex)
