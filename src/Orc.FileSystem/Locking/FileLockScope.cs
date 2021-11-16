@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="FileLockScope.cs" company="WildGums">
 //   Copyright (c) 2008 - 2017 WildGums. All rights reserved.
 // </copyright>
@@ -101,7 +101,9 @@ namespace Orc.FileSystem
 
                     if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
                     {
-                        throw Log.ErrorAndCreateException<FileLockScopeException>(ex, $"Failed to lock synchronization file '{_syncFile}'");
+                        Log.Warning(ex, $"Failed to lock synchronization file '{_syncFile}'");
+
+                        throw new FileLockScopeException($"Failed to lock synchronization file '{_syncFile}'", ex);
                     }
 
                     if (_lockAttemptCounter > 0)

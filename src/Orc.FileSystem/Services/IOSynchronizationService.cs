@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ProjectIOSynchronizationService.cs" company="WildGums">
 //   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
 // </copyright>
@@ -111,7 +111,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to start watching path '{path}'");
+                Log.Warning(ex, $"Failed to start watching path '{path}'");
             }
         }
 
@@ -142,7 +142,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to stop watching path '{path}'");
+                Log.Warning(ex, $"Failed to stop watching path '{path}'");
             }
         }
 
@@ -185,7 +185,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to execute reading task for '{projectLocation}'");
+                Log.Warning(ex, $"Failed to execute reading task for '{projectLocation}'");
                 throw;
             }
         }
@@ -229,7 +229,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to execute writing task for '{projectLocation}'");
+                Log.Warning(ex, $"Failed to execute writing task for '{projectLocation}'");
                 throw;
             }
         }
@@ -260,7 +260,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to execute pending reading for '{path}'");
+                Log.Warning(ex, $"Failed to execute pending reading for '{path}'");
                 throw;
             }
         }
@@ -280,7 +280,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to execute pending writing for '{path}'");
+                Log.Warning(ex, $"Failed to execute pending writing for '{path}'");
                 throw;
             }
         }
@@ -380,7 +380,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to handle FileSystemWatcher event e.ChangeType: '{e.ChangeType}', e.FullPath: '{e.FullPath}'");
+                Log.Warning(ex, $"Failed to handle FileSystemWatcher event e.ChangeType: '{e.ChangeType}', e.FullPath: '{e.FullPath}'");
             }
         }
 
@@ -423,7 +423,7 @@ namespace Orc.FileSystem
                         }
                         catch (Exception readException)
                         {
-                            Log.Error(readException, $"Fatal error in executing reading for '{path}': '{readException.Message}'");
+                            Log.Warning(readException, $"Fatal error in executing reading for '{path}': '{readException.Message}'");
 
                             throw new IOSynchronizationException($"Fatal error in executing reading for '{path}'", readException);
                         }
@@ -498,7 +498,7 @@ namespace Orc.FileSystem
                         }
                         catch (Exception readException)
                         {
-                            Log.Error(readException, $"Fatal error in executing writing for '{path}': '{readException.Message}'");
+                            Log.Warning(readException, $"Fatal error in executing writing for '{path}': '{readException.Message}'");
 
                             throw new IOSynchronizationException($"Fatal error in executing writing for '{path}'", readException);
                         }

@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DirectoryService.cs" company="WildGums">
 //   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
 // </copyright>
@@ -43,7 +43,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to create directory '{path}'");
+                Log.Warning(ex, $"Failed to create directory '{path}'");
 
                 throw;
             }
@@ -62,7 +62,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to move directory '{sourcePath}' => '{destinationPath}'");
+                Log.Warning(ex, $"Failed to move directory '{sourcePath}' => '{destinationPath}'");
 
                 throw;
             }
@@ -75,7 +75,9 @@ namespace Orc.FileSystem
 
             if (!Exists(sourcePath))
             {
-                throw Log.ErrorAndCreateException<DirectoryNotFoundException>($"Source directory '{sourcePath}' does not exist or could not be found");
+                Log.Warning($"Source directory '{sourcePath}' does not exist or could not be found");
+
+                throw new DirectoryNotFoundException($"Source directory '{sourcePath}' does not exist or could not be found");
             }
 
             Log.Debug($"Copying directory '{sourcePath}' to '{destinationPath}'");
@@ -143,7 +145,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to check whether directory '{path}' exists");
+                Log.Warning(ex, $"Failed to check whether directory '{path}' exists");
 
                 throw;
             }
@@ -167,7 +169,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed getting directories inside '{path}'");
+                Log.Warning(ex, $"Failed getting directories inside '{path}'");
 
                 throw;
             }
@@ -191,7 +193,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed getting files inside '{path}'");
+                Log.Warning(ex, $"Failed getting files inside '{path}'");
 
                 throw;
             }

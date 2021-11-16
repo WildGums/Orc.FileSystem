@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="TemporaryFilesContext.cs" company="WildGums">
 //   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
 // </copyright>
@@ -50,7 +50,7 @@ namespace Orc.FileSystem.Tests
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Failed to delete temporary files");
+                Log.Warning(ex, "Failed to delete temporary files");
             }
         }
         #endregion

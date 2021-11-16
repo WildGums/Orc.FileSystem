@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IFileServiceExtensions.cs" company="WildGums">
 //   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
 // </copyright>
@@ -40,7 +40,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to read all lines from '{fileName}'");
+                Log.Warning(ex, $"Failed to read all lines from '{fileName}'");
 
                 throw;
             }
@@ -68,7 +68,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to read all lines from '{fileName}'");
+                Log.Warning(ex, $"Failed to read all lines from '{fileName}'");
 
                 throw;
             }
@@ -111,7 +111,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to write '{count}' lines to '{fileName}'");
+                Log.Warning(ex, $"Failed to write '{count}' lines to '{fileName}'");
 
                 throw;
             }
@@ -143,7 +143,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to write '{count}' lines to '{fileName}'");
+                Log.Warning(ex, $"Failed to write '{count}' lines to '{fileName}'");
 
                 throw;
             }
