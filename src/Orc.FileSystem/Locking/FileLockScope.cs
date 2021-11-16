@@ -54,7 +54,7 @@ namespace Orc.FileSystem
             {
                 lock (_lock)
                 {
-                    return _fileStream != null;
+                    return _fileStream is not null;
                 }
             }
         }
@@ -110,7 +110,7 @@ namespace Orc.FileSystem
                     }
 
                     var processes = FileLockInfo.GetProcessesLockingFile(_syncFile);
-                    if (processes == null || !processes.Any())
+                    if (processes is null || !processes.Any())
                     {
                         Log.Debug(ex, $"First attempt to lock synchronization file '{_syncFile}' was unsuccessful. " +
                                      "Possibly locked by unknown application. Will keep retrying in the background.");
@@ -150,7 +150,7 @@ namespace Orc.FileSystem
                 DeleteSyncFile();
             }
 
-            if (_fileStream != null)
+            if (_fileStream is not null)
             {
                 _fileStream.Dispose();
                 _fileStream = null;
@@ -180,7 +180,7 @@ namespace Orc.FileSystem
             catch (IOException ex)
             {
                 var processes = FileLockInfo.GetProcessesLockingFile(_syncFile);
-                if (processes == null || !processes.Any())
+                if (processes is null || !processes.Any())
                 {
                     Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}'");
                 }

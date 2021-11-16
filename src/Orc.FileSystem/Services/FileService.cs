@@ -60,7 +60,7 @@ namespace Orc.FileSystem
                 }
 
                 var processes = FileLockInfo.GetProcessesLockingFile(fileName);
-                if (processes == null || !processes.Any())
+                if (processes is null || !processes.Any())
                 {                    
                     Log.Error(ex, message);
 
@@ -169,7 +169,7 @@ namespace Orc.FileSystem
                 }
 
                 var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
-                if (sourceLockingProcesses != null && sourceLockingProcesses.Any())
+                if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
                 {
                     Log.Error(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
 
@@ -177,7 +177,7 @@ namespace Orc.FileSystem
                 }
 
                 var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
-                if (destinationLockingProcesses != null && destinationLockingProcesses.Any())
+                if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
                 {
                     Log.Error(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
 
@@ -229,7 +229,7 @@ namespace Orc.FileSystem
                 }
 
                 var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
-                if (sourceLockingProcesses != null && sourceLockingProcesses.Any())
+                if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
                 {
                     Log.Error(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
 
@@ -237,7 +237,7 @@ namespace Orc.FileSystem
                 }
 
                 var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
-                if (destinationLockingProcesses != null && destinationLockingProcesses.Any())
+                if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
                 {
                     Log.Error(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
 
@@ -299,7 +299,7 @@ namespace Orc.FileSystem
                 }
 
                 var processes = FileLockInfo.GetProcessesLockingFile(fileName);
-                if (processes == null || !processes.Any())
+                if (processes is null || !processes.Any())
                 {
                     Log.Error(ex, message);
 

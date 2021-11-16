@@ -62,7 +62,7 @@ namespace Orc.FileSystem
 
         public async Task LockFilesAsync(TimeSpan timeout, params string[] files)
         {
-            if (_existingLocker != null)
+            if (_existingLocker is not null)
             {
                 await _existingLocker.LockFilesAsync(timeout, files);
                 return;
@@ -101,13 +101,13 @@ namespace Orc.FileSystem
                     while (continueLoop)
                     {
                         var lockedFiles = TryCreateAndLockFiles(fileNames);
-                        if (lockedFiles == null && continueLoop)
+                        if (lockedFiles is null && continueLoop)
                         {
                             await TaskShim.Delay(10);
                             continue;
                         }
 
-                        if (lockedFiles == null)
+                        if (lockedFiles is null)
                         {
                             continue;
                         }
@@ -122,7 +122,7 @@ namespace Orc.FileSystem
                                 count++;
                                 LockCounts[fileName] = count;
 
-                                if (lockedFiles.TryGetValue(fileName, out var stream) && stream != null)
+                                if (lockedFiles.TryGetValue(fileName, out var stream) && stream is not null)
                                 {
                                     Locks[fileName] = stream;
                                 }
@@ -148,7 +148,7 @@ namespace Orc.FileSystem
                 }
                 catch (IOException)
                 {
-                    foreach (var fileStream in result.Values.Where(x => x != null))
+                    foreach (var fileStream in result.Values.Where(x => x is not null))
                     {
                         fileStream.Dispose();
                     }
@@ -160,7 +160,7 @@ namespace Orc.FileSystem
                 }
                 catch (Exception)
                 {
-                    foreach (var fileStream in result.Values.Where(x => x != null))
+                    foreach (var fileStream in result.Values.Where(x => x is not null))
                     {
                         fileStream.Dispose();
                     }
