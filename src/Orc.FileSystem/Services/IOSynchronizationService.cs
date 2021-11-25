@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
+﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ProjectIOSynchronizationService.cs" company="WildGums">
 //   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
 // </copyright>
@@ -96,8 +96,8 @@ namespace Orc.FileSystem
 
                 using (await _asyncLock.LockAsync())
                 {
-                    FileSystemWatcher fileSystemWatcher;
-                    if (!_fileSystemWatchers.TryGetValue(path, out fileSystemWatcher))
+#pragma warning disable IDISP001 // Dispose created.
+                    if (!_fileSystemWatchers.TryGetValue(path, out var fileSystemWatcher))
                     {
                         Log.Debug($"Start watching path '{path}'");
 
@@ -107,6 +107,7 @@ namespace Orc.FileSystem
                         fileSystemWatcher = CreateFileSystemWatcher(basePath, syncFile);
                         _fileSystemWatchers[path] = fileSystemWatcher;
                     }
+#pragma warning restore IDISP001 // Dispose created.
                 }
             }
             catch (Exception ex)

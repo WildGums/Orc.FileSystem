@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
+﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="TemporaryFilesContext.cs" company="WildGums">
 //   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
 // </copyright>
@@ -11,7 +11,7 @@ namespace Orc.FileSystem.Tests
     using System.IO;
     using Catel.Logging;
 
-    public class TemporaryFilesContext : IDisposable
+    public sealed class TemporaryFilesContext : IDisposable
     {
         #region Constants
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();

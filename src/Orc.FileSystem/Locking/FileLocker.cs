@@ -16,7 +16,7 @@ namespace Orc.FileSystem
     using Catel.Logging;
     using Catel.Threading;
 
-    public class FileLocker : IDisposable
+    public sealed class FileLocker : IDisposable
     {
         #region Fields
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();

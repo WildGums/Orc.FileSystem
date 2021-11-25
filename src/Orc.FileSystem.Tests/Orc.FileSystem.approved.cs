@@ -48,7 +48,7 @@ namespace Orc.FileSystem
         protected FileLockScopeException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
         public FileLockScopeException(string message, System.Exception innerException) { }
     }
-    public class FileLocker : System.IDisposable
+    public sealed class FileLocker : System.IDisposable
     {
         public FileLocker(Orc.FileSystem.FileLocker existingLocker) { }
         public void Dispose() { }

@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
+﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="FileLockScope.cs" company="WildGums">
 //   Copyright (c) 2008 - 2017 WildGums. All rights reserved.
 // </copyright>
@@ -25,7 +25,9 @@ namespace Orc.FileSystem
         private readonly object _lock = new object();
         private readonly string _syncFile;
 
+#pragma warning disable IDISP006 // Implement IDisposable.
         private FileStream _fileStream;
+#pragma warning restore IDISP006 // Implement IDisposable.
 
         private int _lockAttemptCounter;
         #endregion
@@ -91,6 +93,7 @@ namespace Orc.FileSystem
                 try
                 {
                     // Note: don't use _fileService because we don't want logging in case of failure
+                    _fileStream?.Dispose();
                     _fileStream = File.Open(_syncFile, FileMode.Create, FileAccess.Write, _isReadScope ? FileShare.Delete : FileShare.None);
 
                     Log.Debug($"Locked synchronization file '{_syncFile}'");
