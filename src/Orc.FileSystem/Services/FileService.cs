@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="FileService.cs" company="WildGums">
 //   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
 // </copyright>
@@ -30,7 +30,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to create file '{fileName}'");
+                Log.Warning(ex, $"Failed to create file '{fileName}'");
 
                 throw;
             }
@@ -54,26 +54,26 @@ namespace Orc.FileSystem
                 var message = $"Failed to open file '{fileName}'";
                 if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
                 {
-                    Log.Error(ex, message);
+                    Log.Warning(ex, message);
 
                     throw;
                 }
 
                 var processes = FileLockInfo.GetProcessesLockingFile(fileName);
-                if (processes == null || !processes.Any())
+                if (processes is null || !processes.Any())
                 {                    
-                    Log.Error(ex, message);
+                    Log.Warning(ex, message);
 
                     throw;
                 }
 
-                Log.Error(message + $", locked by: {string.Join(", ", processes)}");
+                Log.Warning(message + $", locked by: {string.Join(", ", processes)}");
 
                 throw;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to open file '{fileName}'");
+                Log.Warning(ex, $"Failed to open file '{fileName}'");
 
                 throw;
             }
@@ -163,34 +163,34 @@ namespace Orc.FileSystem
 
                 if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
                 {
-                    Log.Error(ex, message);
+                    Log.Warning(ex, message);
 
                     throw;
                 }
 
                 var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
-                if (sourceLockingProcesses != null && sourceLockingProcesses.Any())
+                if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
                 {
-                    Log.Error(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
+                    Log.Warning(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
 
                     throw;
                 }
 
                 var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
-                if (destinationLockingProcesses != null && destinationLockingProcesses.Any())
+                if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
                 {
-                    Log.Error(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
+                    Log.Warning(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
 
                     throw;
                 }
 
-                Log.Error(ex, message);
+                Log.Warning(ex, message);
 
                 throw;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to copy file '{sourceFileName}' => '{destinationFileName}'");
+                Log.Warning(ex, $"Failed to copy file '{sourceFileName}' => '{destinationFileName}'");
 
                 throw;
             }
@@ -223,34 +223,34 @@ namespace Orc.FileSystem
 
                 if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
                 {
-                    Log.Error(ex, message);
+                    Log.Warning(ex, message);
 
                     throw;
                 }
 
                 var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
-                if (sourceLockingProcesses != null && sourceLockingProcesses.Any())
+                if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
                 {
-                    Log.Error(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
+                    Log.Warning(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
 
                     throw;
                 }
 
                 var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
-                if (destinationLockingProcesses != null && destinationLockingProcesses.Any())
+                if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
                 {
-                    Log.Error(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
+                    Log.Warning(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
 
                     throw;
                 }
 
-                Log.Error(ex, message);
+                Log.Warning(ex, message);
 
                 throw;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to move file '{sourceFileName}' => '{destinationFileName}'");
+                Log.Warning(ex, $"Failed to move file '{sourceFileName}' => '{destinationFileName}'");
 
                 throw;
             }
@@ -267,7 +267,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to check whether file '{fileName}' exists");
+                Log.Warning(ex, $"Failed to check whether file '{fileName}' exists");
 
                 throw;
             }
@@ -293,20 +293,20 @@ namespace Orc.FileSystem
                 var message = $"Failed to delete file '{fileName}'";
                 if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
                 {
-                    Log.Error(ex, message);
+                    Log.Warning(ex, message);
 
                     throw;
                 }
 
                 var processes = FileLockInfo.GetProcessesLockingFile(fileName);
-                if (processes == null || !processes.Any())
+                if (processes is null || !processes.Any())
                 {
-                    Log.Error(ex, message);
+                    Log.Warning(ex, message);
 
                     throw;
                 }
 
-                Log.Error(message + $", locked by: {string.Join(", ", processes)}");
+                Log.Warning(message + $", locked by: {string.Join(", ", processes)}");
 
                 throw;
             }

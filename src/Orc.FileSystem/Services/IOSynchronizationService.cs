@@ -96,8 +96,8 @@ namespace Orc.FileSystem
 
                 using (await _asyncLock.LockAsync())
                 {
-                    FileSystemWatcher fileSystemWatcher;
-                    if (!_fileSystemWatchers.TryGetValue(path, out fileSystemWatcher))
+#pragma warning disable IDISP001 // Dispose created.
+                    if (!_fileSystemWatchers.TryGetValue(path, out var fileSystemWatcher))
                     {
                         Log.Debug($"Start watching path '{path}'");
 
@@ -107,11 +107,12 @@ namespace Orc.FileSystem
                         fileSystemWatcher = CreateFileSystemWatcher(basePath, syncFile);
                         _fileSystemWatchers[path] = fileSystemWatcher;
                     }
+#pragma warning restore IDISP001 // Dispose created.
                 }
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to start watching path '{path}'");
+                Log.Warning(ex, $"Failed to start watching path '{path}'");
             }
         }
 
@@ -142,7 +143,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to stop watching path '{path}'");
+                Log.Warning(ex, $"Failed to stop watching path '{path}'");
             }
         }
 
@@ -185,7 +186,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to execute reading task for '{projectLocation}'");
+                Log.Warning(ex, $"Failed to execute reading task for '{projectLocation}'");
                 throw;
             }
         }
@@ -229,7 +230,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to execute writing task for '{projectLocation}'");
+                Log.Warning(ex, $"Failed to execute writing task for '{projectLocation}'");
                 throw;
             }
         }
@@ -260,7 +261,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to execute pending reading for '{path}'");
+                Log.Warning(ex, $"Failed to execute pending reading for '{path}'");
                 throw;
             }
         }
@@ -280,7 +281,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to execute pending writing for '{path}'");
+                Log.Warning(ex, $"Failed to execute pending writing for '{path}'");
                 throw;
             }
         }
@@ -380,7 +381,7 @@ namespace Orc.FileSystem
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to handle FileSystemWatcher event e.ChangeType: '{e.ChangeType}', e.FullPath: '{e.FullPath}'");
+                Log.Warning(ex, $"Failed to handle FileSystemWatcher event e.ChangeType: '{e.ChangeType}', e.FullPath: '{e.FullPath}'");
             }
         }
 
@@ -423,7 +424,7 @@ namespace Orc.FileSystem
                         }
                         catch (Exception readException)
                         {
-                            Log.Error(readException, $"Fatal error in executing reading for '{path}': '{readException.Message}'");
+                            Log.Warning(readException, $"Fatal error in executing reading for '{path}': '{readException.Message}'");
 
                             throw new IOSynchronizationException($"Fatal error in executing reading for '{path}'", readException);
                         }
@@ -498,7 +499,7 @@ namespace Orc.FileSystem
                         }
                         catch (Exception readException)
                         {
-                            Log.Error(readException, $"Fatal error in executing writing for '{path}': '{readException.Message}'");
+                            Log.Warning(readException, $"Fatal error in executing writing for '{path}': '{readException.Message}'");
 
                             throw new IOSynchronizationException($"Fatal error in executing writing for '{path}'", readException);
                         }

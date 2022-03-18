@@ -11,7 +11,7 @@ namespace Orc.FileSystem.Tests
     using System.IO;
     using Catel.Logging;
 
-    public class TemporaryFilesContext : IDisposable
+    public sealed class TemporaryFilesContext : IDisposable
     {
         #region Constants
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
@@ -50,7 +50,7 @@ namespace Orc.FileSystem.Tests
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Failed to delete temporary files");
+                Log.Warning(ex, "Failed to delete temporary files");
             }
         }
         #endregion

@@ -1,6 +1,6 @@
 ﻿[assembly: System.Resources.NeutralResourcesLanguage("en-US")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Orc.FileSystem.Tests")]
-[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v5.0", FrameworkDisplayName="")]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v6.0", FrameworkDisplayName="")]
 public static class ModuleInitializer
 {
     public static void Initialize() { }
@@ -48,7 +48,7 @@ namespace Orc.FileSystem
         protected FileLockScopeException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
         public FileLockScopeException(string message, System.Exception innerException) { }
     }
-    public class FileLocker : System.IDisposable
+    public sealed class FileLocker : System.IDisposable
     {
         public FileLocker(Orc.FileSystem.FileLocker existingLocker) { }
         public void Dispose() { }

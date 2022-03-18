@@ -25,7 +25,9 @@ namespace Orc.FileSystem
         private readonly object _lock = new object();
         private readonly string _syncFile;
 
+#pragma warning disable IDISP006 // Implement IDisposable.
         private FileStream _fileStream;
+#pragma warning restore IDISP006 // Implement IDisposable.
 
         private int _lockAttemptCounter;
         #endregion
@@ -54,7 +56,7 @@ namespace Orc.FileSystem
             {
                 lock (_lock)
                 {
-                    return _fileStream != null;
+                    return _fileStream is not null;
                 }
             }
         }
@@ -91,6 +93,7 @@ namespace Orc.FileSystem
                 try
                 {
                     // Note: don't use _fileService because we don't want logging in case of failure
+                    _fileStream?.Dispose();
                     _fileStream = File.Open(_syncFile, FileMode.Create, FileAccess.Write, _isReadScope ? FileShare.Delete : FileShare.None);
 
                     Log.Debug($"Locked synchronization file '{_syncFile}'");
@@ -101,7 +104,9 @@ namespace Orc.FileSystem
 
                     if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
                     {
-                        throw Log.ErrorAndCreateException<FileLockScopeException>(ex, $"Failed to lock synchronization file '{_syncFile}'");
+                        Log.Warning(ex, $"Failed to lock synchronization file '{_syncFile}'");
+
+                        throw new FileLockScopeException($"Failed to lock synchronization file '{_syncFile}'", ex);
                     }
 
                     if (_lockAttemptCounter > 0)
@@ -110,7 +115,7 @@ namespace Orc.FileSystem
                     }
 
                     var processes = FileLockInfo.GetProcessesLockingFile(_syncFile);
-                    if (processes == null || !processes.Any())
+                    if (processes is null || !processes.Any())
                     {
                         Log.Debug(ex, $"First attempt to lock synchronization file '{_syncFile}' was unsuccessful. " +
                                      "Possibly locked by unknown application. Will keep retrying in the background.");
@@ -150,7 +155,7 @@ namespace Orc.FileSystem
                 DeleteSyncFile();
             }
 
-            if (_fileStream != null)
+            if (_fileStream is not null)
             {
                 _fileStream.Dispose();
                 _fileStream = null;
@@ -180,7 +185,7 @@ namespace Orc.FileSystem
             catch (IOException ex)
             {
                 var processes = FileLockInfo.GetProcessesLockingFile(_syncFile);
-                if (processes == null || !processes.Any())
+                if (processes is null || !processes.Any())
                 {
                     Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}'");
                 }
