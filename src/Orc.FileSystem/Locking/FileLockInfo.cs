@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FileLockInfo.cs" company="WildGums">
-//   Copyright (c) 2008 - 2017 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.Runtime.InteropServices;
@@ -15,16 +8,13 @@ namespace Orc.FileSystem
     {
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-        #region Constants
         // maximum character count of application friendly name. 
         private const int CCH_RM_MAX_APP_NAME = 255;
         // maximum character count of service short name. 
         private const int CCH_RM_MAX_SVC_NAME = 63;
         // A system restart is not required. 
         private const int RmRebootReasonNone = 0;
-        #endregion
 
-        #region Methods
         /// <summary> 
         /// Registers resources to a Restart Manager session. The Restart Manager uses  
         /// the list of resources registered with the session to determine which  
@@ -50,10 +40,12 @@ namespace Orc.FileSystem
         /// </returns> 
         [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int RmRegisterResources(uint pSessionHandle,
-            UInt32 nFiles, string[] rgsFilenames,
+            UInt32 nFiles, 
+            string[]? rgsFilenames,
             UInt32 nApplications,
-            [In] RM_UNIQUE_PROCESS[] rgApplications,
-            UInt32 nServices, string[] rgsServiceNames);
+            [In] RM_UNIQUE_PROCESS[]? rgApplications,
+            UInt32 nServices, 
+            string[]? rgsServiceNames);
 
         /// <summary> 
         /// Starts a new Restart Manager session. A maximum of 64 Restart Manager  
@@ -120,7 +112,6 @@ namespace Orc.FileSystem
             [In, Out] RM_PROCESS_INFO[] rgAffectedApps,
             ref uint lpdwRebootReasons);
 
-
         public static string[] GetProcessesLockingFile(string fileName)
         {
             var sessionkey = Guid.NewGuid().ToString();
@@ -172,9 +163,7 @@ namespace Orc.FileSystem
 
             return new string[] { };
         }
-        #endregion
 
-        #region Nested type: RM_APP_TYPE
         /// <summary> 
         /// Specifies the type of application that is described by 
         /// the RM_PROCESS_INFO structure. 
@@ -199,9 +188,7 @@ namespace Orc.FileSystem
             // a process cannot be shut down. 
             RmCritical = 1000
         }
-        #endregion
 
-        #region Nested type: RM_PROCESS_INFO
         /// <summary> 
         /// Describes an application that is to be registered with the Restart Manager. 
         /// </summary> 
@@ -231,9 +218,7 @@ namespace Orc.FileSystem
             // Restart Manager; otherwise, FALSE. 
             [MarshalAs(UnmanagedType.Bool)] public readonly bool Restartable;
         }
-        #endregion
 
-        #region Nested type: RM_UNIQUE_PROCESS
         /// <summary> 
         /// Uniquely identifies a process by its PID and the time the process began.  
         /// An array of RM_UNIQUE_PROCESS structures can be passed 
@@ -247,6 +232,5 @@ namespace Orc.FileSystem
             // The creation time of the process. 
             public readonly System.Runtime.InteropServices.ComTypes.FILETIME ProcessStartTime;
         }
-        #endregion
     }
 }

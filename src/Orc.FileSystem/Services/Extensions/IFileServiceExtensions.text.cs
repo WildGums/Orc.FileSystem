@@ -1,11 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IFileServiceExtensions.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.IO;
@@ -17,7 +10,7 @@ namespace Orc.FileSystem
     {
         public static string ReadAllText(this IFileService fileService, string fileName)
         {
-            Argument.IsNotNull(() => fileService);
+            ArgumentNullException.ThrowIfNull(fileService);
             Argument.IsNotNullOrWhitespace(() => fileName);
 
             try
@@ -43,7 +36,7 @@ namespace Orc.FileSystem
 
         public static async Task<string> ReadAllTextAsync(this IFileService fileService, string fileName)
         {
-            Argument.IsNotNull(() => fileService);
+            ArgumentNullException.ThrowIfNull(fileService);
             Argument.IsNotNullOrWhitespace(() => fileName);
 
             try
@@ -69,7 +62,7 @@ namespace Orc.FileSystem
 
         public static void WriteAllText(this IFileService fileService, string fileName, string text)
         {
-            Argument.IsNotNull(() => fileService);
+            ArgumentNullException.ThrowIfNull(fileService);
             Argument.IsNotNullOrWhitespace(() => fileName);
 
             try
@@ -94,7 +87,7 @@ namespace Orc.FileSystem
 
         public static async Task WriteAllTextAsync(this IFileService fileService, string fileName, string text)
         {
-            Argument.IsNotNull(() => fileService);
+            ArgumentNullException.ThrowIfNull(fileService);
             Argument.IsNotNullOrWhitespace(() => fileName);
 
             try

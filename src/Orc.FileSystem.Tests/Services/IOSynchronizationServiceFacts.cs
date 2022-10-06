@@ -252,7 +252,7 @@ namespace Orc.FileSystem.Tests.Services
                     {
                         await File.WriteAllTextAsync(fileName, "12345");
 
-                        await TaskShim.Delay(2500);
+                        await Task.Delay(2500);
 
                         return true;
                     });

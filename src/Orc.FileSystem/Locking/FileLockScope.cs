@@ -1,12 +1,6 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FileLockScope.cs" company="WildGums">
-//   Copyright (c) 2008 - 2017 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
+    using System;
     using System.IO;
     using System.Linq;
     using Catel;
@@ -14,26 +8,23 @@ namespace Orc.FileSystem
 
     public class FileLockScope : Disposable
     {
-        #region Constants
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
-        #endregion
 
-        #region Fields
-        private readonly IFileService _fileService;
+        private static readonly FileLockScope _dummyLock = new FileLockScope();
+
+        private readonly IFileService? _fileService;
         private readonly bool _isReadScope;
 
         private readonly object _lock = new object();
-        private readonly string _syncFile;
+        private readonly string? _syncFile;
 
 #pragma warning disable IDISP006 // Implement IDisposable.
-        private FileStream _fileStream;
+        private FileStream? _fileStream;
 #pragma warning restore IDISP006 // Implement IDisposable.
 
         private int _lockAttemptCounter;
-        #endregion
 
-        #region Constructors
-        public FileLockScope()
+        private FileLockScope()
         {
             // DummyLock
         }
@@ -41,15 +32,13 @@ namespace Orc.FileSystem
         public FileLockScope(bool isReadScope, string syncFile, IFileService fileService)
         {
             Argument.IsNotNullOrWhitespace(() => syncFile);
-            Argument.IsNotNull(() => fileService);
+            ArgumentNullException.ThrowIfNull(fileService);
 
             _isReadScope = isReadScope;
             _syncFile = syncFile;
             _fileService = fileService;
         }
-        #endregion
 
-        #region Properties
         private bool HasStream
         {
             get
@@ -63,10 +52,16 @@ namespace Orc.FileSystem
 
         private bool IsDummyLock => string.IsNullOrWhiteSpace(_syncFile);
 
-        public bool NotifyOnRelease { get; set; }
-        #endregion
+        public static FileLockScope DummyLock
+        {
+            get
+            {
+                return _dummyLock;
+            }
+        }
 
-        #region Methods
+        public bool NotifyOnRelease { get; set; }
+
         public void WriteDummyContent()
         {
             if (IsDummyLock)
@@ -85,7 +80,8 @@ namespace Orc.FileSystem
         {
             lock (_lock)
             {
-                if (IsDummyLock || HasStream)
+                var syncFile = _syncFile;
+                if (syncFile is null || IsDummyLock || HasStream)
                 {
                     return true;
                 }
@@ -94,19 +90,18 @@ namespace Orc.FileSystem
                 {
                     // Note: don't use _fileService because we don't want logging in case of failure
                     _fileStream?.Dispose();
-                    _fileStream = File.Open(_syncFile, FileMode.Create, FileAccess.Write, _isReadScope ? FileShare.Delete : FileShare.None);
+                    _fileStream = File.Open(syncFile, FileMode.Create, FileAccess.Write, _isReadScope ? FileShare.Delete : FileShare.None);
 
-                    Log.Debug($"Locked synchronization file '{_syncFile}'");
+                    Log.Debug($"Locked synchronization file '{syncFile}'");
                 }
                 catch (IOException ex)
                 {
                     var hResult = (uint)ex.GetHResult();
-
                     if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
                     {
-                        Log.Warning(ex, $"Failed to lock synchronization file '{_syncFile}'");
+                        Log.Warning(ex, $"Failed to lock synchronization file '{syncFile}'");
 
-                        throw new FileLockScopeException($"Failed to lock synchronization file '{_syncFile}'", ex);
+                        throw new FileLockScopeException($"Failed to lock synchronization file '{syncFile}'", ex);
                     }
 
                     if (_lockAttemptCounter > 0)
@@ -114,15 +109,15 @@ namespace Orc.FileSystem
                         return false;
                     }
 
-                    var processes = FileLockInfo.GetProcessesLockingFile(_syncFile);
+                    var processes = FileLockInfo.GetProcessesLockingFile(syncFile);
                     if (processes is null || !processes.Any())
                     {
-                        Log.Debug(ex, $"First attempt to lock synchronization file '{_syncFile}' was unsuccessful. " +
+                        Log.Debug(ex, $"First attempt to lock synchronization file '{syncFile}' was unsuccessful. " +
                                      "Possibly locked by unknown application. Will keep retrying in the background.");
                     }
                     else
                     {
-                        Log.Debug($"First attempt to lock synchronization file '{_syncFile}' was unsuccessful. " +
+                        Log.Debug($"First attempt to lock synchronization file '{syncFile}' was unsuccessful. " +
                                  $"Locked by: {string.Join(", ", processes)}. Will keep retrying in the background.");
                     }
 
@@ -173,28 +168,39 @@ namespace Orc.FileSystem
 
         private void DeleteSyncFile()
         {
+            var syncFile = _syncFile;
+            if (syncFile is null)
+            {
+                return;
+            }
+
             try
             {
-                if (_fileService.Exists(_syncFile))
+                var fileService = _fileService;
+                if (fileService is null)
                 {
-                    _fileService.Delete(_syncFile);
+                    return;
+                }
 
-                    Log.Debug($"Deleted synchronization file '{_syncFile}'");
+                if (fileService.Exists(syncFile))
+                {
+                    fileService.Delete(syncFile);
+
+                    Log.Debug($"Deleted synchronization file '{syncFile}'");
                 }
             }
             catch (IOException ex)
             {
-                var processes = FileLockInfo.GetProcessesLockingFile(_syncFile);
+                var processes = FileLockInfo.GetProcessesLockingFile(syncFile);
                 if (processes is null || !processes.Any())
                 {
-                    Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}'");
+                    Log.Warning(ex, $"Failed to delete synchronization file '{syncFile}'");
                 }
                 else
                 {
-                    Log.Warning(ex, $"Failed to delete synchronization file '{_syncFile}' locked by: {string.Join(", ", processes)}");
+                    Log.Warning(ex, $"Failed to delete synchronization file '{syncFile}' locked by: {string.Join(", ", processes)}");
                 }
             }
         }
-#endregion
     }
 }

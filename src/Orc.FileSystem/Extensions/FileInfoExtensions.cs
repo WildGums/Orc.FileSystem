@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FileInfoExtensions.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.Collections.Generic;
@@ -17,12 +10,11 @@ namespace Orc.FileSystem
     {
         private const int TimerTickIntervalInMilliseconds = 50;
 
-        #region Methods
         public static async Task EnsureFilesNotBusyAsync(this IEnumerable<FileInfo> files)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<object?>();
 
-            Timer timer = null;
+            Timer? timer = null;
 
             var handler = new TimerCallback(x =>
             {
@@ -42,7 +34,7 @@ namespace Orc.FileSystem
                     }
                     catch (IOException)
                     {
-                        timer.Change(TimerTickIntervalInMilliseconds, Timeout.Infinite);
+                        timer?.Change(TimerTickIntervalInMilliseconds, Timeout.Infinite);
                     }
                     catch (Exception ex)
                     {
@@ -59,6 +51,5 @@ namespace Orc.FileSystem
                 await tcs.Task;
             }
         }
-        #endregion
     }
 }

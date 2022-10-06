@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ProjectIOSynchronizationService.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.Collections.Concurrent;
@@ -17,18 +10,14 @@ namespace Orc.FileSystem
     using Catel.Logging;
     using Catel.Scoping;
     using Catel.Threading;
-    using Path = Catel.IO.Path;
 
     public class IOSynchronizationService : IIOSynchronizationService
     {
-        #region Constants
         private const string DefaultSyncFile = "__ofs.sync";
 
         private static readonly TimeSpan DefaultDelayBetweenChecks = TimeSpan.FromMilliseconds(50);
         private static readonly TimeSpan DefaultDelayAfterWriteOperations = TimeSpan.FromMilliseconds(50);
-        #endregion
 
-        #region Fields
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
         private readonly IFileService _fileService;
@@ -44,13 +33,11 @@ namespace Orc.FileSystem
         private readonly ConcurrentDictionary<string, Func<string, Task<bool>>> _writingCallbacks = new ConcurrentDictionary<string, Func<string, Task<bool>>>();
 
         private readonly HashSet<string> _syncFilesInRead = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
-        #endregion
 
-        #region Constructors
         public IOSynchronizationService(IFileService fileService, IDirectoryService directoryService)
         {
-            Argument.IsNotNull(() => fileService);
-            Argument.IsNotNull(() => directoryService);
+            ArgumentNullException.ThrowIfNull(fileService);
+            ArgumentNullException.ThrowIfNull(directoryService);
 
             _fileService = fileService;
             _directoryService = directoryService;
@@ -58,14 +45,12 @@ namespace Orc.FileSystem
             DelayBetweenChecks = DefaultDelayBetweenChecks;
             DelayAfterWriteOperations = DefaultDelayAfterWriteOperations;
         }
-        #endregion
 
-        #region IIOSynchronizationService members
         public TimeSpan DelayBetweenChecks { get; set; }
 
         public TimeSpan DelayAfterWriteOperations { get; set; }
 
-        public event EventHandler<PathEventArgs> RefreshRequired;
+        public event EventHandler<PathEventArgs>? RefreshRequired;
 
         public IDisposable AcquireReadLock(string path)
         {
@@ -127,8 +112,7 @@ namespace Orc.FileSystem
                     _basePathsCache.Remove(path);
                     _syncFilesCache.Remove(path);
 
-                    FileSystemWatcher fileSystemWatcher;
-                    if (_fileSystemWatchers.TryGetValue(path, out fileSystemWatcher))
+                    if (_fileSystemWatchers.TryGetValue(path, out var fileSystemWatcher))
                     {
                         Log.Debug($"Stop watching path '{path}'");
 
@@ -234,9 +218,7 @@ namespace Orc.FileSystem
                 throw;
             }
         }
-        #endregion
 
-        #region Methods
         protected virtual string ResolveObservedFileName(string path)
         {
             Argument.IsNotNullOrWhitespace(() => path);
@@ -256,7 +238,7 @@ namespace Orc.FileSystem
                 {
                     await ExecuteReadingIfPossibleAsync(path);
 
-                    await TaskShim.Delay(DelayBetweenChecks);
+                    await Task.Delay(DelayBetweenChecks);
                 }
             }
             catch (Exception ex)
@@ -276,7 +258,7 @@ namespace Orc.FileSystem
                 {
                     await ExecuteWritingIfPossibleAsync(path);
 
-                    await TaskShim.Delay(DelayBetweenChecks);
+                    await Task.Delay(DelayBetweenChecks);
                 }
             }
             catch (Exception ex)
@@ -290,8 +272,7 @@ namespace Orc.FileSystem
         {
             Argument.IsNotNullOrWhitespace(() => path);
 
-            string syncFile;
-            if (_syncFilesCache.TryGetValue(path, out syncFile))
+            if (_syncFilesCache.TryGetValue(path, out var syncFile))
             {
                 return syncFile;
             }
@@ -313,15 +294,12 @@ namespace Orc.FileSystem
         {
             Argument.IsNotNullOrWhitespace(() => path);
 
-            string basePath;
-            if (_basePathsCache.TryGetValue(path, out basePath))
+            if (_basePathsCache.TryGetValue(path, out var basePath))
             {
                 return basePath;
             }
 
-            basePath = _directoryService.Exists(path)
-                ? path
-                : Path.GetParentDirectory(path);
+            basePath = _directoryService.Exists(path) ? path : (Path.GetDirectoryName(path) ?? ".");
 
             _basePathsCache[path] = basePath;
             return basePath;
@@ -387,7 +365,7 @@ namespace Orc.FileSystem
 
         private async Task ExecuteReadingIfPossibleAsync(string path)
         {
-            Func<string, Task<bool>> read;
+            Func<string, Task<bool>>? read;
 
             var syncFile = GetSyncFileByPath(path);
             using (await _asyncLock.LockAsync())
@@ -470,7 +448,7 @@ namespace Orc.FileSystem
 
         private async Task ExecuteWritingIfPossibleAsync(string path)
         {
-            Func<string, Task<bool>> write;
+            Func<string, Task<bool>>? write;
 
             using (await _asyncLock.LockAsync())
             {
@@ -515,7 +493,7 @@ namespace Orc.FileSystem
                             Log.Debug($"Succeeded to execute write actions to path '{path}', using a delay of '{delay}'");
 
                             // Sometimes we need a bit of delay in order to write files to disk
-                            await TaskShim.Delay(delay);
+                            await Task.Delay(delay);
 
                             scopeObject.WriteDummyContent();
                         }
@@ -558,10 +536,7 @@ namespace Orc.FileSystem
 
             return !string.Equals(path, syncFile)
                     ? ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(isReadScope, syncFile, _fileService))
-                    : ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope());
+                    : ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => FileLockScope.DummyLock);
         }
-
-
-        #endregion
     }
 }
