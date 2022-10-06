@@ -143,7 +143,6 @@
                     }
 
                     result.Clear();
-                    result = null;
 
                     break;
                 }

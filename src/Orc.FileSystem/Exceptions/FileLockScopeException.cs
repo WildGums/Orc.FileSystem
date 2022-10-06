@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FileLockScopeException.cs" company="WildGums">
-//   Copyright (c) 2008 - 2017 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.Runtime.Serialization;
@@ -13,7 +6,6 @@ namespace Orc.FileSystem
     [Serializable]
     public class FileLockScopeException : Exception
     {
-        #region Constructors
         public FileLockScopeException()
         {
 
@@ -34,6 +26,5 @@ namespace Orc.FileSystem
         {
 
         }
-        #endregion
     }
 }

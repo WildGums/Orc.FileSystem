@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IDirectoryServiceExtensions.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.IO;
@@ -19,8 +12,8 @@ namespace Orc.FileSystem
 
         public static bool IsEmpty(this IDirectoryService directoryService, string path)
         {
-            Argument.IsNotNull(() => directoryService);
-            Argument.IsNotNull(() => path);
+            ArgumentNullException.ThrowIfNull(directoryService);
+            ArgumentNullException.ThrowIfNull(path);
 
             if (!directoryService.Exists(path))
             {
@@ -48,8 +41,8 @@ namespace Orc.FileSystem
 
         public static ulong GetSize(this IDirectoryService directoryService, string path)
         {
-            Argument.IsNotNull(() => directoryService);
-            Argument.IsNotNull(() => path);
+            ArgumentNullException.ThrowIfNull(directoryService);
+            ArgumentNullException.ThrowIfNull(path);
 
             ulong size = 0L;
 

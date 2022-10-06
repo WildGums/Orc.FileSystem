@@ -1,11 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IFileServiceExtensions.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.Collections.Generic;
@@ -20,7 +13,7 @@ namespace Orc.FileSystem
     {
         public static string[] ReadAllLines(this IFileService fileService, string fileName)
         {
-            Argument.IsNotNull(() => fileService);
+            ArgumentNullException.ThrowIfNull(fileService);
             Argument.IsNotNullOrWhitespace(() => fileName);
 
             try
@@ -48,7 +41,7 @@ namespace Orc.FileSystem
 
         public static async Task<string[]> ReadAllLinesAsync(this IFileService fileService, string fileName)
         {
-            Argument.IsNotNull(() => fileService);
+            ArgumentNullException.ThrowIfNull(fileService);
             Argument.IsNotNullOrWhitespace(() => fileName);
 
             try
@@ -74,12 +67,6 @@ namespace Orc.FileSystem
             }
         }
 
-        [ObsoleteEx(RemoveInVersion = "5.0", TreatAsErrorFromVersion = "4.1")]
-        public static void WriteAllLines(this IFileService fileService, string fileName, string[] lines)
-        {
-            WriteAllLines(fileService, fileName, (IEnumerable<string>)lines);
-        }
-
         public static Task WriteAllLinesAsync(this IFileService fileService, string fileName, string[] lines)
         {
             return WriteAllLinesAsync(fileService, fileName, (IEnumerable<string>)lines);
@@ -87,7 +74,7 @@ namespace Orc.FileSystem
 
         public static void WriteAllLines(this IFileService fileService, string fileName, IEnumerable<string> lines)
         {
-            Argument.IsNotNull(() => fileService);
+            ArgumentNullException.ThrowIfNull(fileService);
             Argument.IsNotNullOrWhitespace(() => fileName);
 
             var count = 0;
@@ -119,7 +106,7 @@ namespace Orc.FileSystem
 
         public static async Task WriteAllLinesAsync(this IFileService fileService, string fileName, IEnumerable<string> lines)
         {
-            Argument.IsNotNull(() => fileService);
+            ArgumentNullException.ThrowIfNull(fileService);
             Argument.IsNotNullOrWhitespace(() => fileName);
 
             var count = 0;

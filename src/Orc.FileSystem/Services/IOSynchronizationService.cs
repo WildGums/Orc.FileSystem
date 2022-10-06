@@ -13,14 +13,11 @@
 
     public class IOSynchronizationService : IIOSynchronizationService
     {
-        #region Constants
         private const string DefaultSyncFile = "__ofs.sync";
 
         private static readonly TimeSpan DefaultDelayBetweenChecks = TimeSpan.FromMilliseconds(50);
         private static readonly TimeSpan DefaultDelayAfterWriteOperations = TimeSpan.FromMilliseconds(50);
-        #endregion
 
-        #region Fields
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
         private readonly IFileService _fileService;
@@ -36,13 +33,11 @@
         private readonly ConcurrentDictionary<string, Func<string, Task<bool>>> _writingCallbacks = new ConcurrentDictionary<string, Func<string, Task<bool>>>();
 
         private readonly HashSet<string> _syncFilesInRead = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
-        #endregion
 
-        #region Constructors
         public IOSynchronizationService(IFileService fileService, IDirectoryService directoryService)
         {
-            Argument.IsNotNull(() => fileService);
-            Argument.IsNotNull(() => directoryService);
+            ArgumentNullException.ThrowIfNull(fileService);
+            ArgumentNullException.ThrowIfNull(directoryService);
 
             _fileService = fileService;
             _directoryService = directoryService;
@@ -50,14 +45,12 @@
             DelayBetweenChecks = DefaultDelayBetweenChecks;
             DelayAfterWriteOperations = DefaultDelayAfterWriteOperations;
         }
-        #endregion
 
-        #region IIOSynchronizationService members
         public TimeSpan DelayBetweenChecks { get; set; }
 
         public TimeSpan DelayAfterWriteOperations { get; set; }
 
-        public event EventHandler<PathEventArgs> RefreshRequired;
+        public event EventHandler<PathEventArgs>? RefreshRequired;
 
         public IDisposable AcquireReadLock(string path)
         {
@@ -119,8 +112,7 @@
                     _basePathsCache.Remove(path);
                     _syncFilesCache.Remove(path);
 
-                    FileSystemWatcher fileSystemWatcher;
-                    if (_fileSystemWatchers.TryGetValue(path, out fileSystemWatcher))
+                    if (_fileSystemWatchers.TryGetValue(path, out var fileSystemWatcher))
                     {
                         Log.Debug($"Stop watching path '{path}'");
 
@@ -226,9 +218,7 @@
                 throw;
             }
         }
-        #endregion
 
-        #region Methods
         protected virtual string ResolveObservedFileName(string path)
         {
             Argument.IsNotNullOrWhitespace(() => path);
@@ -282,8 +272,7 @@
         {
             Argument.IsNotNullOrWhitespace(() => path);
 
-            string syncFile;
-            if (_syncFilesCache.TryGetValue(path, out syncFile))
+            if (_syncFilesCache.TryGetValue(path, out var syncFile))
             {
                 return syncFile;
             }
@@ -305,15 +294,12 @@
         {
             Argument.IsNotNullOrWhitespace(() => path);
 
-            string basePath;
-            if (_basePathsCache.TryGetValue(path, out basePath))
+            if (_basePathsCache.TryGetValue(path, out var basePath))
             {
                 return basePath;
             }
 
-            basePath = _directoryService.Exists(path)
-                ? path
-                : Path.GetDirectoryName(path);
+            basePath = _directoryService.Exists(path) ? path : (Path.GetDirectoryName(path) ?? ".");
 
             _basePathsCache[path] = basePath;
             return basePath;
@@ -379,7 +365,7 @@
 
         private async Task ExecuteReadingIfPossibleAsync(string path)
         {
-            Func<string, Task<bool>> read;
+            Func<string, Task<bool>>? read;
 
             var syncFile = GetSyncFileByPath(path);
             using (await _asyncLock.LockAsync())
@@ -462,7 +448,7 @@
 
         private async Task ExecuteWritingIfPossibleAsync(string path)
         {
-            Func<string, Task<bool>> write;
+            Func<string, Task<bool>>? write;
 
             using (await _asyncLock.LockAsync())
             {
@@ -550,10 +536,7 @@
 
             return !string.Equals(path, syncFile)
                     ? ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope(isReadScope, syncFile, _fileService))
-                    : ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => new FileLockScope());
+                    : ScopeManager<FileLockScope>.GetScopeManager(scopeName, () => FileLockScope.DummyLock);
         }
-
-
-        #endregion
     }
 }

@@ -1,11 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DirectoryService.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.IO;
@@ -20,7 +13,7 @@ namespace Orc.FileSystem
 
         public DirectoryService(IFileService fileService)
         {
-            Argument.IsNotNull(() => fileService);
+            ArgumentNullException.ThrowIfNull(fileService);
 
             _fileService = fileService;
         }
@@ -106,7 +99,7 @@ namespace Orc.FileSystem
                 foreach (var subDirectory in subDirectories)
                 {
                     var subDirectoryName = Path.GetDirectoryName(subDirectory);
-                    var destinationSubDirectory = Path.Combine(destinationPath, subDirectoryName);
+                    var destinationSubDirectory = Path.Combine(destinationPath, subDirectoryName ?? string.Empty);
 
                     Copy(subDirectory, destinationSubDirectory, copySubDirs, overwriteExisting);
                 }

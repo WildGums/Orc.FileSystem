@@ -32,9 +32,9 @@ namespace Orc.FileSystem
     }
     public class FileLockScope : Catel.Disposable
     {
-        public FileLockScope() { }
         public FileLockScope(bool isReadScope, string syncFile, Orc.FileSystem.IFileService fileService) { }
         public bool NotifyOnRelease { get; set; }
+        public static Orc.FileSystem.FileLockScope DummyLock { get; }
         protected override void DisposeManaged() { }
         public bool Lock() { }
         public void Unlock() { }
@@ -106,8 +106,6 @@ namespace Orc.FileSystem
         public static void WriteAllBytes(this Orc.FileSystem.IFileService fileService, string fileName, byte[] bytes) { }
         public static System.Threading.Tasks.Task WriteAllBytesAsync(this Orc.FileSystem.IFileService fileService, string fileName, byte[] bytes) { }
         public static void WriteAllLines(this Orc.FileSystem.IFileService fileService, string fileName, System.Collections.Generic.IEnumerable<string> lines) { }
-        [System.Obsolete("Will be removed in version 5.0.0.", true)]
-        public static void WriteAllLines(this Orc.FileSystem.IFileService fileService, string fileName, string[] lines) { }
         public static System.Threading.Tasks.Task WriteAllLinesAsync(this Orc.FileSystem.IFileService fileService, string fileName, System.Collections.Generic.IEnumerable<string> lines) { }
         public static System.Threading.Tasks.Task WriteAllLinesAsync(this Orc.FileSystem.IFileService fileService, string fileName, string[] lines) { }
         public static void WriteAllText(this Orc.FileSystem.IFileService fileService, string fileName, string text) { }
@@ -117,7 +115,7 @@ namespace Orc.FileSystem
     {
         System.TimeSpan DelayAfterWriteOperations { get; set; }
         System.TimeSpan DelayBetweenChecks { get; set; }
-        event System.EventHandler<Orc.FileSystem.PathEventArgs> RefreshRequired;
+        event System.EventHandler<Orc.FileSystem.PathEventArgs>? RefreshRequired;
         System.IDisposable AcquireReadLock(string path);
         System.IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true);
         System.Threading.Tasks.Task ExecuteReadingAsync(string projectLocation, System.Func<string, System.Threading.Tasks.Task<bool>> readAsync);
@@ -138,7 +136,7 @@ namespace Orc.FileSystem
         public IOSynchronizationService(Orc.FileSystem.IFileService fileService, Orc.FileSystem.IDirectoryService directoryService) { }
         public System.TimeSpan DelayAfterWriteOperations { get; set; }
         public System.TimeSpan DelayBetweenChecks { get; set; }
-        public event System.EventHandler<Orc.FileSystem.PathEventArgs> RefreshRequired;
+        public event System.EventHandler<Orc.FileSystem.PathEventArgs>? RefreshRequired;
         public System.IDisposable AcquireReadLock(string path) { }
         public System.IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true) { }
         public System.Threading.Tasks.Task ExecuteReadingAsync(string projectLocation, System.Func<string, System.Threading.Tasks.Task<bool>> readAsync) { }

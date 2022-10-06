@@ -1,22 +1,14 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="StreamExtensions.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.IO;
     using System.Threading.Tasks;
-    using Catel;
 
     public static class StreamExtensions
     {
         public static byte[] ReadAllBytes(this Stream stream)
         {
-            Argument.IsNotNull(() => stream);
+            ArgumentNullException.ThrowIfNull(stream);
 
             const int BufferSize = 2048;
 
@@ -41,7 +33,7 @@ namespace Orc.FileSystem
 
         public static async Task<byte[]> ReadAllBytesAsync(this Stream stream)
         {
-            Argument.IsNotNull(() => stream);
+            ArgumentNullException.ThrowIfNull(stream);
 
             const int BufferSize = 2048;
 
