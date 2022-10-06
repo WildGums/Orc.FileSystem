@@ -1,16 +1,10 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FileLocker.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Catel;
     using Catel.Logging;
@@ -18,7 +12,6 @@ namespace Orc.FileSystem
 
     public sealed class FileLocker : IDisposable
     {
-        #region Fields
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
         private static readonly Dictionary<string, FileStream> Locks = new Dictionary<string, FileStream>(StringComparer.OrdinalIgnoreCase);
@@ -31,16 +24,14 @@ namespace Orc.FileSystem
         private readonly HashSet<string> _internalLocks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private bool _isDisposed;
-        #endregion
 
-        #region Constructors
         public FileLocker(FileLocker existingLocker)
         {
+            ArgumentNullException.ThrowIfNull(existingLocker);
+
             _existingLocker = existingLocker;
         }
-        #endregion
 
-        #region IDisposable Members
         public void Dispose()
         {
             if (_isDisposed)
@@ -52,9 +43,7 @@ namespace Orc.FileSystem
 
             _isDisposed = true;
         }
-        #endregion
 
-        #region Methods
         public Task LockFilesAsync(params string[] files)
         {
             return LockFilesAsync(TimeSpan.FromSeconds(5), files);
@@ -103,7 +92,7 @@ namespace Orc.FileSystem
                         var lockedFiles = TryCreateAndLockFiles(fileNames);
                         if (lockedFiles is null && continueLoop)
                         {
-                            await TaskShim.Delay(10);
+                            await Task.Delay(10);
                             continue;
                         }
 
@@ -226,6 +215,5 @@ namespace Orc.FileSystem
                 }
             }
         }
-        #endregion
     }
 }

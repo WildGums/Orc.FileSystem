@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ProjectIOSynchronizationService.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.FileSystem
+﻿namespace Orc.FileSystem
 {
     using System;
     using System.Collections.Concurrent;
@@ -17,7 +10,6 @@ namespace Orc.FileSystem
     using Catel.Logging;
     using Catel.Scoping;
     using Catel.Threading;
-    using Path = Catel.IO.Path;
 
     public class IOSynchronizationService : IIOSynchronizationService
     {
@@ -256,7 +248,7 @@ namespace Orc.FileSystem
                 {
                     await ExecuteReadingIfPossibleAsync(path);
 
-                    await TaskShim.Delay(DelayBetweenChecks);
+                    await Task.Delay(DelayBetweenChecks);
                 }
             }
             catch (Exception ex)
@@ -276,7 +268,7 @@ namespace Orc.FileSystem
                 {
                     await ExecuteWritingIfPossibleAsync(path);
 
-                    await TaskShim.Delay(DelayBetweenChecks);
+                    await Task.Delay(DelayBetweenChecks);
                 }
             }
             catch (Exception ex)
@@ -321,7 +313,7 @@ namespace Orc.FileSystem
 
             basePath = _directoryService.Exists(path)
                 ? path
-                : Path.GetParentDirectory(path);
+                : Path.GetDirectoryName(path);
 
             _basePathsCache[path] = basePath;
             return basePath;
@@ -515,7 +507,7 @@ namespace Orc.FileSystem
                             Log.Debug($"Succeeded to execute write actions to path '{path}', using a delay of '{delay}'");
 
                             // Sometimes we need a bit of delay in order to write files to disk
-                            await TaskShim.Delay(delay);
+                            await Task.Delay(delay);
 
                             scopeObject.WriteDummyContent();
                         }
