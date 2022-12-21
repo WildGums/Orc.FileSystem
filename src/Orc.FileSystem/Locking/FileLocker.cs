@@ -18,7 +18,7 @@
         private static readonly Dictionary<string, int> LockCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private static readonly AsyncLock AsyncLock = new AsyncLock();
 
-        private readonly FileLocker _existingLocker;
+        private readonly FileLocker? _existingLocker;
         private readonly int _uniqueId = UniqueIdentifierHelper.GetUniqueIdentifier<FileLocker>();
 
         private readonly HashSet<string> _internalLocks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -27,8 +27,6 @@
 
         public FileLocker(FileLocker? existingLocker)
         {
-            ArgumentNullException.ThrowIfNull(existingLocker);
-
             _existingLocker = existingLocker;
         }
 
