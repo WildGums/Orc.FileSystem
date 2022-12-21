@@ -50,7 +50,7 @@ namespace Orc.FileSystem
     }
     public sealed class FileLocker : System.IDisposable
     {
-        public FileLocker(Orc.FileSystem.FileLocker existingLocker) { }
+        public FileLocker(Orc.FileSystem.FileLocker? existingLocker) { }
         public void Dispose() { }
         public System.Threading.Tasks.Task LockFilesAsync(params string[] files) { }
         public System.Threading.Tasks.Task LockFilesAsync(System.TimeSpan timeout, params string[] files) { }

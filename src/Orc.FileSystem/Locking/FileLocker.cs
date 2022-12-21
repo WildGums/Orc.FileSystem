@@ -25,7 +25,7 @@
 
         private bool _isDisposed;
 
-        public FileLocker(FileLocker existingLocker)
+        public FileLocker(FileLocker? existingLocker)
         {
             ArgumentNullException.ThrowIfNull(existingLocker);
 
