@@ -404,7 +404,7 @@
                         {
                             Log.Warning(readException, $"Fatal error in executing reading for '{path}': '{readException.Message}'");
 
-                            throw new IOSynchronizationException($"Fatal error in executing reading for '{path}'", readException);
+                            throw Log.ErrorAndCreateException(message => new IOSynchronizationException(message, readException), $"Fatal error in executing reading for '{path}'");
                         }
 
                         if (!succeeded)
@@ -479,7 +479,7 @@
                         {
                             Log.Warning(readException, $"Fatal error in executing writing for '{path}': '{readException.Message}'");
 
-                            throw new IOSynchronizationException($"Fatal error in executing writing for '{path}'", readException);
+                            throw Log.ErrorAndCreateException(message => new IOSynchronizationException(message, readException), $"Fatal error in executing writing for '{path}'");
                         }
 
                         if (!succeeded)

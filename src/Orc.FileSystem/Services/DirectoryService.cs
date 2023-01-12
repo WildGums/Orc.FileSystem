@@ -70,7 +70,7 @@
             {
                 Log.Warning($"Source directory '{sourcePath}' does not exist or could not be found");
 
-                throw new DirectoryNotFoundException($"Source directory '{sourcePath}' does not exist or could not be found");
+                throw Log.ErrorAndCreateException<DirectoryNotFoundException>($"Source directory '{sourcePath}' does not exist or could not be found");
             }
 
             Log.Debug($"Copying directory '{sourcePath}' to '{destinationPath}'");

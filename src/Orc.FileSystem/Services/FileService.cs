@@ -111,7 +111,7 @@
                         break;
 
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(fileMode), fileMode, null);
+                        throw Log.ErrorAndCreateException(_ => new ArgumentOutOfRangeException(nameof(fileMode), fileMode, null), "Argument out of range");
                 }
 
                 if (fileMustExist && !File.Exists(fileName))

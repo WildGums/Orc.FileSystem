@@ -101,7 +101,7 @@
                     {
                         Log.Warning(ex, $"Failed to lock synchronization file '{syncFile}'");
 
-                        throw new FileLockScopeException($"Failed to lock synchronization file '{syncFile}'", ex);
+                        throw Log.ErrorAndCreateException(message => new FileLockScopeException(message, ex), $"Failed to lock synchronization file '{syncFile}'");
                     }
 
                     if (_lockAttemptCounter > 0)
