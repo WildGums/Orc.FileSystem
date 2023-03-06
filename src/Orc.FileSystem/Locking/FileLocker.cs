@@ -14,7 +14,7 @@
     {
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-        private static readonly Dictionary<string, FileStream> Locks = new Dictionary<string, FileStream>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, Stream> Locks = new Dictionary<string, Stream>(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, int> LockCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private static readonly AsyncLock AsyncLock = new AsyncLock();
 
@@ -122,9 +122,9 @@
             }
         }
 
-        private static Dictionary<string, FileStream> TryCreateAndLockFiles(string[] fileNames)
+        private static Dictionary<string, Stream> TryCreateAndLockFiles(string[] fileNames)
         {
-            var result = new Dictionary<string, FileStream>();
+            var result = new Dictionary<string, Stream>();
 
             foreach (var fileName in fileNames)
             {
@@ -135,9 +135,9 @@
                 }
                 catch (IOException)
                 {
-                    foreach (var fileStream in result.Values.Where(x => x is not null))
+                    foreach (var stream in result.Values.Where(x => x is not null))
                     {
-                        fileStream.Dispose();
+                        stream.Dispose();
                     }
 
                     result.Clear();
@@ -146,9 +146,9 @@
                 }
                 catch (Exception)
                 {
-                    foreach (var fileStream in result.Values.Where(x => x is not null))
+                    foreach (var stream in result.Values.Where(x => x is not null))
                     {
-                        fileStream.Dispose();
+                        stream.Dispose();
                     }
 
                     result.Clear();

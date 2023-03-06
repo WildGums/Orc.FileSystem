@@ -10,7 +10,7 @@
     {
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-        public FileStream Create(string fileName)
+        public Stream Create(string fileName)
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -18,8 +18,8 @@
 
             try
             {
-                var fileStream = File.Create(fileName);
-                return fileStream;
+                var stream = File.Create(fileName);
+                return stream;
             }
             catch (Exception ex)
             {
@@ -29,7 +29,7 @@
             }
         }
 
-        public FileStream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+        public Stream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -37,8 +37,8 @@
 
             try
             {
-                var fileStream = File.Open(fileName, fileMode, fileAccess, fileShare);
-                return fileStream;
+                var stream = File.Open(fileName, fileMode, fileAccess, fileShare);
+                return stream;
             }
             catch (IOException ex)
             {
@@ -124,7 +124,7 @@
                     return false;
                 }
 
-                using (var fileStream = File.Open(fileName, finalFileMode, fileAccess, fileShare))
+                using (var stream = File.Open(fileName, finalFileMode, fileAccess, fileShare))
                 {
                     // Open for test
                 }

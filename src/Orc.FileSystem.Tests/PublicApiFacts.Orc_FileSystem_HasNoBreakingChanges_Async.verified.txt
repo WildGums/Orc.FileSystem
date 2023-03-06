@@ -60,11 +60,11 @@ namespace Orc.FileSystem
         public FileService() { }
         public bool CanOpen(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3) { }
         public void Copy(string sourceFileName, string destinationFileName, bool overwrite = false) { }
-        public System.IO.FileStream Create(string fileName) { }
+        public System.IO.Stream Create(string fileName) { }
         public void Delete(string fileName) { }
         public bool Exists(string fileName) { }
         public void Move(string sourceFileName, string destinationFileName, bool overwrite = false) { }
-        public System.IO.FileStream Open(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3) { }
+        public System.IO.Stream Open(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3) { }
     }
     public interface IDirectoryService
     {
@@ -85,18 +85,18 @@ namespace Orc.FileSystem
     {
         bool CanOpen(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3);
         void Copy(string sourceFileName, string destinationFileName, bool overwrite = false);
-        System.IO.FileStream Create(string fileName);
+        System.IO.Stream Create(string fileName);
         void Delete(string fileName);
         bool Exists(string fileName);
         void Move(string sourceFileName, string destinationFileName, bool overwrite = false);
-        System.IO.FileStream Open(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3);
+        System.IO.Stream Open(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3);
     }
     public static class IFileServiceExtensions
     {
         public static bool CanOpenRead(this Orc.FileSystem.IFileService fileService, string fileName) { }
         public static bool CanOpenWrite(this Orc.FileSystem.IFileService fileService, string fileName) { }
-        public static System.IO.FileStream OpenRead(this Orc.FileSystem.IFileService fileService, string fileName) { }
-        public static System.IO.FileStream OpenWrite(this Orc.FileSystem.IFileService fileService, string fileName) { }
+        public static System.IO.Stream OpenRead(this Orc.FileSystem.IFileService fileService, string fileName) { }
+        public static System.IO.Stream OpenWrite(this Orc.FileSystem.IFileService fileService, string fileName) { }
         public static byte[] ReadAllBytes(this Orc.FileSystem.IFileService fileService, string fileName) { }
         public static System.Threading.Tasks.Task<byte[]> ReadAllBytesAsync(this Orc.FileSystem.IFileService fileService, string fileName) { }
         public static string[] ReadAllLines(this Orc.FileSystem.IFileService fileService, string fileName) { }
