@@ -1,10 +1,9 @@
-﻿namespace Orc.FileSystem.Views
+﻿namespace Orc.FileSystem.Views;
+
+public partial class MainWindow 
 {
-    public partial class MainWindow 
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

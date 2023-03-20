@@ -1,65 +1,63 @@
-﻿namespace Orc.FileSystem
+﻿namespace Orc.FileSystem;
+
+using System;
+using System.IO;
+using System.Linq;
+using Catel.Logging;
+
+public static class IDirectoryServiceExtensions
 {
-    using System;
-    using System.IO;
-    using System.Linq;
-    using Catel;
-    using Catel.Logging;
+    private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-    public static class IDirectoryServiceExtensions
+    public static bool IsEmpty(this IDirectoryService directoryService, string path)
     {
-        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+        ArgumentNullException.ThrowIfNull(directoryService);
+        ArgumentNullException.ThrowIfNull(path);
 
-        public static bool IsEmpty(this IDirectoryService directoryService, string path)
+        if (!directoryService.Exists(path))
         {
-            ArgumentNullException.ThrowIfNull(directoryService);
-            ArgumentNullException.ThrowIfNull(path);
-
-            if (!directoryService.Exists(path))
-            {
-                // If it doesn't exist, it's empty
-                return true;
-            }
-
-            if (directoryService.GetFiles(path).Any())
-            {
-                return false;
-            }
-
-            // We are assuming that, even if we have subdirectories, they could all be empty (e.g. we are checking for
-            // an empty directory tree)
-            foreach (var subDirectory in directoryService.GetDirectories(path))
-            {
-                if (!IsEmpty(directoryService, subDirectory))
-                {
-                    return false;
-                }
-            }
-
+            // If it doesn't exist, it's empty
             return true;
         }
 
-        public static ulong GetSize(this IDirectoryService directoryService, string path)
+        if (directoryService.GetFiles(path).Any())
         {
-            ArgumentNullException.ThrowIfNull(directoryService);
-            ArgumentNullException.ThrowIfNull(path);
-
-            ulong size = 0L;
-
-            try
-            {
-                if (directoryService.Exists(path))
-                {
-                    size += (ulong)(from fileName in directoryService.GetFiles(path, "*", SearchOption.AllDirectories)
-                                    select new FileInfo(fileName)).Sum(x => x.Length);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "Failed to calculate the size of directory '{0}'", path);
-            }
-
-            return size;
+            return false;
         }
+
+        // We are assuming that, even if we have subdirectories, they could all be empty (e.g. we are checking for
+        // an empty directory tree)
+        foreach (var subDirectory in directoryService.GetDirectories(path))
+        {
+            if (!IsEmpty(directoryService, subDirectory))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static ulong GetSize(this IDirectoryService directoryService, string path)
+    {
+        ArgumentNullException.ThrowIfNull(directoryService);
+        ArgumentNullException.ThrowIfNull(path);
+
+        ulong size = 0L;
+
+        try
+        {
+            if (directoryService.Exists(path))
+            {
+                size += (ulong)(from fileName in directoryService.GetFiles(path, "*", SearchOption.AllDirectories)
+                    select new FileInfo(fileName)).Sum(x => x.Length);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to calculate the size of directory '{0}'", path);
+        }
+
+        return size;
     }
 }
