@@ -1,39 +1,38 @@
-﻿namespace Orc.FileSystem
+﻿namespace Orc.FileSystem;
+
+using System;
+using System.IO;
+using Catel.Logging;
+
+public static partial class IFileServiceExtensions
 {
-    using System;
-    using System.IO;
-    using Catel.Logging;
+    private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-    public static partial class IFileServiceExtensions
+    public static bool CanOpenRead(this IFileService fileService, string fileName)
     {
-        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+        ArgumentNullException.ThrowIfNull(fileService);
 
-        public static bool CanOpenRead(this IFileService fileService, string fileName)
-        {
-            ArgumentNullException.ThrowIfNull(fileService);
+        return fileService.CanOpen(fileName, FileMode.Open, FileAccess.Read);
+    }
 
-            return fileService.CanOpen(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        }
+    public static FileStream OpenRead(this IFileService fileService, string fileName)
+    {
+        ArgumentNullException.ThrowIfNull(fileService);
 
-        public static FileStream OpenRead(this IFileService fileService, string fileName)
-        {
-            ArgumentNullException.ThrowIfNull(fileService);
+        return fileService.Open(fileName, FileMode.Open, FileAccess.Read);
+    }
 
-            return fileService.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        }
+    public static bool CanOpenWrite(this IFileService fileService, string fileName)
+    {
+        ArgumentNullException.ThrowIfNull(fileService);
 
-        public static bool CanOpenWrite(this IFileService fileService, string fileName)
-        {
-            ArgumentNullException.ThrowIfNull(fileService);
+        return fileService.CanOpen(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+    }
 
-            return fileService.CanOpen(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-        }
+    public static FileStream OpenWrite(this IFileService fileService, string fileName)
+    {
+        ArgumentNullException.ThrowIfNull(fileService);
 
-        public static FileStream OpenWrite(this IFileService fileService, string fileName)
-        {
-            ArgumentNullException.ThrowIfNull(fileService);
-
-            return fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-        }
+        return fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
     }
 }

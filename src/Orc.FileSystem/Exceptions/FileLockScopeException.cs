@@ -1,30 +1,29 @@
-﻿namespace Orc.FileSystem
+﻿namespace Orc.FileSystem;
+
+using System;
+using System.Runtime.Serialization;
+
+[Serializable]
+public class FileLockScopeException : Exception
 {
-    using System;
-    using System.Runtime.Serialization;
-
-    [Serializable]
-    public class FileLockScopeException : Exception
+    public FileLockScopeException()
     {
-        public FileLockScopeException()
-        {
 
-        }
+    }
 
-        public FileLockScopeException(string message)
-            : base(message)
-        {
-        }
+    public FileLockScopeException(string message)
+        : base(message)
+    {
+    }
 
-        public FileLockScopeException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+    public FileLockScopeException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
 
-        protected FileLockScopeException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
+    protected FileLockScopeException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
+    {
 
-        }
     }
 }

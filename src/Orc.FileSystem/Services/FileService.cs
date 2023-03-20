@@ -1,314 +1,313 @@
-﻿namespace Orc.FileSystem
+﻿namespace Orc.FileSystem;
+
+using System;
+using System.IO;
+using System.Linq;
+using Catel;
+using Catel.Logging;
+
+public class FileService : IFileService
 {
-    using System;
-    using System.IO;
-    using System.Linq;
-    using Catel;
-    using Catel.Logging;
+    private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-    public class FileService : IFileService
+    public FileStream Create(string fileName)
     {
-        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+        Argument.IsNotNullOrWhitespace(() => fileName);
 
-        public FileStream Create(string fileName)
+        Log.DebugIfAttached($"Creating file '{fileName}'");
+
+        try
         {
-            Argument.IsNotNullOrWhitespace(() => fileName);
-
-            Log.DebugIfAttached($"Creating file '{fileName}'");
-
-            try
-            {
-                var fileStream = File.Create(fileName);
-                return fileStream;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, $"Failed to create file '{fileName}'");
-
-                throw;
-            }
+            var fileStream = File.Create(fileName);
+            return fileStream;
         }
-
-        public FileStream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+        catch (Exception ex)
         {
-            Argument.IsNotNullOrWhitespace(() => fileName);
+            Log.Warning(ex, $"Failed to create file '{fileName}'");
 
-            Log.DebugIfAttached($"Opening file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
-
-            try
-            {
-                var fileStream = File.Open(fileName, fileMode, fileAccess, fileShare);
-                return fileStream;
-            }
-            catch (IOException ex)
-            {
-                var hResult = (uint) ex.GetHResult();
-
-                var message = $"Failed to open file '{fileName}'";
-                if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
-                {
-                    Log.Warning(ex, message);
-
-                    throw;
-                }
-
-                var processes = FileLockInfo.GetProcessesLockingFile(fileName);
-                if (processes is null || !processes.Any())
-                {                    
-                    Log.Warning(ex, message);
-
-                    throw;
-                }
-
-                Log.Warning(message + $", locked by: {string.Join(", ", processes)}");
-
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, $"Failed to open file '{fileName}'");
-
-                throw;
-            }
+            throw;
         }
+    }
 
-        public bool CanOpen(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+    public FileStream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+    {
+        Argument.IsNotNullOrWhitespace(() => fileName);
+
+        Log.DebugIfAttached($"Opening file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
+
+        try
         {
-            Argument.IsNotNullOrWhitespace(() => fileName);
+            var fileStream = File.Open(fileName, fileMode, fileAccess, fileShare);
+            return fileStream;
+        }
+        catch (IOException ex)
+        {
+            var hResult = (uint) ex.GetHResult();
 
-            Log.DebugIfAttached($"Checking for possibility to open file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
-
-            try
+            var message = $"Failed to open file '{fileName}'";
+            if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
             {
-                // If file is create => always use append (so we don't change the file)
-                var fileMustNotExist = false;
-                var fileMustExist = false;
-                var finalFileMode = FileMode.Open;
+                Log.Warning(ex, message);
 
-                switch (fileMode)
-                {
-                    case FileMode.CreateNew:
-                        finalFileMode = FileMode.Append;
-                        fileMustNotExist = true;
-                        break;
-
-                    case FileMode.Create:
-                        finalFileMode = FileMode.Append;
-                        break;
-
-                    case FileMode.Open:
-                        fileMustExist = true;
-                        break;
-
-                    case FileMode.OpenOrCreate:
-                        finalFileMode = FileMode.Append;
-                        break;
-
-                    case FileMode.Truncate:
-                    case FileMode.Append:
-                        finalFileMode = FileMode.Append;
-                        fileMustExist = true;
-                        break;
-
-                    default:
-                        throw Log.ErrorAndCreateException(_ => new ArgumentOutOfRangeException(nameof(fileMode), fileMode, null), "Argument out of range");
-                }
-
-                if (fileMustExist && !File.Exists(fileName))
-                {
-                    return false;
-                }
-
-                if (fileMustNotExist && File.Exists(fileName))
-                {
-                    return false;
-                }
-
-                using (var fileStream = File.Open(fileName, finalFileMode, fileAccess, fileShare))
-                {
-                    // Open for test
-                }
-
-                return true;
+                throw;
             }
-            catch (Exception)
+
+            var processes = FileLockInfo.GetProcessesLockingFile(fileName);
+            if (processes is null || !processes.Any())
+            {                    
+                Log.Warning(ex, message);
+
+                throw;
+            }
+
+            Log.Warning(message + $", locked by: {string.Join(", ", processes)}");
+
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, $"Failed to open file '{fileName}'");
+
+            throw;
+        }
+    }
+
+    public bool CanOpen(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+    {
+        Argument.IsNotNullOrWhitespace(() => fileName);
+
+        Log.DebugIfAttached($"Checking for possibility to open file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
+
+        try
+        {
+            // If file is create => always use append (so we don't change the file)
+            var fileMustNotExist = false;
+            var fileMustExist = false;
+            var finalFileMode = FileMode.Open;
+
+            switch (fileMode)
+            {
+                case FileMode.CreateNew:
+                    finalFileMode = FileMode.Append;
+                    fileMustNotExist = true;
+                    break;
+
+                case FileMode.Create:
+                    finalFileMode = FileMode.Append;
+                    break;
+
+                case FileMode.Open:
+                    fileMustExist = true;
+                    break;
+
+                case FileMode.OpenOrCreate:
+                    finalFileMode = FileMode.Append;
+                    break;
+
+                case FileMode.Truncate:
+                case FileMode.Append:
+                    finalFileMode = FileMode.Append;
+                    fileMustExist = true;
+                    break;
+
+                default:
+                    throw Log.ErrorAndCreateException(_ => new ArgumentOutOfRangeException(nameof(fileMode), fileMode, null), "Argument out of range");
+            }
+
+            if (fileMustExist && !File.Exists(fileName))
             {
                 return false;
             }
-        }
 
-        public void Copy(string sourceFileName, string destinationFileName, bool overwrite = false)
-        {
-            Argument.IsNotNullOrWhitespace(() => sourceFileName);
-            Argument.IsNotNullOrWhitespace(() => destinationFileName);
-
-            Log.DebugIfAttached($"Copying file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
-
-            try
+            if (fileMustNotExist && File.Exists(fileName))
             {
-                File.Copy(sourceFileName, destinationFileName, overwrite);
+                return false;
             }
-            catch (IOException ex)
+
+            using (File.Open(fileName, finalFileMode, fileAccess, fileShare))
             {
-                var hResult = (uint)ex.GetHResult();
+                // Open for test
+            }
 
-                var message = $"Failed to copy file '{sourceFileName}' to the '{destinationFileName}'";
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
 
-                if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
-                {
-                    Log.Warning(ex, message);
+    public void Copy(string sourceFileName, string destinationFileName, bool overwrite = false)
+    {
+        Argument.IsNotNullOrWhitespace(() => sourceFileName);
+        Argument.IsNotNullOrWhitespace(() => destinationFileName);
 
-                    throw;
-                }
+        Log.DebugIfAttached($"Copying file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
 
-                var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
-                if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
-                {
-                    Log.Warning(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
+        try
+        {
+            File.Copy(sourceFileName, destinationFileName, overwrite);
+        }
+        catch (IOException ex)
+        {
+            var hResult = (uint)ex.GetHResult();
 
-                    throw;
-                }
+            var message = $"Failed to copy file '{sourceFileName}' to the '{destinationFileName}'";
 
-                var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
-                if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
-                {
-                    Log.Warning(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
-
-                    throw;
-                }
-
+            if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
+            {
                 Log.Warning(ex, message);
 
                 throw;
             }
-            catch (Exception ex)
+
+            var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
+            if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
             {
-                Log.Warning(ex, $"Failed to copy file '{sourceFileName}' => '{destinationFileName}'");
+                Log.Warning(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
 
                 throw;
             }
-        }
 
-        public void Move(string sourceFileName, string destinationFileName, bool overwrite = false)
-        {
-            Argument.IsNotNullOrWhitespace(() => sourceFileName);
-            Argument.IsNotNullOrWhitespace(() => destinationFileName);
-
-            Log.DebugIfAttached($"Moving file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
-
-            try
+            var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
+            if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
             {
-                if (File.Exists(sourceFileName))
-                {
-                    if (File.Exists(destinationFileName) && overwrite)
-                    {
-                        File.Delete(destinationFileName);
-                    }
-                }
+                Log.Warning(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
 
-                File.Move(sourceFileName, destinationFileName);
+                throw;
             }
-            catch (IOException ex)
+
+            Log.Warning(ex, message);
+
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, $"Failed to copy file '{sourceFileName}' => '{destinationFileName}'");
+
+            throw;
+        }
+    }
+
+    public void Move(string sourceFileName, string destinationFileName, bool overwrite = false)
+    {
+        Argument.IsNotNullOrWhitespace(() => sourceFileName);
+        Argument.IsNotNullOrWhitespace(() => destinationFileName);
+
+        Log.DebugIfAttached($"Moving file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
+
+        try
+        {
+            if (File.Exists(sourceFileName))
             {
-                var hResult = (uint)ex.GetHResult();
-
-                var message = $"Failed to move file '{sourceFileName}' to the '{destinationFileName}'";
-
-                if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
+                if (File.Exists(destinationFileName) && overwrite)
                 {
-                    Log.Warning(ex, message);
-
-                    throw;
+                    File.Delete(destinationFileName);
                 }
+            }
 
-                var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
-                if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
-                {
-                    Log.Warning(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
+            File.Move(sourceFileName, destinationFileName);
+        }
+        catch (IOException ex)
+        {
+            var hResult = (uint)ex.GetHResult();
 
-                    throw;
-                }
+            var message = $"Failed to move file '{sourceFileName}' to the '{destinationFileName}'";
 
-                var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
-                if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
-                {
-                    Log.Warning(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
-
-                    throw;
-                }
-
+            if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
+            {
                 Log.Warning(ex, message);
 
                 throw;
             }
-            catch (Exception ex)
+
+            var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
+            if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
             {
-                Log.Warning(ex, $"Failed to move file '{sourceFileName}' => '{destinationFileName}'");
+                Log.Warning(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
 
                 throw;
+            }
+
+            var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
+            if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
+            {
+                Log.Warning(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
+
+                throw;
+            }
+
+            Log.Warning(ex, message);
+
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, $"Failed to move file '{sourceFileName}' => '{destinationFileName}'");
+
+            throw;
+        }
+    }
+
+    public bool Exists(string fileName)
+    {
+        Argument.IsNotNullOrWhitespace(() => fileName);
+
+        try
+        {
+            var exists = File.Exists(fileName);
+            return exists;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, $"Failed to check whether file '{fileName}' exists");
+
+            throw;
+        }
+    }
+
+    public void Delete(string fileName)
+    {
+        Argument.IsNotNullOrWhitespace(() => fileName);
+
+        try
+        {
+            if (File.Exists(fileName))
+            {
+                Log.DebugIfAttached($"Deleting file '{fileName}'");
+
+                File.Delete(fileName);
             }
         }
-
-        public bool Exists(string fileName)
+        catch (IOException ex)
         {
-            Argument.IsNotNullOrWhitespace(() => fileName);
+            var hResult = (uint)ex.GetHResult();
 
-            try
+            var message = $"Failed to delete file '{fileName}'";
+            if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
             {
-                var exists = File.Exists(fileName);
-                return exists;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, $"Failed to check whether file '{fileName}' exists");
+                Log.Warning(ex, message);
 
                 throw;
             }
+
+            var processes = FileLockInfo.GetProcessesLockingFile(fileName);
+            if (processes is null || !processes.Any())
+            {
+                Log.Warning(ex, message);
+
+                throw;
+            }
+
+            Log.Warning(message + $", locked by: {string.Join(", ", processes)}");
+
+            throw;
         }
-
-        public void Delete(string fileName)
+        catch (Exception ex)
         {
-            Argument.IsNotNullOrWhitespace(() => fileName);
+            Log.Warning(ex, $"Failed to delete file '{fileName}'");
 
-            try
-            {
-                if (File.Exists(fileName))
-                {
-                    Log.DebugIfAttached($"Deleting file '{fileName}'");
-
-                    File.Delete(fileName);
-                }
-            }
-            catch (IOException ex)
-            {
-                var hResult = (uint)ex.GetHResult();
-
-                var message = $"Failed to delete file '{fileName}'";
-                if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
-                {
-                    Log.Warning(ex, message);
-
-                    throw;
-                }
-
-                var processes = FileLockInfo.GetProcessesLockingFile(fileName);
-                if (processes is null || !processes.Any())
-                {
-                    Log.Warning(ex, message);
-
-                    throw;
-                }
-
-                Log.Warning(message + $", locked by: {string.Join(", ", processes)}");
-
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, $"Failed to delete file '{fileName}'");
-
-                throw;
-            }
+            throw;
         }
     }
 }
