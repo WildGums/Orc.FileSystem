@@ -46,13 +46,13 @@ public class IOSynchronizationService : IIOSynchronizationService
         DelayAfterWriteOperations = DefaultDelayAfterWriteOperations;
     }
 
-    public TimeSpan DelayBetweenChecks { get; set; }
+    public virtual TimeSpan DelayBetweenChecks { get; set; }
 
-    public TimeSpan DelayAfterWriteOperations { get; set; }
+    public virtual TimeSpan DelayAfterWriteOperations { get; set; }
 
     public event EventHandler<PathEventArgs>? RefreshRequired;
 
-    public IDisposable AcquireReadLock(string path)
+    public virtual IDisposable AcquireReadLock(string path)
     {
         var scopeManager = GetScopeManager(true, path);
         scopeManager.ScopeObject.Lock();
@@ -60,7 +60,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         return scopeManager;
     }
 
-    public IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true)
+    public virtual IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true)
     {
         var scopeManager = GetScopeManager(false, path);
 
@@ -71,7 +71,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         return scopeManager;
     }
 
-    public async Task StartWatchingForChangesAsync(string path)
+    public virtual async Task StartWatchingForChangesAsync(string path)
     {
         Argument.IsNotNullOrWhitespace(() => path);
 
@@ -101,7 +101,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         }
     }
 
-    public async Task StopWatchingForChangesAsync(string path)
+    public virtual async Task StopWatchingForChangesAsync(string path)
     {
         Argument.IsNotNullOrWhitespace(() => path);
 
@@ -131,7 +131,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         }
     }
 
-    public async Task ExecuteReadingAsync(string projectLocation, Func<string, Task<bool>> readAsync)
+    public virtual async Task ExecuteReadingAsync(string projectLocation, Func<string, Task<bool>> readAsync)
     {
         Argument.IsNotNullOrWhitespace(() => projectLocation);
 
@@ -173,7 +173,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         }
     }
 
-    public async Task ExecuteWritingAsync(string projectLocation, Func<string, Task<bool>> writeAsync)
+    public virtual async Task ExecuteWritingAsync(string projectLocation, Func<string, Task<bool>> writeAsync)
     {
         Argument.IsNotNullOrWhitespace(() => projectLocation);
 

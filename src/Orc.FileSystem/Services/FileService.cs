@@ -10,7 +10,7 @@ public class FileService : IFileService
 {
     private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-    public FileStream Create(string fileName)
+    public virtual Stream Create(string fileName)
     {
         Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -18,8 +18,8 @@ public class FileService : IFileService
 
         try
         {
-            var fileStream = File.Create(fileName);
-            return fileStream;
+            var stream = File.Create(fileName);
+            return stream;
         }
         catch (Exception ex)
         {
@@ -29,7 +29,7 @@ public class FileService : IFileService
         }
     }
 
-    public FileStream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+    public virtual Stream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
     {
         Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -37,8 +37,8 @@ public class FileService : IFileService
 
         try
         {
-            var fileStream = File.Open(fileName, fileMode, fileAccess, fileShare);
-            return fileStream;
+            var stream = File.Open(fileName, fileMode, fileAccess, fileShare);
+            return stream;
         }
         catch (IOException ex)
         {
@@ -72,7 +72,7 @@ public class FileService : IFileService
         }
     }
 
-    public bool CanOpen(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+    public virtual bool CanOpen(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
     {
         Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -137,7 +137,7 @@ public class FileService : IFileService
         }
     }
 
-    public void Copy(string sourceFileName, string destinationFileName, bool overwrite = false)
+    public virtual void Copy(string sourceFileName, string destinationFileName, bool overwrite = false)
     {
         Argument.IsNotNullOrWhitespace(() => sourceFileName);
         Argument.IsNotNullOrWhitespace(() => destinationFileName);
@@ -189,7 +189,7 @@ public class FileService : IFileService
         }
     }
 
-    public void Move(string sourceFileName, string destinationFileName, bool overwrite = false)
+    public virtual void Move(string sourceFileName, string destinationFileName, bool overwrite = false)
     {
         Argument.IsNotNullOrWhitespace(() => sourceFileName);
         Argument.IsNotNullOrWhitespace(() => destinationFileName);
@@ -249,7 +249,7 @@ public class FileService : IFileService
         }
     }
 
-    public bool Exists(string fileName)
+    public virtual bool Exists(string fileName)
     {
         Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -266,7 +266,7 @@ public class FileService : IFileService
         }
     }
 
-    public void Delete(string fileName)
+    public virtual void Delete(string fileName)
     {
         Argument.IsNotNullOrWhitespace(() => fileName);
 

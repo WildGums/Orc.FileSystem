@@ -10,13 +10,13 @@ namespace Orc.FileSystem
     public class DirectoryService : Orc.FileSystem.IDirectoryService
     {
         public DirectoryService(Orc.FileSystem.IFileService fileService) { }
-        public void Copy(string sourcePath, string destinationPath, bool copySubDirs = true, bool overwriteExisting = false) { }
-        public string Create(string path) { }
-        public void Delete(string path, bool recursive = true) { }
-        public bool Exists(string path) { }
-        public string[] GetDirectories(string path, string searchPattern = "", System.IO.SearchOption searchOption = 0) { }
-        public string[] GetFiles(string path, string searchPattern = "", System.IO.SearchOption searchOption = 0) { }
-        public void Move(string sourcePath, string destinationPath) { }
+        public virtual void Copy(string sourcePath, string destinationPath, bool copySubDirs = true, bool overwriteExisting = false) { }
+        public virtual string Create(string path) { }
+        public virtual void Delete(string path, bool recursive = true) { }
+        public virtual bool Exists(string path) { }
+        public virtual string[] GetDirectories(string path, string searchPattern = "", System.IO.SearchOption searchOption = 0) { }
+        public virtual string[] GetFiles(string path, string searchPattern = "", System.IO.SearchOption searchOption = 0) { }
+        public virtual void Move(string sourcePath, string destinationPath) { }
     }
     public static class ExceptionExtensions
     {
@@ -58,13 +58,13 @@ namespace Orc.FileSystem
     public class FileService : Orc.FileSystem.IFileService
     {
         public FileService() { }
-        public bool CanOpen(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3) { }
-        public void Copy(string sourceFileName, string destinationFileName, bool overwrite = false) { }
-        public System.IO.FileStream Create(string fileName) { }
-        public void Delete(string fileName) { }
-        public bool Exists(string fileName) { }
-        public void Move(string sourceFileName, string destinationFileName, bool overwrite = false) { }
-        public System.IO.FileStream Open(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3) { }
+        public virtual bool CanOpen(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3) { }
+        public virtual void Copy(string sourceFileName, string destinationFileName, bool overwrite = false) { }
+        public virtual System.IO.Stream Create(string fileName) { }
+        public virtual void Delete(string fileName) { }
+        public virtual bool Exists(string fileName) { }
+        public virtual void Move(string sourceFileName, string destinationFileName, bool overwrite = false) { }
+        public virtual System.IO.Stream Open(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3) { }
     }
     public interface IDirectoryService
     {
@@ -85,18 +85,18 @@ namespace Orc.FileSystem
     {
         bool CanOpen(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3);
         void Copy(string sourceFileName, string destinationFileName, bool overwrite = false);
-        System.IO.FileStream Create(string fileName);
+        System.IO.Stream Create(string fileName);
         void Delete(string fileName);
         bool Exists(string fileName);
         void Move(string sourceFileName, string destinationFileName, bool overwrite = false);
-        System.IO.FileStream Open(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3);
+        System.IO.Stream Open(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3);
     }
     public static class IFileServiceExtensions
     {
         public static bool CanOpenRead(this Orc.FileSystem.IFileService fileService, string fileName) { }
         public static bool CanOpenWrite(this Orc.FileSystem.IFileService fileService, string fileName) { }
-        public static System.IO.FileStream OpenRead(this Orc.FileSystem.IFileService fileService, string fileName) { }
-        public static System.IO.FileStream OpenWrite(this Orc.FileSystem.IFileService fileService, string fileName) { }
+        public static System.IO.Stream OpenRead(this Orc.FileSystem.IFileService fileService, string fileName) { }
+        public static System.IO.Stream OpenWrite(this Orc.FileSystem.IFileService fileService, string fileName) { }
         public static byte[] ReadAllBytes(this Orc.FileSystem.IFileService fileService, string fileName) { }
         public static System.Threading.Tasks.Task<byte[]> ReadAllBytesAsync(this Orc.FileSystem.IFileService fileService, string fileName) { }
         public static string[] ReadAllLines(this Orc.FileSystem.IFileService fileService, string fileName) { }
@@ -134,17 +134,17 @@ namespace Orc.FileSystem
     public class IOSynchronizationService : Orc.FileSystem.IIOSynchronizationService
     {
         public IOSynchronizationService(Orc.FileSystem.IFileService fileService, Orc.FileSystem.IDirectoryService directoryService) { }
-        public System.TimeSpan DelayAfterWriteOperations { get; set; }
-        public System.TimeSpan DelayBetweenChecks { get; set; }
+        public virtual System.TimeSpan DelayAfterWriteOperations { get; set; }
+        public virtual System.TimeSpan DelayBetweenChecks { get; set; }
         public event System.EventHandler<Orc.FileSystem.PathEventArgs>? RefreshRequired;
-        public System.IDisposable AcquireReadLock(string path) { }
-        public System.IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true) { }
-        public System.Threading.Tasks.Task ExecuteReadingAsync(string projectLocation, System.Func<string, System.Threading.Tasks.Task<bool>> readAsync) { }
-        public System.Threading.Tasks.Task ExecuteWritingAsync(string projectLocation, System.Func<string, System.Threading.Tasks.Task<bool>> writeAsync) { }
+        public virtual System.IDisposable AcquireReadLock(string path) { }
+        public virtual System.IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true) { }
+        public virtual System.Threading.Tasks.Task ExecuteReadingAsync(string projectLocation, System.Func<string, System.Threading.Tasks.Task<bool>> readAsync) { }
+        public virtual System.Threading.Tasks.Task ExecuteWritingAsync(string projectLocation, System.Func<string, System.Threading.Tasks.Task<bool>> writeAsync) { }
         protected string GetSyncFileByPath(string path) { }
         protected virtual string ResolveObservedFileName(string path) { }
-        public System.Threading.Tasks.Task StartWatchingForChangesAsync(string path) { }
-        public System.Threading.Tasks.Task StopWatchingForChangesAsync(string path) { }
+        public virtual System.Threading.Tasks.Task StartWatchingForChangesAsync(string path) { }
+        public virtual System.Threading.Tasks.Task StopWatchingForChangesAsync(string path) { }
     }
     public class PathEventArgs : System.EventArgs
     {

@@ -15,7 +15,7 @@ public static partial class IFileServiceExtensions
         return fileService.CanOpen(fileName, FileMode.Open, FileAccess.Read);
     }
 
-    public static FileStream OpenRead(this IFileService fileService, string fileName)
+    public static Stream OpenRead(this IFileService fileService, string fileName)
     {
         ArgumentNullException.ThrowIfNull(fileService);
 
@@ -29,7 +29,7 @@ public static partial class IFileServiceExtensions
         return fileService.CanOpen(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
     }
 
-    public static FileStream OpenWrite(this IFileService fileService, string fileName)
+    public static Stream OpenWrite(this IFileService fileService, string fileName)
     {
         ArgumentNullException.ThrowIfNull(fileService);
 

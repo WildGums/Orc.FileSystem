@@ -18,7 +18,7 @@ public class DirectoryService : IDirectoryService
         _fileService = fileService;
     }
 
-    public string Create(string path)
+    public virtual string Create(string path)
     {
         Argument.IsNotNullOrWhitespace(() => path);
 
@@ -44,7 +44,7 @@ public class DirectoryService : IDirectoryService
         }
     }
 
-    public void Move(string sourcePath, string destinationPath)
+    public virtual void Move(string sourcePath, string destinationPath)
     {
         Argument.IsNotNullOrWhitespace(() => sourcePath);
         Argument.IsNotNullOrWhitespace(() => destinationPath);
@@ -63,7 +63,7 @@ public class DirectoryService : IDirectoryService
         }
     }
 
-    public void Copy(string sourcePath, string destinationPath, bool copySubDirs = true, bool overwriteExisting = false)
+    public virtual void Copy(string sourcePath, string destinationPath, bool copySubDirs = true, bool overwriteExisting = false)
     {
         Argument.IsNotNullOrWhitespace(() => sourcePath);
         Argument.IsNotNullOrWhitespace(() => destinationPath);
@@ -110,7 +110,7 @@ public class DirectoryService : IDirectoryService
         }
     }
 
-    public void Delete(string path, bool recursive = true)
+    public virtual void Delete(string path, bool recursive = true)
     {
         Argument.IsNotNullOrWhitespace(() => path);
 
@@ -133,7 +133,7 @@ public class DirectoryService : IDirectoryService
         }
     }
 
-    public bool Exists(string path)
+    public virtual bool Exists(string path)
     {
         Argument.IsNotNullOrWhitespace(() => path);
 
@@ -150,7 +150,7 @@ public class DirectoryService : IDirectoryService
         }
     }
 
-    public string[] GetDirectories(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly)
+    public virtual string[] GetDirectories(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly)
     {
         Argument.IsNotNullOrWhitespace(() => path);
 
@@ -174,7 +174,7 @@ public class DirectoryService : IDirectoryService
         }
     }
 
-    public string[] GetFiles(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly)
+    public virtual string[] GetFiles(string path, string searchPattern = "", SearchOption searchOption = SearchOption.TopDirectoryOnly)
     {
         Argument.IsNotNullOrWhitespace(() => path);
 

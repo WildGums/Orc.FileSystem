@@ -19,7 +19,7 @@ public class FileLockScope : Disposable
     private readonly string? _syncFile;
 
 #pragma warning disable IDISP006 // Implement IDisposable.
-    private FileStream? _fileStream;
+    private Stream? _stream;
 #pragma warning restore IDISP006 // Implement IDisposable.
 
     private int _lockAttemptCounter;
@@ -45,7 +45,7 @@ public class FileLockScope : Disposable
         {
             lock (_lock)
             {
-                return _fileStream is not null;
+                return _stream is not null;
             }
         }
     }
@@ -72,7 +72,7 @@ public class FileLockScope : Disposable
         // Note: writing dummy data for FileSystemWatcher
         lock (_lock)
         {
-            _fileStream?.WriteByte(0);
+            _stream?.WriteByte(0);
         }
     }
 
@@ -89,8 +89,8 @@ public class FileLockScope : Disposable
             try
             {
                 // Note: don't use _fileService because we don't want logging in case of failure
-                _fileStream?.Dispose();
-                _fileStream = File.Open(syncFile, FileMode.Create, FileAccess.Write, _isReadScope ? FileShare.Delete : FileShare.None);
+                _stream?.Dispose();
+                _stream = File.Open(syncFile, FileMode.Create, FileAccess.Write, _isReadScope ? FileShare.Delete : FileShare.None);
 
                 Log.Debug($"Locked synchronization file '{syncFile}'");
             }
@@ -150,10 +150,10 @@ public class FileLockScope : Disposable
             DeleteSyncFile();
         }
 
-        if (_fileStream is not null)
+        if (_stream is not null)
         {
-            _fileStream.Dispose();
-            _fileStream = null;
+            _stream.Dispose();
+            _stream = null;
 
             Log.Debug($"Unlocked synchronization file '{_syncFile}'");
         }

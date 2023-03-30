@@ -14,7 +14,7 @@ public sealed class FileLocker : IDisposable
 {
     private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-    private static readonly Dictionary<string, FileStream> Locks = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, Stream> Locks = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, int> LockCounts = new(StringComparer.OrdinalIgnoreCase);
     private static readonly AsyncLock AsyncLock = new();
 
@@ -121,9 +121,9 @@ public sealed class FileLocker : IDisposable
         }
     }
 
-    private static Dictionary<string, FileStream> TryCreateAndLockFiles(string[] fileNames)
+    private static Dictionary<string, Stream> TryCreateAndLockFiles(string[] fileNames)
     {
-        var result = new Dictionary<string, FileStream>();
+        var result = new Dictionary<string, Stream>();
 
         foreach (var fileName in fileNames)
         {
@@ -134,9 +134,9 @@ public sealed class FileLocker : IDisposable
             }
             catch (IOException)
             {
-                foreach (var fileStream in result.Values.Where(x => x is not null))
+                foreach (var stream in result.Values.Where(x => x is not null))
                 {
-                    fileStream.Dispose();
+                    stream.Dispose();
                 }
 
                 result.Clear();
@@ -145,9 +145,9 @@ public sealed class FileLocker : IDisposable
             }
             catch (Exception)
             {
-                foreach (var fileStream in result.Values.Where(x => x is not null))
+                foreach (var stream in result.Values.Where(x => x is not null))
                 {
-                    fileStream.Dispose();
+                    stream.Dispose();
                 }
 
                 result.Clear();
