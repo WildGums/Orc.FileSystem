@@ -1,5 +1,4 @@
-using System.Diagnostics;
-using Catel.Logging;
+﻿using Catel.Logging;
 
 /// <summary>
 /// Used by the ModuleInit. All code inside the Initialize method is ran as soon as the assembly is loaded.

@@ -1,113 +1,96 @@
-﻿namespace Orc.FileSystem
+﻿namespace Orc.FileSystem;
+
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Catel;
+using Catel.Logging;
+
+public static partial class IFileServiceExtensions
 {
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Catel;
-    using Catel.Logging;
-
-    public static partial class IFileServiceExtensions
+    public static string ReadAllText(this IFileService fileService, string fileName)
     {
-        public static string ReadAllText(this IFileService fileService, string fileName)
+        ArgumentNullException.ThrowIfNull(fileService);
+        Argument.IsNotNullOrWhitespace(() => fileName);
+
+        try
         {
-            ArgumentNullException.ThrowIfNull(fileService);
-            Argument.IsNotNullOrWhitespace(() => fileName);
+            using var stream = fileService.OpenRead(fileName);
+            Log.Debug($"Reading all text from '{fileName}'");
 
-            try
-            {
-                using (var stream = fileService.OpenRead(fileName))
-                {
-                    Log.Debug($"Reading all text from '{fileName}'");
-
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var text = reader.ReadToEnd();
-                        return text;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, $"Failed to read all text from '{fileName}'");
-
-                throw;
-            }
+            using var reader = new StreamReader(stream);
+            var text = reader.ReadToEnd();
+            return text;
         }
-
-        public static async Task<string> ReadAllTextAsync(this IFileService fileService, string fileName)
+        catch (Exception ex)
         {
-            ArgumentNullException.ThrowIfNull(fileService);
-            Argument.IsNotNullOrWhitespace(() => fileName);
+            Log.Warning(ex, $"Failed to read all text from '{fileName}'");
 
-            try
-            {
-                using (var stream = fileService.OpenRead(fileName))
-                {
-                    Log.Debug($"Reading all text from '{fileName}'");
-
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var text = await reader.ReadToEndAsync();
-                        return text;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, $"Failed to read all text from '{fileName}'");
-
-                throw;
-            }
+            throw;
         }
+    }
 
-        public static void WriteAllText(this IFileService fileService, string fileName, string text)
+    public static async Task<string> ReadAllTextAsync(this IFileService fileService, string fileName)
+    {
+        ArgumentNullException.ThrowIfNull(fileService);
+        Argument.IsNotNullOrWhitespace(() => fileName);
+
+        try
         {
-            ArgumentNullException.ThrowIfNull(fileService);
-            Argument.IsNotNullOrWhitespace(() => fileName);
+            await using var stream = fileService.OpenRead(fileName);
+            Log.Debug($"Reading all text from '{fileName}'");
 
-            try
-            {
-                using (var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    Log.Debug($"Writing text to '{fileName}'");
-
-                    using (var writer = new StreamWriter(stream))
-                    {
-                        writer.Write(text);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, $"Failed to write text to '{fileName}'");
-
-                throw;
-            }
+            using var reader = new StreamReader(stream);
+            var text = await reader.ReadToEndAsync();
+            return text;
         }
-
-        public static async Task WriteAllTextAsync(this IFileService fileService, string fileName, string text)
+        catch (Exception ex)
         {
-            ArgumentNullException.ThrowIfNull(fileService);
-            Argument.IsNotNullOrWhitespace(() => fileName);
+            Log.Warning(ex, $"Failed to read all text from '{fileName}'");
 
-            try
-            {
-                using (var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    Log.Debug($"Writing text to '{fileName}'");
+            throw;
+        }
+    }
 
-                    using (var writer = new StreamWriter(stream))
-                    {
-                        await writer.WriteAsync(text);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, $"Failed to write text to '{fileName}'");
+    public static void WriteAllText(this IFileService fileService, string fileName, string text)
+    {
+        ArgumentNullException.ThrowIfNull(fileService);
+        Argument.IsNotNullOrWhitespace(() => fileName);
 
-                throw;
-            }
+        try
+        {
+            using var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+            Log.Debug($"Writing text to '{fileName}'");
+
+            using var writer = new StreamWriter(stream);
+            writer.Write(text);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, $"Failed to write text to '{fileName}'");
+
+            throw;
+        }
+    }
+
+    public static async Task WriteAllTextAsync(this IFileService fileService, string fileName, string text)
+    {
+        ArgumentNullException.ThrowIfNull(fileService);
+        Argument.IsNotNullOrWhitespace(() => fileName);
+
+        try
+        {
+            await using var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+            Log.Debug($"Writing text to '{fileName}'");
+
+            await using var writer = new StreamWriter(stream);
+            await writer.WriteAsync(text);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, $"Failed to write text to '{fileName}'");
+
+            throw;
         }
     }
 }

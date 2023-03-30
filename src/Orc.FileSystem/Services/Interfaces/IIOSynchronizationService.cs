@@ -1,22 +1,21 @@
-﻿namespace Orc.FileSystem
+﻿namespace Orc.FileSystem;
+
+using System;
+using System.Threading.Tasks;
+
+public interface IIOSynchronizationService
 {
-    using System;
-    using System.Threading.Tasks;
+    TimeSpan DelayBetweenChecks { get; set; }
+    TimeSpan DelayAfterWriteOperations { get; set; }
 
-    public interface IIOSynchronizationService
-    {
-        TimeSpan DelayBetweenChecks { get; set; }
-        TimeSpan DelayAfterWriteOperations { get; set; }
+    event EventHandler<PathEventArgs>? RefreshRequired;
 
-        event EventHandler<PathEventArgs>? RefreshRequired;
+    IDisposable AcquireReadLock(string path);
+    IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true);
 
-        IDisposable AcquireReadLock(string path);
-        IDisposable AcquireWriteLock(string path, bool notifyOnRelease = true);
+    Task StartWatchingForChangesAsync(string path);
+    Task StopWatchingForChangesAsync(string path);
 
-        Task StartWatchingForChangesAsync(string path);
-        Task StopWatchingForChangesAsync(string path);
-
-        Task ExecuteReadingAsync(string projectLocation, Func<string, Task<bool>> readAsync);
-        Task ExecuteWritingAsync(string projectLocation, Func<string, Task<bool>> writeAsync);
-    }
+    Task ExecuteReadingAsync(string projectLocation, Func<string, Task<bool>> readAsync);
+    Task ExecuteWritingAsync(string projectLocation, Func<string, Task<bool>> writeAsync);
 }

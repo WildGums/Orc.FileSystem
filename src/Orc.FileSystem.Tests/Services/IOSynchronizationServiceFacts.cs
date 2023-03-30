@@ -1,194 +1,105 @@
-﻿namespace Orc.FileSystem.Tests.Services
+﻿namespace Orc.FileSystem.Tests.Services;
+
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using NUnit.Framework;
+
+public class IOSynchronizationServiceFacts
 {
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Catel.Threading;
-    using NUnit.Framework;
+    // TODO: Write unit tests
 
-    public class IOSynchronizationServiceFacts
+    [TestFixture]
+    public class TheExecuteWritingAsyncMethod
     {
-        // TODO: Write unit tests
-
-        [TestFixture]
-        public class TheExecuteWritingAsyncMethod
+        [Test]
+        public async Task WriterWrapsAnyExceptionIntoIOSynchronizationExceptionAsync()
         {
-            [Test]
-            public async Task WriterWrapsAnyExceptionIntoIOSynchronizationExceptionAsync()
+            try
             {
-                try
+                using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotSwallowReaderIOExceptionAsync"))
                 {
-                    using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotSwallowReaderIOExceptionAsync"))
+                    var rootDirectory = temporaryFilesContext.GetDirectory("output");
+
+                    var fileService = new FileService();
+                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+
+                    var alreadyExecuted = false;
+
+                    await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ =>
                     {
-                        var rootDirectory = temporaryFilesContext.GetDirectory("output");
-
-                        var fileService = new FileService();
-                        var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
-
-                        var aleadyExecuted = false;
-
-                        await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
+                        if (alreadyExecuted)
                         {
-                            if (!aleadyExecuted)
-                            {
-                                // preventing continuous loop
-                                aleadyExecuted = true;
-
-                                throw new IOException();
-                            }
-
                             return true;
-                        });
-                    }
+                        }
 
-                    Assert.Fail("Expected exception");
-                }
-                catch (Exception ex)
-                {
-                    Assert.IsInstanceOf<IOSynchronizationException>(ex);
-                }
-            }
+                        // preventing continuous loop
+                        alreadyExecuted = true;
 
-            [Test]
-            public async Task AllowsAccessToSameDirectoryBySameProcessAsync()
-            {
-                using (var temporaryFilesContext = new TemporaryFilesContext("AllowsAccessToSameDirectoryBySameProcessAsync"))
-                {
-                    var rootDirectory = temporaryFilesContext.GetDirectory("output");
-                    var file1 = temporaryFilesContext.GetFile("output\\file1.txt");
-                    var file2 = temporaryFilesContext.GetFile("output\\file2.txt");
+                        throw new IOException();
 
-                    var fileService = new FileService();
-                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
-
-                    await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
-                    {
-                        // File 1
-                        await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async y => true);
-
-                        // File 2
-                        await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async y => true);
-
-                        return true;
                     });
                 }
+
+                Assert.Fail("Expected exception");
             }
-
-            [Test]
-            public async Task AllowsAccessToNestingDirectoriesBySameProcessAsync()
+            catch (Exception ex)
             {
-                using (var temporaryFilesContext = new TemporaryFilesContext("AllowsAccessToNestingDirectoriesBySameProcessAsync"))
-                {
-                    var rootDirectory = temporaryFilesContext.GetDirectory("output");
-                    var subdirectory = temporaryFilesContext.GetDirectory("output\\subdirectory");
-
-                    var fileService = new FileService();
-                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
-
-                    await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
-                    {
-                        await ioSynchronizationService.ExecuteWritingAsync(subdirectory, async y => true);
-
-                        return true;
-                    });
-                }
+                Assert.IsInstanceOf<IOSynchronizationException>(ex);
             }
         }
 
-        [TestFixture]
-        public class TheExecuteReadingAsyncMethod
+        [Test]
+        public async Task AllowsAccessToSameDirectoryBySameProcessAsync()
         {
-            [Test]
-            public async Task ReaderWrapsAnyExceptionIntoIOSynchronizationExceptionAsync()
+            using var temporaryFilesContext = new TemporaryFilesContext("AllowsAccessToSameDirectoryBySameProcessAsync");
+            var rootDirectory = temporaryFilesContext.GetDirectory("output");
+            var file1 = temporaryFilesContext.GetFile("output\\file1.txt");
+            var file2 = temporaryFilesContext.GetFile("output\\file2.txt");
+
+            var fileService = new FileService();
+            var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+
+            await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ =>
             {
-                try
-                {
-                    using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotSwallowReaderIOExceptionAsync"))
-                    {
-                        var rootDirectory = temporaryFilesContext.GetDirectory("output");
-                        var fileName = temporaryFilesContext.GetFile("file1.txt");
+                // File 1
+                await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ => true);
 
-                        var fileService = new FileService();
-                        var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+                // File 2
+                await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ => true);
 
-                        // write for creating sync file
-                        await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
-                        {
-                            await File.WriteAllTextAsync(fileName, "12345");
-                            return true;
-                        });
+                return true;
+            });
+        }
 
-                        var aleadyExecuted = false;
+        [Test]
+        public async Task AllowsAccessToNestingDirectoriesBySameProcessAsync()
+        {
+            using var temporaryFilesContext = new TemporaryFilesContext("AllowsAccessToNestingDirectoriesBySameProcessAsync");
+            var rootDirectory = temporaryFilesContext.GetDirectory("output");
+            var subDirectory = temporaryFilesContext.GetDirectory("output\\subdirectory");
 
-                        await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async x =>
-                        {
-                            if (!aleadyExecuted)
-                            {
-                                // preventing continuous loop
-                                aleadyExecuted = true;
+            var fileService = new FileService();
+            var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
-                                throw new IOException();
-                            }
-
-                            return true;
-                        });
-                    }
-
-                    Assert.Fail("Expected exception");
-                }
-                catch (Exception ex)
-                {
-                    Assert.IsInstanceOf<IOSynchronizationException>(ex);
-                }
-            }
-
-            [Test]
-            public async Task DoesNotDeleteSyncFileIfEqualsToObservedFilePathAsync()
+            await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ =>
             {
-                using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotDeleteSyncFileIfEqualsToObservedFilePathAsync"))
-                {
-                    var fileName = temporaryFilesContext.GetFile("file1.txt");
+                await ioSynchronizationService.ExecuteWritingAsync(subDirectory, async _ => true);
 
-                    var fileService = new FileService();
-                    var ioSynchronizationService = new IOSynchronizationWithoutSeparateSyncFileService(fileService, new DirectoryService(fileService));
+                return true;
+            });
+        }
+    }
 
-                    // ensure syn file exists and data file exists
-                    await ioSynchronizationService.ExecuteWritingAsync(fileName, async x =>
-                    {
-                        await File.WriteAllTextAsync(fileName, "12345");
-                        return true;
-                    });
-
-                    var syncFile = ioSynchronizationService.GetSyncFileByPath(fileName);
-                    // required thing
-                    Assert.AreEqual(syncFile, fileName);
-
-                    Assert.IsTrue(File.Exists(syncFile));
-
-                    // nested readings
-                    await ioSynchronizationService.ExecuteReadingAsync(fileName, async x =>
-                    {
-                        await ioSynchronizationService.ExecuteReadingAsync(fileName, async y =>
-                        {
-                            Assert.IsTrue(File.Exists(syncFile));
-
-                            return true;
-                        });
-
-                        Assert.IsTrue(File.Exists(syncFile));
-
-                        return true;
-                    });
-
-                    // Even now the refresh file should not be removed
-                    Assert.IsTrue(File.Exists(syncFile));
-                }
-            }
-
-            [Test]
-            public async Task CorrectlyReleasesFileAfterAllNestedScopesHaveBeenReleasedAsync()
+    [TestFixture]
+    public class TheExecuteReadingAsyncMethod
+    {
+        [Test]
+        public async Task ReaderWrapsAnyExceptionIntoIOSynchronizationExceptionAsync()
+        {
+            try
             {
-                using (var temporaryFilesContext = new TemporaryFilesContext("CorrectlyReleasesFileAfterAllNestedScopesHaveBeenReleasedAsync"))
+                using (var temporaryFilesContext = new TemporaryFilesContext("DoesNotSwallowReaderIOExceptionAsync"))
                 {
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
                     var fileName = temporaryFilesContext.GetFile("file1.txt");
@@ -196,76 +107,155 @@
                     var fileService = new FileService();
                     var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
 
-                    // Step 1: Write
-                    await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
+                    // write for creating sync file
+                    await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ =>
                     {
                         await File.WriteAllTextAsync(fileName, "12345");
                         return true;
                     });
 
-                    var syncFile = ioSynchronizationService.GetSyncFileByPath(rootDirectory);
+                    var alreadyExecuted = false;
 
+                    await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async _ =>
+                    {
+                        if (alreadyExecuted)
+                        {
+                            return true;
+                        }
+
+                        // preventing continuous loop
+                        alreadyExecuted = true;
+
+                        throw new IOException();
+
+                    });
+                }
+
+                Assert.Fail("Expected exception");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsInstanceOf<IOSynchronizationException>(ex);
+            }
+        }
+
+        [Test]
+        public async Task DoesNotDeleteSyncFileIfEqualsToObservedFilePathAsync()
+        {
+            using var temporaryFilesContext = new TemporaryFilesContext("DoesNotDeleteSyncFileIfEqualsToObservedFilePathAsync");
+            var fileName = temporaryFilesContext.GetFile("file1.txt");
+
+            var fileService = new FileService();
+            var ioSynchronizationService = new IOSynchronizationWithoutSeparateSyncFileService(fileService, new DirectoryService(fileService));
+
+            // ensure syn file exists and data file exists
+            await ioSynchronizationService.ExecuteWritingAsync(fileName, async _ =>
+            {
+                await File.WriteAllTextAsync(fileName, "12345");
+                return true;
+            });
+
+            var syncFile = ioSynchronizationService.GetSyncFileByPath(fileName);
+            // required thing
+            Assert.AreEqual(syncFile, fileName);
+
+            Assert.IsTrue(File.Exists(syncFile));
+
+            // nested readings
+            await ioSynchronizationService.ExecuteReadingAsync(fileName, async _ =>
+            {
+                await ioSynchronizationService.ExecuteReadingAsync(fileName, async _ =>
+                {
                     Assert.IsTrue(File.Exists(syncFile));
 
-                    // Now do 2 nested reads
-                    await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async x =>
-                    {
-                        await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async y =>
-                        {
-                            Assert.IsTrue(File.Exists(syncFile));
+                    return true;
+                });
 
-                            return true;
-                        });
+                Assert.IsTrue(File.Exists(syncFile));
 
-                        Assert.IsTrue(File.Exists(syncFile));
+                return true;
+            });
 
-                        return true;
-                    });
+            // Even now the refresh file should not be removed
+            Assert.IsTrue(File.Exists(syncFile));
+        }
 
-                    // Only now the refresh file should be removed
-                    Assert.IsFalse(File.Exists(syncFile));
-                }
-            }
+        [Test]
+        public async Task CorrectlyReleasesFileAfterAllNestedScopesHaveBeenReleasedAsync()
+        {
+            using var temporaryFilesContext = new TemporaryFilesContext("CorrectlyReleasesFileAfterAllNestedScopesHaveBeenReleasedAsync");
+            var rootDirectory = temporaryFilesContext.GetDirectory("output");
+            var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-            [Test]
-            public async Task WaitWithReadingUntilWriteIsFinishedAsync()
+            var fileService = new FileService();
+            var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+
+            // Step 1: Write
+            await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ =>
             {
-                using (var temporaryFilesContext = new TemporaryFilesContext("WaitWithReadingUntilWriteIsFinishedAsync"))
+                await File.WriteAllTextAsync(fileName, "12345");
+                return true;
+            });
+
+            var syncFile = ioSynchronizationService.GetSyncFileByPath(rootDirectory);
+
+            Assert.IsTrue(File.Exists(syncFile));
+
+            // Now do 2 nested reads
+            await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async _ =>
+            {
+                await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async _ =>
                 {
-                    var rootDirectory = temporaryFilesContext.GetDirectory("output");
-                    var fileName = temporaryFilesContext.GetFile("file1.txt");
+                    Assert.IsTrue(File.Exists(syncFile));
 
-                    var fileService = new FileService();
-                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+                    return true;
+                });
 
-                    // Step 1: Write, do not await
+                Assert.IsTrue(File.Exists(syncFile));
+
+                return true;
+            });
+
+            // Only now the refresh file should be removed
+            Assert.IsFalse(File.Exists(syncFile));
+        }
+
+        [Test]
+        public async Task WaitWithReadingUntilWriteIsFinishedAsync()
+        {
+            using var temporaryFilesContext = new TemporaryFilesContext("WaitWithReadingUntilWriteIsFinishedAsync");
+            var rootDirectory = temporaryFilesContext.GetDirectory("output");
+            var fileName = temporaryFilesContext.GetFile("file1.txt");
+
+            var fileService = new FileService();
+            var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+
+            // Step 1: Write, do not await
 #pragma warning disable 4014
-                    ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async x =>
+            ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ =>
 #pragma warning restore 4014
-                    {
-                        await File.WriteAllTextAsync(fileName, "12345");
+            {
+                await File.WriteAllTextAsync(fileName, "12345");
 
-                        await Task.Delay(2500);
+                await Task.Delay(2500);
 
-                        return true;
-                    });
+                return true;
+            });
 
-                    var startTime = DateTime.Now;
-                    var endTime = DateTime.Now;
+            var startTime = DateTime.Now;
+            var endTime = DateTime.Now;
 
-                    // Step 2: read, but should only be allowed after 5 seconds
-                    await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async y =>
-                    {
-                        endTime = DateTime.Now;
-                        return true;
-                    });
+            // Step 2: read, but should only be allowed after 5 seconds
+            await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async _ =>
+            {
+                endTime = DateTime.Now;
+                return true;
+            });
 
-                    var delta = endTime - startTime;
+            var delta = endTime - startTime;
 
-                    // Delta should be at least 2 seconds (meaning we have awaited the writing)
-                    Assert.IsTrue(delta > TimeSpan.FromSeconds(2));
-                }
-            }
+            // Delta should be at least 2 seconds (meaning we have awaited the writing)
+            Assert.IsTrue(delta > TimeSpan.FromSeconds(2));
         }
     }
 }
