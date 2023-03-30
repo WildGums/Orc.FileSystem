@@ -10,7 +10,7 @@
     {
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-        public Stream Create(string fileName)
+        public virtual Stream Create(string fileName)
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -29,7 +29,7 @@
             }
         }
 
-        public Stream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+        public virtual Stream Open(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -72,7 +72,7 @@
             }
         }
 
-        public bool CanOpen(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
+        public virtual bool CanOpen(string fileName, FileMode fileMode, FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.ReadWrite)
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -137,7 +137,7 @@
             }
         }
 
-        public void Copy(string sourceFileName, string destinationFileName, bool overwrite = false)
+        public virtual void Copy(string sourceFileName, string destinationFileName, bool overwrite = false)
         {
             Argument.IsNotNullOrWhitespace(() => sourceFileName);
             Argument.IsNotNullOrWhitespace(() => destinationFileName);
@@ -189,7 +189,7 @@
             }
         }
 
-        public void Move(string sourceFileName, string destinationFileName, bool overwrite = false)
+        public virtual void Move(string sourceFileName, string destinationFileName, bool overwrite = false)
         {
             Argument.IsNotNullOrWhitespace(() => sourceFileName);
             Argument.IsNotNullOrWhitespace(() => destinationFileName);
@@ -249,7 +249,7 @@
             }
         }
 
-        public bool Exists(string fileName)
+        public virtual bool Exists(string fileName)
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
@@ -266,7 +266,7 @@
             }
         }
 
-        public void Delete(string fileName)
+        public virtual void Delete(string fileName)
         {
             Argument.IsNotNullOrWhitespace(() => fileName);
 
