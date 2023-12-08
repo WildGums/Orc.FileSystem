@@ -45,7 +45,7 @@ public class IOSynchronizationServiceFacts
             }
             catch (Exception ex)
             {
-                Assert.IsInstanceOf<IOSynchronizationException>(ex);
+                Assert.That(ex, Is.InstanceOf<IOSynchronizationException>());
             }
         }
 
@@ -135,7 +135,7 @@ public class IOSynchronizationServiceFacts
             }
             catch (Exception ex)
             {
-                Assert.IsInstanceOf<IOSynchronizationException>(ex);
+                Assert.That(ex, Is.InstanceOf<IOSynchronizationException>());
             }
         }
 
@@ -157,27 +157,27 @@ public class IOSynchronizationServiceFacts
 
             var syncFile = ioSynchronizationService.GetSyncFileByPath(fileName);
             // required thing
-            Assert.AreEqual(syncFile, fileName);
+            Assert.That(fileName, Is.EqualTo(syncFile));
 
-            Assert.IsTrue(File.Exists(syncFile));
+            Assert.That(File.Exists(syncFile), Is.True);
 
             // nested readings
             await ioSynchronizationService.ExecuteReadingAsync(fileName, async _ =>
             {
                 await ioSynchronizationService.ExecuteReadingAsync(fileName, async _ =>
                 {
-                    Assert.IsTrue(File.Exists(syncFile));
+                    Assert.That(File.Exists(syncFile), Is.True);
 
                     return true;
                 });
 
-                Assert.IsTrue(File.Exists(syncFile));
+                Assert.That(File.Exists(syncFile), Is.True);
 
                 return true;
             });
 
             // Even now the refresh file should not be removed
-            Assert.IsTrue(File.Exists(syncFile));
+            Assert.That(File.Exists(syncFile), Is.True);
         }
 
         [Test]
@@ -199,25 +199,25 @@ public class IOSynchronizationServiceFacts
 
             var syncFile = ioSynchronizationService.GetSyncFileByPath(rootDirectory);
 
-            Assert.IsTrue(File.Exists(syncFile));
+            Assert.That(File.Exists(syncFile), Is.True);
 
             // Now do 2 nested reads
             await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async _ =>
             {
                 await ioSynchronizationService.ExecuteReadingAsync(rootDirectory, async _ =>
                 {
-                    Assert.IsTrue(File.Exists(syncFile));
+                    Assert.That(File.Exists(syncFile), Is.True);
 
                     return true;
                 });
 
-                Assert.IsTrue(File.Exists(syncFile));
+                Assert.That(File.Exists(syncFile), Is.True);
 
                 return true;
             });
 
             // Only now the refresh file should be removed
-            Assert.IsFalse(File.Exists(syncFile));
+            Assert.That(File.Exists(syncFile), Is.False);
         }
 
         [Test]
@@ -255,7 +255,7 @@ public class IOSynchronizationServiceFacts
             var delta = endTime - startTime;
 
             // Delta should be at least 2 seconds (meaning we have awaited the writing)
-            Assert.IsTrue(delta > TimeSpan.FromSeconds(2));
+            Assert.That(delta > TimeSpan.FromSeconds(2), Is.True);
         }
     }
 }
