@@ -1,67 +1,58 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="StreamExtensions.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
+﻿namespace Orc.FileSystem;
 
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
-namespace Orc.FileSystem
+public static class StreamExtensions
 {
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Catel;
-
-    public static class StreamExtensions
+    public static byte[] ReadAllBytes(this Stream stream)
     {
-        public static byte[] ReadAllBytes(this Stream stream)
+        ArgumentNullException.ThrowIfNull(stream);
+
+        const int bufferSize = 2048;
+
+        var bytes = new byte[stream.Length];
+
+        var buffer = new byte[bufferSize];
+        var totalBytesRead = 0;
+        int bytesRead;
+
+        do
         {
-            Argument.IsNotNull(() => stream);
+            bytesRead = stream.Read(buffer, 0, bufferSize);
 
-            const int BufferSize = 2048;
+            Buffer.BlockCopy(buffer, 0, bytes, totalBytesRead, bytesRead);
 
-            var bytes = new byte[stream.Length];
+            totalBytesRead += bytesRead;
 
-            var buffer = new byte[BufferSize];
-            var totalBytesRead = 0;
-            var bytesRead = 0;
+        } while (bytesRead > 0);
 
-            do
-            {
-                bytesRead = stream.Read(buffer, 0, BufferSize);
+        return bytes;
+    }
 
-                Buffer.BlockCopy(buffer, 0, bytes, totalBytesRead, bytesRead);
+    public static async Task<byte[]> ReadAllBytesAsync(this Stream stream)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
 
-                totalBytesRead += bytesRead;
+        const int bufferSize = 2048;
 
-            } while (bytesRead > 0);
+        var bytes = new byte[stream.Length];
 
-            return bytes;
-        }
+        var buffer = new byte[bufferSize];
+        var totalBytesRead = 0;
+        var bytesRead = 0;
 
-        public static async Task<byte[]> ReadAllBytesAsync(this Stream stream)
+        do
         {
-            Argument.IsNotNull(() => stream);
+            bytesRead = await stream.ReadAsync(buffer, 0, bufferSize);
 
-            const int BufferSize = 2048;
+            Buffer.BlockCopy(buffer, 0, bytes, totalBytesRead, bytesRead);
 
-            var bytes = new byte[stream.Length];
+            totalBytesRead += bytesRead;
 
-            var buffer = new byte[BufferSize];
-            var totalBytesRead = 0;
-            var bytesRead = 0;
+        } while (bytesRead > 0);
 
-            do
-            {
-                bytesRead = await stream.ReadAsync(buffer, 0, BufferSize);
-
-                Buffer.BlockCopy(buffer, 0, bytes, totalBytesRead, bytesRead);
-
-                totalBytesRead += bytesRead;
-
-            } while (bytesRead > 0);
-
-            return bytes;
-        }
+        return bytes;
     }
 }

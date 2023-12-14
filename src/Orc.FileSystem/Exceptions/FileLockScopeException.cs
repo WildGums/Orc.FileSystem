@@ -1,39 +1,22 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FileLockScopeException.cs" company="WildGums">
-//   Copyright (c) 2008 - 2017 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
+﻿namespace Orc.FileSystem;
 
+using System;
 
-namespace Orc.FileSystem
+[Serializable]
+public class FileLockScopeException : Exception
 {
-    using System;
-    using System.Runtime.Serialization;
-
-    [Serializable]
-    public class FileLockScopeException : Exception
+    public FileLockScopeException()
     {
-        #region Constructors
-        public FileLockScopeException()
-        {
 
-        }
+    }
 
-        public FileLockScopeException(string message)
-            : base(message)
-        {
-        }
+    public FileLockScopeException(string message)
+        : base(message)
+    {
+    }
 
-        public FileLockScopeException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-
-        protected FileLockScopeException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-
-        }
-        #endregion
+    public FileLockScopeException(string message, Exception innerException)
+        : base(message, innerException)
+    {
     }
 }

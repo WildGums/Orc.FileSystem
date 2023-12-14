@@ -1,48 +1,38 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IFileServiceExtensions.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
+﻿namespace Orc.FileSystem;
 
+using System;
+using System.IO;
+using Catel.Logging;
 
-namespace Orc.FileSystem
+public static partial class IFileServiceExtensions
 {
-    using System.IO;
-    using Catel;
-    using Catel.Logging;
+    private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
-    public static partial class IFileServiceExtensions
+    public static bool CanOpenRead(this IFileService fileService, string fileName)
     {
-        #region Constants
-        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
-        #endregion
+        ArgumentNullException.ThrowIfNull(fileService);
 
-        public static bool CanOpenRead(this IFileService fileService, string fileName)
-        {
-            Argument.IsNotNull(() => fileService);
+        return fileService.CanOpen(fileName, FileMode.Open, FileAccess.Read);
+    }
 
-            return fileService.CanOpen(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        }
+    public static Stream OpenRead(this IFileService fileService, string fileName)
+    {
+        ArgumentNullException.ThrowIfNull(fileService);
 
-        public static FileStream OpenRead(this IFileService fileService, string fileName)
-        {
-            Argument.IsNotNull(() => fileService);
+        return fileService.Open(fileName, FileMode.Open, FileAccess.Read);
+    }
 
-            return fileService.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        }
+    public static bool CanOpenWrite(this IFileService fileService, string fileName)
+    {
+        ArgumentNullException.ThrowIfNull(fileService);
 
-        public static bool CanOpenWrite(this IFileService fileService, string fileName)
-        {
-            Argument.IsNotNull(() => fileService);
+        return fileService.CanOpen(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+    }
 
-            return fileService.CanOpen(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-        }
+    public static Stream OpenWrite(this IFileService fileService, string fileName)
+    {
+        ArgumentNullException.ThrowIfNull(fileService);
 
-        public static FileStream OpenWrite(this IFileService fileService, string fileName)
-        {
-            Argument.IsNotNull(() => fileService);
-
-            return fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-        }
+        return fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
     }
 }

@@ -1,64 +1,54 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FileInfoExtensions.cs" company="WildGums">
-//   Copyright (c) 2008 - 2016 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
+﻿namespace Orc.FileSystem;
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using System.Threading;
 
-namespace Orc.FileSystem
+public static class FileInfoExtensions
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Threading.Tasks;
-    using System.Threading;
+    private const int TimerTickIntervalInMilliseconds = 50;
 
-    public static class FileInfoExtensions
+    public static async Task EnsureFilesNotBusyAsync(this IEnumerable<FileInfo> files)
     {
-        private const int TimerTickIntervalInMilliseconds = 50;
+        var tcs = new TaskCompletionSource<object?>();
 
-        #region Methods
-        public static async Task EnsureFilesNotBusyAsync(this IEnumerable<FileInfo> files)
+        Timer? timer = null;
+
+        var handler = new TimerCallback(x =>
         {
-            var tcs = new TaskCompletionSource<object>();
-
-            Timer timer = null;
-
-            var handler = new TimerCallback(x =>
+            foreach (var file in files)
             {
-                foreach (var file in files)
+                try
                 {
-                    try
+                    if (!file.Exists)
                     {
-                        if (!file.Exists)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        using (file.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        {
-                            // don't do anything
-                        }
-                    }
-                    catch (IOException)
+                    using (file.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
-                        timer.Change(TimerTickIntervalInMilliseconds, Timeout.Infinite);
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.TrySetException(ex);
-                        return;
+                        // don't do anything
                     }
                 }
-
-                tcs.TrySetResult(null);
-            });
-
-            using (timer = new Timer(handler, null, TimerTickIntervalInMilliseconds, Timeout.Infinite))
-            {
-                await tcs.Task;
+                catch (IOException)
+                {
+                    timer?.Change(TimerTickIntervalInMilliseconds, Timeout.Infinite);
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                    return;
+                }
             }
+
+            tcs.TrySetResult(null);
+        });
+
+        using (timer = new Timer(handler, null, TimerTickIntervalInMilliseconds, Timeout.Infinite))
+        {
+            await tcs.Task;
         }
-        #endregion
     }
 }
