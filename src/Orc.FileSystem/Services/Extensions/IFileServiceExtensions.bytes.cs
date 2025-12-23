@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Catel;
 using Catel.Logging;
+using Microsoft.Extensions.Logging;
 
 public static partial class IFileServiceExtensions
 {
@@ -16,14 +17,14 @@ public static partial class IFileServiceExtensions
         try
         {
             using var stream = fileService.OpenRead(fileName);
-            Log.Debug($"Reading all bytes from '{fileName}'");
+            Logger.LogDebug($"Reading all bytes from '{fileName}'");
 
             var bytes = stream.ReadAllBytes();
             return bytes;
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, $"Failed to read all bytes from '{fileName}'");
+            Logger.LogWarning(ex, $"Failed to read all bytes from '{fileName}'");
 
             throw;
         }
@@ -37,14 +38,14 @@ public static partial class IFileServiceExtensions
         try
         {
             await using var stream = fileService.OpenRead(fileName);
-            Log.Debug($"Reading all bytes from '{fileName}'");
+            Logger.LogDebug($"Reading all bytes from '{fileName}'");
 
             var bytes = await stream.ReadAllBytesAsync();
             return bytes;
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, $"Failed to read all bytes from '{fileName}'");
+            Logger.LogWarning(ex, $"Failed to read all bytes from '{fileName}'");
 
             throw;
         }
@@ -58,13 +59,13 @@ public static partial class IFileServiceExtensions
         try
         {
             using var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-            Log.Debug($"Writing '{bytes.Length}' bytes to '{fileName}'");
+            Logger.LogDebug($"Writing '{bytes.Length}' bytes to '{fileName}'");
 
             stream.Write(bytes, 0, bytes.Length);
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, $"Failed to write '{bytes.Length}' bytes to '{fileName}'");
+            Logger.LogWarning(ex, $"Failed to write '{bytes.Length}' bytes to '{fileName}'");
 
             throw;
         }
@@ -78,13 +79,13 @@ public static partial class IFileServiceExtensions
         try
         {
             await using var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-            Log.Debug($"Writing '{bytes.Length}' bytes to '{fileName}'");
+            Logger.LogDebug($"Writing '{bytes.Length}' bytes to '{fileName}'");
 
             await stream.WriteAsync(bytes, 0, bytes.Length);
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, $"Failed to write '{bytes.Length}' bytes to '{fileName}'");
+            Logger.LogWarning(ex, $"Failed to write '{bytes.Length}' bytes to '{fileName}'");
 
             throw;
         }

@@ -32,7 +32,7 @@ public sealed class TemporaryFilesContext : IDisposable
     #region IDisposable Members
     public void Dispose()
     {
-        Log.Debug("Deleting temporary files from '{0}'", _rootDirectory);
+        Logger.LogDebug("Deleting temporary files from '{0}'", _rootDirectory);
 
         try
         {
@@ -43,7 +43,7 @@ public sealed class TemporaryFilesContext : IDisposable
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Failed to delete temporary files");
+            Logger.LogWarning(ex, "Failed to delete temporary files");
         }
     }
     #endregion

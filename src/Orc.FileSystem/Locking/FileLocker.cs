@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 using Catel;
 using Catel.Logging;
 using Catel.Threading;
+using Microsoft.Extensions.Logging;
 
 public sealed class FileLocker : IDisposable
 {
-    private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+    private static readonly ILogger Logger = LogManager.GetLogger(typeof(FileLocker));
 
     private static readonly Dictionary<string, Stream> Locks = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, int> LockCounts = new(StringComparer.OrdinalIgnoreCase);
@@ -68,10 +69,11 @@ public sealed class FileLocker : IDisposable
                 ReleaseLockedFiles();
             }
 
-            Log.Debug($"[{_uniqueId}] Creating and locking following files");
+            Logger.LogDebug($"[{_uniqueId}] Creating and locking following files");
+
             foreach (var file in fileNames)
             {
-                Log.Debug($"[{_uniqueId}]  * {file}");
+                Logger.LogDebug($"[{_uniqueId}]  * {file}");
             }
 
             var continueLoop = true;
@@ -80,7 +82,7 @@ public sealed class FileLocker : IDisposable
             {
                 continueLoop = false;
 
-                Log.Warning("Locking files has interrupted due to timeout");
+                Logger.LogWarning("Locking files has interrupted due to timeout");
             });
 
             await using (var timer = new Timer(timerHandler, null, timeout, Timeout.InfiniteTimeSpan))
@@ -163,7 +165,7 @@ public sealed class FileLocker : IDisposable
     {
         lock (Locks)
         {
-            Log.Debug("Releasing locked files");
+            Logger.LogDebug("Releasing locked files");
 
             foreach (var lockFile in _internalLocks.ToList())
             {
@@ -182,7 +184,7 @@ public sealed class FileLocker : IDisposable
 
                     Locks.Remove(lockFile);
 
-                    Log.Debug($"'{lockFile}' released");
+                    Logger.LogDebug($"'{lockFile}' released");
                 }
 
                 if (count <= 0 && File.Exists(lockFile))
@@ -191,12 +193,12 @@ public sealed class FileLocker : IDisposable
                     {
                         File.Delete(lockFile);
 
-                        Log.Debug($"'{lockFile}' deleted");
+                        Logger.LogDebug($"'{lockFile}' deleted");
                     }
                     catch (Exception ex)
                     {
                         // it is not a reason for crashing the app
-                        Log.Warning(ex, $"Failed to delete '{lockFile}'");
+                        Logger.LogWarning(ex, $"Failed to delete '{lockFile}'");
                     }
                 }
 

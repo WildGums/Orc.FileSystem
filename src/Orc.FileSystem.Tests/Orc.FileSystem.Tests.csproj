@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Catel.Core" Version="6.2.0" />
-    <PackageReference Include="Catel.Fody" Version="4.11.0" PrivateAssets="all" />
+    <PackageReference Include="Catel.Core" Version="7.0.0-remove-ioc0079" />
+    <PackageReference Include="Catel.Fody" Version="4.12.0-alpha0118" PrivateAssets="all" />
     <PackageReference Include="Fody" Version="6.9.3" PrivateAssets="all">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
