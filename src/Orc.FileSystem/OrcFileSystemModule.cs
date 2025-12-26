@@ -10,7 +10,7 @@
     /// </summary>
     public static class OrcFileSystemModule
     {
-        public static IServiceCollection AddOrcFileSystemServices(this IServiceCollection serviceCollection)
+        public static IServiceCollection AddOrcFileSystem(this IServiceCollection serviceCollection)
         {
             serviceCollection.TryAddSingleton<IFileService, FileService>();
             serviceCollection.TryAddSingleton<IDirectoryService, DirectoryService>();
