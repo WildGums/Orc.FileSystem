@@ -3,17 +3,16 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 
 public class IOSynchronizationServiceFacts
 {
-    // TODO: Write unit tests
-
     [TestFixture]
     public class TheExecuteWritingAsyncMethod
     {
         [Test]
-        public async Task WriterWrapsAnyExceptionIntoIOSynchronizationExceptionAsync()
+        public async Task Writer_Wraps_Any_Exception_Into_IOSynchronizationException()
         {
             try
             {
@@ -21,8 +20,9 @@ public class IOSynchronizationServiceFacts
                 {
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
 
-                    var fileService = new FileService();
-                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+                    var fileService = new FileService(NullLogger<FileService>.Instance);
+                    var ioSynchronizationService = new IOSynchronizationService(NullLogger<IOSynchronizationService>.Instance, 
+                        fileService, new DirectoryService(NullLogger<DirectoryService>.Instance, fileService));
 
                     var alreadyExecuted = false;
 
@@ -50,15 +50,16 @@ public class IOSynchronizationServiceFacts
         }
 
         [Test]
-        public async Task AllowsAccessToSameDirectoryBySameProcessAsync()
+        public async Task Allows_Access_To_Same_Directory_By_Same_Process()
         {
             using var temporaryFilesContext = new TemporaryFilesContext("AllowsAccessToSameDirectoryBySameProcessAsync");
             var rootDirectory = temporaryFilesContext.GetDirectory("output");
             var file1 = temporaryFilesContext.GetFile("output\\file1.txt");
             var file2 = temporaryFilesContext.GetFile("output\\file2.txt");
 
-            var fileService = new FileService();
-            var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+            var fileService = new FileService(NullLogger<FileService>.Instance);
+            var ioSynchronizationService = new IOSynchronizationService(NullLogger<IOSynchronizationService>.Instance,
+                fileService, new DirectoryService(NullLogger<DirectoryService>.Instance, fileService));
 
             await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ =>
             {
@@ -73,14 +74,15 @@ public class IOSynchronizationServiceFacts
         }
 
         [Test]
-        public async Task AllowsAccessToNestingDirectoriesBySameProcessAsync()
+        public async Task Allows_Access_To_Nesting_Directories_By_Same_Process()
         {
             using var temporaryFilesContext = new TemporaryFilesContext("AllowsAccessToNestingDirectoriesBySameProcessAsync");
             var rootDirectory = temporaryFilesContext.GetDirectory("output");
             var subDirectory = temporaryFilesContext.GetDirectory("output\\subdirectory");
 
-            var fileService = new FileService();
-            var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+            var fileService = new FileService(NullLogger<FileService>.Instance);
+            var ioSynchronizationService = new IOSynchronizationService(NullLogger<IOSynchronizationService>.Instance,
+                fileService, new DirectoryService(NullLogger<DirectoryService>.Instance, fileService));
 
             await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ =>
             {
@@ -92,10 +94,10 @@ public class IOSynchronizationServiceFacts
     }
 
     [TestFixture]
-    public class TheExecuteReadingAsyncMethod
+    public class The_ExecuteReadingAsync_Method
     {
         [Test]
-        public async Task ReaderWrapsAnyExceptionIntoIOSynchronizationExceptionAsync()
+        public async Task Reader_Wraps_Any_Exception_Into_IOSynchronizationException()
         {
             try
             {
@@ -104,8 +106,9 @@ public class IOSynchronizationServiceFacts
                     var rootDirectory = temporaryFilesContext.GetDirectory("output");
                     var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-                    var fileService = new FileService();
-                    var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+                    var fileService = new FileService(NullLogger<FileService>.Instance);
+                    var ioSynchronizationService = new IOSynchronizationService(NullLogger<IOSynchronizationService>.Instance,
+                        fileService, new DirectoryService(NullLogger<DirectoryService>.Instance, fileService));
 
                     // write for creating sync file
                     await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ =>
@@ -140,13 +143,14 @@ public class IOSynchronizationServiceFacts
         }
 
         [Test]
-        public async Task DoesNotDeleteSyncFileIfEqualsToObservedFilePathAsync()
+        public async Task Does_Not_Delete_Sync_File_If_Equals_To_Observed_File_Path()
         {
             using var temporaryFilesContext = new TemporaryFilesContext("DoesNotDeleteSyncFileIfEqualsToObservedFilePathAsync");
             var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-            var fileService = new FileService();
-            var ioSynchronizationService = new IOSynchronizationWithoutSeparateSyncFileService(fileService, new DirectoryService(fileService));
+            var fileService = new FileService(NullLogger<FileService>.Instance);
+            var ioSynchronizationService = new IOSynchronizationWithoutSeparateSyncFileService(NullLogger<IOSynchronizationService>.Instance,
+                fileService, new DirectoryService(NullLogger<DirectoryService>.Instance, fileService));
 
             // ensure syn file exists and data file exists
             await ioSynchronizationService.ExecuteWritingAsync(fileName, async _ =>
@@ -181,14 +185,15 @@ public class IOSynchronizationServiceFacts
         }
 
         [Test]
-        public async Task CorrectlyReleasesFileAfterAllNestedScopesHaveBeenReleasedAsync()
+        public async Task Correctly_Releases_File_After_All_Nested_Scopes_Have_Been_Released()
         {
             using var temporaryFilesContext = new TemporaryFilesContext("CorrectlyReleasesFileAfterAllNestedScopesHaveBeenReleasedAsync");
             var rootDirectory = temporaryFilesContext.GetDirectory("output");
             var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-            var fileService = new FileService();
-            var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+            var fileService = new FileService(NullLogger<FileService>.Instance);
+            var ioSynchronizationService = new IOSynchronizationService(NullLogger<IOSynchronizationService>.Instance,
+                fileService, new DirectoryService(NullLogger<DirectoryService>.Instance, fileService));
 
             // Step 1: Write
             await ioSynchronizationService.ExecuteWritingAsync(rootDirectory, async _ =>
@@ -221,14 +226,15 @@ public class IOSynchronizationServiceFacts
         }
 
         [Test]
-        public async Task WaitWithReadingUntilWriteIsFinishedAsync()
+        public async Task Wait_With_Reading_Until_Write_Is_Finished()
         {
             using var temporaryFilesContext = new TemporaryFilesContext("WaitWithReadingUntilWriteIsFinishedAsync");
             var rootDirectory = temporaryFilesContext.GetDirectory("output");
             var fileName = temporaryFilesContext.GetFile("file1.txt");
 
-            var fileService = new FileService();
-            var ioSynchronizationService = new IOSynchronizationService(fileService, new DirectoryService(fileService));
+            var fileService = new FileService(NullLogger<FileService>.Instance);
+            var ioSynchronizationService = new IOSynchronizationService(NullLogger<IOSynchronizationService>.Instance,
+                fileService, new DirectoryService(NullLogger<DirectoryService>.Instance, fileService));
 
             // Step 1: Write, do not await
 #pragma warning disable 4014

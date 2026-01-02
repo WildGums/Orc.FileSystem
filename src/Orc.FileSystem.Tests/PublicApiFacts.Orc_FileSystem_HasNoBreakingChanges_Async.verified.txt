@@ -10,7 +10,7 @@ namespace Orc.FileSystem
 {
     public class DirectoryService : Orc.FileSystem.IDirectoryService
     {
-        public DirectoryService(Orc.FileSystem.IFileService fileService) { }
+        public DirectoryService(Microsoft.Extensions.Logging.ILogger<Orc.FileSystem.DirectoryService> logger, Orc.FileSystem.IFileService fileService) { }
         public virtual void Copy(string sourcePath, string destinationPath, bool copySubDirs = true, bool overwriteExisting = false) { }
         public virtual string Create(string path) { }
         public virtual void Delete(string path, bool recursive = true) { }
@@ -57,7 +57,7 @@ namespace Orc.FileSystem
     }
     public class FileService : Orc.FileSystem.IFileService
     {
-        public FileService() { }
+        public FileService(Microsoft.Extensions.Logging.ILogger<Orc.FileSystem.FileService> logger) { }
         public virtual bool CanOpen(string fileName, System.IO.FileMode fileMode, System.IO.FileAccess fileAccess = 3, System.IO.FileShare fileShare = 3) { }
         public virtual void Copy(string sourceFileName, string destinationFileName, bool overwrite = false) { }
         public virtual System.IO.Stream Create(string fileName) { }
@@ -132,7 +132,7 @@ namespace Orc.FileSystem
     }
     public class IOSynchronizationService : Orc.FileSystem.IIOSynchronizationService
     {
-        public IOSynchronizationService(Orc.FileSystem.IFileService fileService, Orc.FileSystem.IDirectoryService directoryService) { }
+        public IOSynchronizationService(Microsoft.Extensions.Logging.ILogger<Orc.FileSystem.IOSynchronizationService> logger, Orc.FileSystem.IFileService fileService, Orc.FileSystem.IDirectoryService directoryService) { }
         public virtual System.TimeSpan DelayAfterWriteOperations { get; set; }
         public virtual System.TimeSpan DelayBetweenChecks { get; set; }
         public event System.EventHandler<Orc.FileSystem.PathEventArgs>? RefreshRequired;
@@ -144,6 +144,10 @@ namespace Orc.FileSystem
         protected virtual string ResolveObservedFileName(string path) { }
         public virtual System.Threading.Tasks.Task StartWatchingForChangesAsync(string path) { }
         public virtual System.Threading.Tasks.Task StopWatchingForChangesAsync(string path) { }
+    }
+    public static class OrcFileSystemModule
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddOrcFileSystem(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection) { }
     }
     public class PathEventArgs : System.EventArgs
     {
