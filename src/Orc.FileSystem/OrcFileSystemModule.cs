@@ -1,4 +1,4 @@
-﻿namespace Orc.FileSystem
+﻿namespace Orc
 {
     using Catel.Services;
     using Catel.ThirdPartyNotices;
