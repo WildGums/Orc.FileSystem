@@ -145,10 +145,6 @@ namespace Orc.FileSystem
         public virtual System.Threading.Tasks.Task StartWatchingForChangesAsync(string path) { }
         public virtual System.Threading.Tasks.Task StopWatchingForChangesAsync(string path) { }
     }
-    public static class OrcFileSystemModule
-    {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddOrcFileSystem(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection) { }
-    }
     public class PathEventArgs : System.EventArgs
     {
         public PathEventArgs(string path) { }
@@ -162,5 +158,12 @@ namespace Orc.FileSystem
     public static class SystemErrorCodes
     {
         public const uint ERROR_SHARING_VIOLATION = 2147942432u;
+    }
+}
+namespace Orc
+{
+    public static class OrcFileSystemModule
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddOrcFileSystem(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection) { }
     }
 }
