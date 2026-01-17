@@ -24,7 +24,7 @@
     </PackageReference>
     <PackageReference Include="Obsolete.Fody" Version="5.3.1" PrivateAssets="all" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\..\Catel\src\Catel.Core\Catel.Core.csproj" />
   </ItemGroup>
