@@ -1,7 +1,7 @@
 ﻿namespace Orc.FileSystem;
 
 using System.Diagnostics;
-using Catel.Logging;
+using Microsoft.Extensions.Logging;
 
 internal static class ILogExtensions
 {
@@ -12,11 +12,11 @@ internal static class ILogExtensions
         IsDebuggerAttached = Debugger.IsAttached;
     }
 
-    public static void DebugIfAttached(this ILog log, string message)
+    public static void LogDebugIfAttached(this ILogger logger, string message)
     {
         if (IsDebuggerAttached)
         {
-            log.Debug(message);
+            logger.LogDebug(message);
         }
     }
 }

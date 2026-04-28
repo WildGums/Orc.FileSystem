@@ -3,10 +3,11 @@
 using System;
 using System.Runtime.InteropServices;
 using Catel.Logging;
+using Microsoft.Extensions.Logging;
 
 public static class FileLockInfo
 {
-    private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+    private static readonly ILogger Logger = LogManager.GetLogger(typeof(FileLockInfo));
 
     // maximum character count of application friendly name. 
     private const int CCH_RM_MAX_APP_NAME = 255;
@@ -118,7 +119,7 @@ public static class FileLockInfo
         var res = RmStartSession(out var handle, 0, sessionkey);
         if (res != 0)
         {
-            Log.Warning($"Failed to get processes locking file '{fileName}': Could not start new Restart Manager session");
+            Logger.LogWarning($"Failed to get processes locking file '{fileName}': Could not start new Restart Manager session");
             return new string[] { };
         }
 
@@ -135,7 +136,7 @@ public static class FileLockInfo
             res = RmRegisterResources(handle, 1, resources, 0, null, 0, null);
             if (res != 0)
             {
-                Log.Warning($"Failed to get processes locking file '{fileName}': Could not register resource to a Restart Manager session");
+                Logger.LogWarning($"Failed to get processes locking file '{fileName}': Could not register resource to a Restart Manager session");
                 return new string[] { };
             }
 
@@ -153,7 +154,7 @@ public static class FileLockInfo
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, $"Failed to get processes locking file '{fileName}'");
+            Logger.LogWarning(ex, $"Failed to get processes locking file '{fileName}'");
         }
         finally
         {

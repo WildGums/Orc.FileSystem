@@ -2,20 +2,12 @@
 
 using System;
 using System.IO;
-using Catel.Logging;
 
 public sealed class TemporaryFilesContext : IDisposable
 {
-    #region Constants
-    private static readonly ILog Log = LogManager.GetCurrentClassLogger();
-    #endregion
-
-    #region Fields
     private readonly Guid _randomGuid = Guid.NewGuid();
     private readonly string _rootDirectory;
-    #endregion
 
-    #region Constructors
     public TemporaryFilesContext(string name = null)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -27,12 +19,10 @@ public sealed class TemporaryFilesContext : IDisposable
 
         Directory.CreateDirectory(_rootDirectory);
     }
-    #endregion
 
-    #region IDisposable Members
     public void Dispose()
     {
-        Log.Debug("Deleting temporary files from '{0}'", _rootDirectory);
+        //Logger.LogDebug("Deleting temporary files from '{0}'", _rootDirectory);
 
         try
         {
@@ -41,14 +31,12 @@ public sealed class TemporaryFilesContext : IDisposable
                 Directory.Delete(_rootDirectory, true);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Log.Warning(ex, "Failed to delete temporary files");
+            //Logger.LogWarning(ex, "Failed to delete temporary files");
         }
     }
-    #endregion
 
-    #region Methods
     public string GetDirectory(string relativeDirectoryName)
     {
         var fullPath = Path.Combine(_rootDirectory, relativeDirectoryName);
@@ -81,5 +69,4 @@ public sealed class TemporaryFilesContext : IDisposable
 
         return fullPath;
     }
-    #endregion
 }

@@ -3,10 +3,11 @@
 using System;
 using System.IO;
 using Catel.Logging;
+using Microsoft.Extensions.Logging;
 
 public static partial class IFileServiceExtensions
 {
-    private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+    private static readonly ILogger Logger = LogManager.GetLogger(typeof(IFileServiceExtensions));
 
     public static bool CanOpenRead(this IFileService fileService, string fileName)
     {
