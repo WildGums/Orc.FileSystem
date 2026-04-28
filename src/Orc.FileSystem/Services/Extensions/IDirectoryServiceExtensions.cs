@@ -4,10 +4,11 @@ using System;
 using System.IO;
 using System.Linq;
 using Catel.Logging;
+using Microsoft.Extensions.Logging;
 
 public static class IDirectoryServiceExtensions
 {
-    private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+    private static readonly ILogger Logger = LogManager.GetLogger(typeof(IDirectoryServiceExtensions));
 
     public static bool IsEmpty(this IDirectoryService directoryService, string path)
     {
@@ -55,7 +56,7 @@ public static class IDirectoryServiceExtensions
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Failed to calculate the size of directory '{0}'", path);
+            Logger.LogWarning(ex, "Failed to calculate the size of directory '{0}'", path);
         }
 
         return size;

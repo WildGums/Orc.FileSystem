@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Catel;
 using Catel.Logging;
+using Microsoft.Extensions.Logging;
 
 public static partial class IFileServiceExtensions
 {
@@ -18,7 +19,7 @@ public static partial class IFileServiceExtensions
         try
         {
             using var stream = fileService.OpenRead(fileName);
-            Log.Debug($"Reading all lines from '{fileName}'");
+            Logger.LogDebug($"Reading all lines from '{fileName}'");
 
             using var reader = new StreamReader(stream);
             var text = reader.ReadToEnd();
@@ -28,7 +29,7 @@ public static partial class IFileServiceExtensions
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, $"Failed to read all lines from '{fileName}'");
+            Logger.LogWarning(ex, $"Failed to read all lines from '{fileName}'");
 
             throw;
         }
@@ -42,7 +43,7 @@ public static partial class IFileServiceExtensions
         try
         {
             await using var stream = fileService.OpenRead(fileName);
-            Log.Debug($"Reading all lines from '{fileName}'");
+            Logger.LogDebug($"Reading all lines from '{fileName}'");
 
             using var reader = new StreamReader(stream);
             var text = await reader.ReadToEndAsync();
@@ -52,7 +53,7 @@ public static partial class IFileServiceExtensions
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, $"Failed to read all lines from '{fileName}'");
+            Logger.LogWarning(ex, $"Failed to read all lines from '{fileName}'");
 
             throw;
         }
@@ -75,7 +76,7 @@ public static partial class IFileServiceExtensions
             count = lines.Count();
 
             using var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-            Log.Debug($"Writing '{count}' lines to '{fileName}'");
+            Logger.LogDebug($"Writing '{count}' lines to '{fileName}'");
 
             using var writer = new StreamWriter(stream);
             foreach (var line in lines)
@@ -85,7 +86,7 @@ public static partial class IFileServiceExtensions
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, $"Failed to write '{count}' lines to '{fileName}'");
+            Logger.LogWarning(ex, $"Failed to write '{count}' lines to '{fileName}'");
 
             throw;
         }
@@ -103,7 +104,7 @@ public static partial class IFileServiceExtensions
             count = lines.Count();
 
             await using var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-            Log.Debug($"Writing '{count}' lines to '{fileName}'");
+            Logger.LogDebug($"Writing '{count}' lines to '{fileName}'");
 
             await using var writer = new StreamWriter(stream);
             foreach (var line in lines)
@@ -113,7 +114,7 @@ public static partial class IFileServiceExtensions
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, $"Failed to write '{count}' lines to '{fileName}'");
+            Logger.LogWarning(ex, $"Failed to write '{count}' lines to '{fileName}'");
 
             throw;
         }

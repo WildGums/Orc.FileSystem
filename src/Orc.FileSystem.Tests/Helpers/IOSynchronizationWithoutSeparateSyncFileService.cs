@@ -1,9 +1,12 @@
 ﻿namespace Orc.FileSystem.Tests;
 
+using Microsoft.Extensions.Logging;
+
 public class IOSynchronizationWithoutSeparateSyncFileService : IOSynchronizationService
 {
-    public IOSynchronizationWithoutSeparateSyncFileService(IFileService fileService, IDirectoryService directoryService)
-        : base(fileService, directoryService)
+    public IOSynchronizationWithoutSeparateSyncFileService(ILogger<IOSynchronizationService> logger, 
+        IFileService fileService, IDirectoryService directoryService)
+        : base(logger, fileService, directoryService)
     {
     }
 

@@ -1,10 +1,12 @@
 ﻿namespace Orc.FileSystem.ViewModels;
 
+using System;
 using Catel.MVVM;
 
 public class MainViewModel : ViewModelBase
 {
-    public MainViewModel()
+    public MainViewModel(IServiceProvider serviceProvider)
+        : base(serviceProvider)
     {
         Title = "Orc.FileSystem example";
     }

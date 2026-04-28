@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Catel.IoC;
 using Catel.Services;
 using Orc.FileSystem;
@@ -14,13 +14,5 @@ public static class ModuleInitializer
     [ModuleInitializer]
     public static void Initialize()
     {
-        var serviceLocator = ServiceLocator.Default;
-
-        serviceLocator.RegisterType<IFileService, FileService>();
-        serviceLocator.RegisterType<IDirectoryService, DirectoryService>();
-        serviceLocator.RegisterType<IIOSynchronizationService, IOSynchronizationService>();
-
-        var languageService = serviceLocator.ResolveRequiredType<ILanguageService>();
-        languageService.RegisterLanguageSource(new LanguageResourceSource("Orc.FileSystem", "Orc.FileSystem.Properties", "Resources"));
     }
 }
