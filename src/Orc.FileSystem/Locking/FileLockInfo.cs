@@ -119,7 +119,7 @@ public static class FileLockInfo
         var res = RmStartSession(out var handle, 0, sessionkey);
         if (res != 0)
         {
-            Logger.LogWarning($"Failed to get processes locking file '{fileName}': Could not start new Restart Manager session");
+            Logger.LogWarning("Failed to get processes locking file '{FileName}': Could not start new Restart Manager session", fileName);
             return new string[] { };
         }
 
@@ -136,7 +136,7 @@ public static class FileLockInfo
             res = RmRegisterResources(handle, 1, resources, 0, null, 0, null);
             if (res != 0)
             {
-                Logger.LogWarning($"Failed to get processes locking file '{fileName}': Could not register resource to a Restart Manager session");
+                Logger.LogWarning("Failed to get processes locking file '{FileName}': Could not register resource to a Restart Manager session", fileName);
                 return new string[] { };
             }
 
@@ -154,7 +154,7 @@ public static class FileLockInfo
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, $"Failed to get processes locking file '{fileName}'");
+            Logger.LogWarning(ex, "Failed to get processes locking file '{FileName}'", fileName);
         }
         finally
         {

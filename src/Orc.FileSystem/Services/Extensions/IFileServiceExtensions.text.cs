@@ -17,7 +17,7 @@ public static partial class IFileServiceExtensions
         try
         {
             using var stream = fileService.OpenRead(fileName);
-            Logger.LogDebug($"Reading all text from '{fileName}'");
+            Logger.LogDebug("Reading all text from '{FileName}'", fileName);
 
             using var reader = new StreamReader(stream);
             var text = reader.ReadToEnd();
@@ -25,7 +25,7 @@ public static partial class IFileServiceExtensions
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, $"Failed to read all text from '{fileName}'");
+            Logger.LogWarning(ex, "Failed to read all text from '{FileName}'", fileName);
 
             throw;
         }
@@ -39,7 +39,7 @@ public static partial class IFileServiceExtensions
         try
         {
             await using var stream = fileService.OpenRead(fileName);
-            Logger.LogDebug($"Reading all text from '{fileName}'");
+            Logger.LogDebug("Reading all text from '{FileName}'", fileName);
 
             using var reader = new StreamReader(stream);
             var text = await reader.ReadToEndAsync();
@@ -47,7 +47,7 @@ public static partial class IFileServiceExtensions
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, $"Failed to read all text from '{fileName}'");
+            Logger.LogWarning(ex, "Failed to read all text from '{FileName}'", fileName);
 
             throw;
         }
@@ -61,14 +61,14 @@ public static partial class IFileServiceExtensions
         try
         {
             using var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-            Logger.LogDebug($"Writing text to '{fileName}'");
+            Logger.LogDebug("Writing text to '{FileName}'", fileName);
 
             using var writer = new StreamWriter(stream);
             writer.Write(text);
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, $"Failed to write text to '{fileName}'");
+            Logger.LogWarning(ex, "Failed to write text to '{FileName}'", fileName);
 
             throw;
         }
@@ -82,14 +82,14 @@ public static partial class IFileServiceExtensions
         try
         {
             await using var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-            Logger.LogDebug($"Writing text to '{fileName}'");
+            Logger.LogDebug("Writing text to '{FileName}'", fileName);
 
             await using var writer = new StreamWriter(stream);
             await writer.WriteAsync(text);
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, $"Failed to write text to '{fileName}'");
+            Logger.LogWarning(ex, "Failed to write text to '{FileName}'", fileName);
 
             throw;
         }

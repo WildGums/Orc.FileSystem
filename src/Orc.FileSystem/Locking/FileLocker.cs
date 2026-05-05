@@ -69,11 +69,11 @@ public sealed class FileLocker : IDisposable
                 ReleaseLockedFiles();
             }
 
-            Logger.LogDebug($"[{_uniqueId}] Creating and locking following files");
+            Logger.LogDebug("[{UniqueId}] Creating and locking following files", _uniqueId);
 
             foreach (var file in fileNames)
             {
-                Logger.LogDebug($"[{_uniqueId}]  * {file}");
+                Logger.LogDebug("[{UniqueId}]  * {File}", _uniqueId, file);
             }
 
             var continueLoop = true;
@@ -184,7 +184,7 @@ public sealed class FileLocker : IDisposable
 
                     Locks.Remove(lockFile);
 
-                    Logger.LogDebug($"'{lockFile}' released");
+                    Logger.LogDebug("'{LockFile}' released", lockFile);
                 }
 
                 if (count <= 0 && File.Exists(lockFile))
@@ -193,12 +193,12 @@ public sealed class FileLocker : IDisposable
                     {
                         File.Delete(lockFile);
 
-                        Logger.LogDebug($"'{lockFile}' deleted");
+                        Logger.LogDebug("'{LockFile}' deleted", lockFile);
                     }
                     catch (Exception ex)
                     {
                         // it is not a reason for crashing the app
-                        Logger.LogWarning(ex, $"Failed to delete '{lockFile}'");
+                        Logger.LogWarning(ex, "Failed to delete '{LockFile}'", lockFile);
                     }
                 }
 

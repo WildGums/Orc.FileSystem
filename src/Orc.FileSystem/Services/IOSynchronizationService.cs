@@ -82,7 +82,7 @@ public class IOSynchronizationService : IIOSynchronizationService
 #pragma warning disable IDISP001 // Dispose created.
                 if (!_fileSystemWatchers.TryGetValue(path, out var fileSystemWatcher))
                 {
-                    _logger.LogDebug($"Start watching path '{path}'");
+                    _logger.LogDebug("Start watching path '{Path}'", path);
 
                     var syncFile = GetSyncFileByPath(path);
                     syncFile = Path.GetFileName(syncFile);
@@ -95,7 +95,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to start watching path '{path}'");
+            _logger.LogWarning(ex, "Failed to start watching path '{Path}'", path);
         }
     }
 
@@ -112,7 +112,7 @@ public class IOSynchronizationService : IIOSynchronizationService
 
                 if (_fileSystemWatchers.TryGetValue(path, out var fileSystemWatcher))
                 {
-                    _logger.LogDebug($"Stop watching path '{path}'");
+                    _logger.LogDebug("Stop watching path '{Path}'", path);
 
                     fileSystemWatcher.Changed -= OnFileSystemWatcherChanged;
 
@@ -125,7 +125,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to stop watching path '{path}'");
+            _logger.LogWarning(ex, "Failed to stop watching path '{Path}'", path);
         }
     }
 
@@ -166,7 +166,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to execute reading task for '{projectLocation}'");
+            _logger.LogWarning(ex, "Failed to execute reading task for '{ProjectLocation}'", projectLocation);
             throw;
         }
     }
@@ -208,7 +208,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to execute writing task for '{projectLocation}'");
+            _logger.LogWarning(ex, "Failed to execute writing task for '{ProjectLocation}'", projectLocation);
             throw;
         }
     }
@@ -237,7 +237,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to execute pending reading for '{path}'");
+            _logger.LogWarning(ex, "Failed to execute pending reading for '{Path}'", path);
             throw;
         }
     }
@@ -257,7 +257,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to execute pending writing for '{path}'");
+            _logger.LogWarning(ex, "Failed to execute pending writing for '{Path}'", path);
             throw;
         }
     }
@@ -319,7 +319,7 @@ public class IOSynchronizationService : IIOSynchronizationService
     {
         try
         {
-            _logger.LogDebug($"Received file watcher event '{e.FullPath} => {e.ChangeType}'");
+            _logger.LogDebug("Received file watcher event '{FullPath} => {ChangeType}'", e.FullPath, e.ChangeType);
 
             var fileName = e.FullPath;
             var paths = GetPathsBySyncFile(fileName);
@@ -353,7 +353,7 @@ public class IOSynchronizationService : IIOSynchronizationService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to handle FileSystemWatcher event e.ChangeType: '{e.ChangeType}', e.FullPath: '{e.FullPath}'");
+            _logger.LogWarning(ex, "Failed to handle FileSystemWatcher event e.ChangeType: '{ChangeType}', e.FullPath: '{FullPath}'", e.ChangeType, e.FullPath);
         }
     }
 
@@ -387,7 +387,7 @@ public class IOSynchronizationService : IIOSynchronizationService
 
             if (succeeded)
             {
-                _logger.LogDebug($"Executing read actions from path '{path}'");
+                _logger.LogDebug("Executing read actions from path '{Path}'", path);
 
                 try
                 {
@@ -395,12 +395,12 @@ public class IOSynchronizationService : IIOSynchronizationService
                 }
                 catch (Exception readException)
                 {
-                    _logger.LogWarning(readException, $"Fatal error in executing reading for '{path}': '{readException.Message}'");
+                    _logger.LogWarning(readException, "Fatal error in executing reading for '{Path}': '{ExceptionMessage}'", path, readException.Message);
 
                     throw _logger.LogErrorAndCreateException(message => new IOSynchronizationException(message, readException), $"Fatal error in executing reading for '{path}'");
                 }
 
-                _logger.LogDebug(succeeded ? $"Succeeded to execute read actions to path '{path}'" : $"Failed to execute read actions to path '{path}'");
+                _logger.LogDebug(succeeded ? "Succeeded to execute read actions to path '{Path}'" : "Failed to execute read actions to path '{Path}'", path);
             }
         }
         // Note: if we will swallow any other exception we will get endless loop
@@ -413,7 +413,7 @@ public class IOSynchronizationService : IIOSynchronizationService
                 throw;
             }
 
-            _logger.LogWarning(ex, $"Reading from '{path}' failed, adding enqueued action back in the queue");
+            _logger.LogWarning(ex, "Reading from '{Path}' failed, adding enqueued action back in the queue", path);
 
             succeeded = false;
         }
@@ -453,7 +453,7 @@ public class IOSynchronizationService : IIOSynchronizationService
 
             if (succeeded)
             {
-                _logger.LogDebug($"Executing write actions to path '{path}'");
+                _logger.LogDebug("Executing write actions to path '{Path}'", path);
 
                 try
                 {
@@ -461,20 +461,20 @@ public class IOSynchronizationService : IIOSynchronizationService
                 }
                 catch (Exception readException)
                 {
-                    _logger.LogWarning(readException, $"Fatal error in executing writing for '{path}': '{readException.Message}'");
+                    _logger.LogWarning(readException, "Fatal error in executing writing for '{Path}': '{ExceptionMessage}'", path, readException.Message);
 
                     throw _logger.LogErrorAndCreateException(message => new IOSynchronizationException(message, readException), $"Fatal error in executing writing for '{path}'");
                 }
 
                 if (!succeeded)
                 {
-                    _logger.LogDebug($"Failed to execute write actions to path '{path}', will retry");
+                    _logger.LogDebug("Failed to execute write actions to path '{Path}', will retry", path);
                 }
                 else
                 {
                     var delay = DelayAfterWriteOperations;
 
-                    _logger.LogDebug($"Succeeded to execute write actions to path '{path}', using a delay of '{delay}'");
+                    _logger.LogDebug("Succeeded to execute write actions to path '{Path}', using a delay of '{Delay}'", path, delay);
 
                     // Sometimes we need a bit of delay in order to write files to disk
                     await Task.Delay(delay);
@@ -492,7 +492,7 @@ public class IOSynchronizationService : IIOSynchronizationService
                 throw;
             }
 
-            _logger.LogWarning(ex, $"Writing to '{path}' failed, adding enqueued action back in the queue");
+            _logger.LogWarning(ex, "Writing to '{Path}' failed, adding enqueued action back in the queue", path);
 
             succeeded = false;
         }

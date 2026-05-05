@@ -28,7 +28,7 @@ public class DirectoryService : IDirectoryService
                 return path;
             }
 
-            _logger.LogDebug($"Creating directory '{path}'");
+            _logger.LogDebug("Creating directory '{Path}'", path);
 
             var info = Directory.CreateDirectory(path);
             path = info.FullName;
@@ -37,7 +37,7 @@ public class DirectoryService : IDirectoryService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to create directory '{path}'");
+            _logger.LogWarning(ex, "Failed to create directory '{Path}'", path);
 
             throw;
         }
@@ -50,13 +50,13 @@ public class DirectoryService : IDirectoryService
 
         try
         {
-            _logger.LogDebug($"Moving directory '{sourcePath}' => '{destinationPath}'");
+            _logger.LogDebug("Moving directory '{SourcePath}' => '{DestinationPath}'", sourcePath, destinationPath);
 
             Directory.Move(sourcePath, destinationPath);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to move directory '{sourcePath}' => '{destinationPath}'");
+            _logger.LogWarning(ex, "Failed to move directory '{SourcePath}' => '{DestinationPath}'", sourcePath, destinationPath);
 
             throw;
         }
@@ -69,12 +69,12 @@ public class DirectoryService : IDirectoryService
 
         if (!Exists(sourcePath))
         {
-            _logger.LogWarning($"Source directory '{sourcePath}' does not exist or could not be found");
+            _logger.LogWarning("Source directory '{SourcePath}' does not exist or could not be found", sourcePath);
 
             throw _logger.LogErrorAndCreateException<DirectoryNotFoundException>($"Source directory '{sourcePath}' does not exist or could not be found");
         }
 
-        _logger.LogDebug($"Copying directory '{sourcePath}' to '{destinationPath}'");
+        _logger.LogDebug("Copying directory '{SourcePath}' to '{DestinationPath}'", sourcePath, destinationPath);
 
         Create(destinationPath);
 
@@ -86,7 +86,7 @@ public class DirectoryService : IDirectoryService
 
             if (File.Exists(destinationFileName) && !overwriteExisting)
             {
-                _logger.LogDebug($"Skipping copying of '{file}', file already exists in target directory");
+                _logger.LogDebug("Skipping copying of '{File}', file already exists in target directory", file);
                 continue;
             }
 
@@ -120,13 +120,13 @@ public class DirectoryService : IDirectoryService
                 return;
             }
 
-            _logger.LogDebug($"Deleting directory '{path}', recursive: '{recursive}'");
+            _logger.LogDebug("Deleting directory '{Path}', recursive: '{Recursive}'", path, recursive);
 
             Directory.Delete(path, recursive);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to delete directory '{path}'");
+            _logger.LogWarning(ex, "Failed to delete directory '{Path}'", path);
 
             throw;
         }
@@ -143,7 +143,7 @@ public class DirectoryService : IDirectoryService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to check whether directory '{path}' exists");
+            _logger.LogWarning(ex, "Failed to check whether directory '{Path}' exists", path);
 
             throw;
         }
@@ -160,14 +160,14 @@ public class DirectoryService : IDirectoryService
                 searchPattern = "*";
             }
 
-            _logger.LogDebug($"Getting directories inside '{path}', searchPattern: '{searchPattern}', searchOption: '{searchOption}'");
+            _logger.LogDebug("Getting directories inside '{Path}', searchPattern: '{SearchPattern}', searchOption: '{SearchOption}'", path, searchPattern, searchOption);
 
             var directories = Directory.GetDirectories(path, searchPattern, searchOption);
             return directories;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed getting directories inside '{path}'");
+            _logger.LogWarning(ex, "Failed getting directories inside '{Path}'", path);
 
             throw;
         }
@@ -184,14 +184,14 @@ public class DirectoryService : IDirectoryService
                 searchPattern = "*";
             }
 
-            _logger.LogDebug($"Getting files inside '{path}', searchPattern: '{searchPattern}', searchOption: '{searchOption}'");
+            _logger.LogDebug("Getting files inside '{Path}', searchPattern: '{SearchPattern}', searchOption: '{SearchOption}'", path, searchPattern, searchOption);
 
             var files = Directory.GetFiles(path, searchPattern, searchOption);
             return files;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed getting files inside '{path}'");
+            _logger.LogWarning(ex, "Failed getting files inside '{Path}'", path);
 
             throw;
         }

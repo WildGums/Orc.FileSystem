@@ -20,7 +20,7 @@ public class FileService : IFileService
     {
         Argument.IsNotNullOrWhitespace(() => fileName);
 
-        _logger.LogDebugIfAttached($"Creating file '{fileName}'");
+        _logger.LogDebugIfAttached("Creating file '{FileName}'", fileName);
 
         try
         {
@@ -29,7 +29,7 @@ public class FileService : IFileService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to create file '{fileName}'");
+            _logger.LogWarning(ex, "Failed to create file '{FileName}'", fileName);
 
             throw;
         }
@@ -39,7 +39,7 @@ public class FileService : IFileService
     {
         Argument.IsNotNullOrWhitespace(() => fileName);
 
-        _logger.LogDebugIfAttached($"Opening file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
+        _logger.LogDebugIfAttached("Opening file '{FileName}', fileMode: '{FileMode}', fileAccess: '{FileAccess}', fileShare: '{FileShare}'", fileName, fileMode, fileAccess, fileShare);
 
         try
         {
@@ -50,10 +50,10 @@ public class FileService : IFileService
         {
             var hResult = (uint) ex.GetHResult();
 
-            var message = $"Failed to open file '{fileName}'";
+            var message = "Failed to open file '{FileName}'";
             if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
             {
-                _logger.LogWarning(ex, message);
+                _logger.LogWarning(ex, message, fileName);
 
                 throw;
             }
@@ -61,18 +61,18 @@ public class FileService : IFileService
             var processes = FileLockInfo.GetProcessesLockingFile(fileName);
             if (processes is null || !processes.Any())
             {                    
-                _logger.LogWarning(ex, message);
+                _logger.LogWarning(ex, message, fileName);
 
                 throw;
             }
 
-            _logger.LogWarning(message + $", locked by: {string.Join(", ", processes)}");
+            _logger.LogWarning("Failed to open file '{FileName}', locked by: {LockedByProcesses}", fileName, string.Join(", ", processes));
 
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to open file '{fileName}'");
+            _logger.LogWarning(ex, "Failed to open file '{FileName}'", fileName);
 
             throw;
         }
@@ -82,7 +82,7 @@ public class FileService : IFileService
     {
         Argument.IsNotNullOrWhitespace(() => fileName);
 
-        _logger.LogDebugIfAttached($"Checking for possibility to open file '{fileName}', fileMode: '{fileMode}', fileAccess: '{fileAccess}', fileShare: '{fileShare}'");
+        _logger.LogDebugIfAttached("Checking for possibility to open file '{FileName}', fileMode: '{FileMode}', fileAccess: '{FileAccess}', fileShare: '{FileShare}'", fileName, fileMode, fileAccess, fileShare);
 
         try
         {
@@ -148,7 +148,7 @@ public class FileService : IFileService
         Argument.IsNotNullOrWhitespace(() => sourceFileName);
         Argument.IsNotNullOrWhitespace(() => destinationFileName);
 
-        _logger.LogDebugIfAttached($"Copying file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
+        _logger.LogDebugIfAttached("Copying file '{SourceFileName}' => '{DestinationFileName}', overwrite: '{Overwrite}'", sourceFileName, destinationFileName, overwrite);
 
         try
         {
@@ -158,11 +158,11 @@ public class FileService : IFileService
         {
             var hResult = (uint)ex.GetHResult();
 
-            var message = $"Failed to copy file '{sourceFileName}' to the '{destinationFileName}'";
+            var message = "Failed to copy file '{SourceFileName}' to the '{DestinationFileName}'";
 
             if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
             {
-                _logger.LogWarning(ex, message);
+                _logger.LogWarning(ex, message, sourceFileName, destinationFileName);
 
                 throw;
             }
@@ -170,7 +170,7 @@ public class FileService : IFileService
             var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
             if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
             {
-                _logger.LogWarning(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
+                _logger.LogWarning(ex, "Failed to copy file '{SourceFileName}' to the '{DestinationFileName}'\nthe source file is locked by: {SourceLockedByProcesses}", sourceFileName, destinationFileName, string.Join(", ", sourceLockingProcesses));
 
                 throw;
             }
@@ -178,18 +178,18 @@ public class FileService : IFileService
             var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
             if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
             {
-                _logger.LogWarning(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
+                _logger.LogWarning(ex, "Failed to copy file '{SourceFileName}' to the '{DestinationFileName}'\nthe destination file is locked by: {DestinationLockedByProcesses}", sourceFileName, destinationFileName, string.Join(", ", destinationLockingProcesses));
 
                 throw;
             }
 
-            _logger.LogWarning(ex, message);
+            _logger.LogWarning(ex, message, sourceFileName, destinationFileName);
 
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to copy file '{sourceFileName}' => '{destinationFileName}'");
+            _logger.LogWarning(ex, "Failed to copy file '{SourceFileName}' => '{DestinationFileName}'", sourceFileName, destinationFileName);
 
             throw;
         }
@@ -200,7 +200,7 @@ public class FileService : IFileService
         Argument.IsNotNullOrWhitespace(() => sourceFileName);
         Argument.IsNotNullOrWhitespace(() => destinationFileName);
 
-        _logger.LogDebugIfAttached($"Moving file '{sourceFileName}' => '{destinationFileName}', overwrite: '{overwrite}'");
+        _logger.LogDebugIfAttached("Moving file '{SourceFileName}' => '{DestinationFileName}', overwrite: '{Overwrite}'", sourceFileName, destinationFileName, overwrite);
 
         try
         {
@@ -218,11 +218,11 @@ public class FileService : IFileService
         {
             var hResult = (uint)ex.GetHResult();
 
-            var message = $"Failed to move file '{sourceFileName}' to the '{destinationFileName}'";
+            var message = "Failed to move file '{SourceFileName}' to the '{DestinationFileName}'";
 
             if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
             {
-                _logger.LogWarning(ex, message);
+                _logger.LogWarning(ex, message, sourceFileName, destinationFileName);
 
                 throw;
             }
@@ -230,7 +230,7 @@ public class FileService : IFileService
             var sourceLockingProcesses = FileLockInfo.GetProcessesLockingFile(sourceFileName);
             if (sourceLockingProcesses is not null && sourceLockingProcesses.Any())
             {
-                _logger.LogWarning(ex, message + $"\nthe file file '{sourceFileName}', locked by: {string.Join(", ", sourceLockingProcesses)}");
+                _logger.LogWarning(ex, "Failed to move file '{SourceFileName}' to the '{DestinationFileName}'\nthe source file is locked by: {SourceLockedByProcesses}", sourceFileName, destinationFileName, string.Join(", ", sourceLockingProcesses));
 
                 throw;
             }
@@ -238,18 +238,18 @@ public class FileService : IFileService
             var destinationLockingProcesses = FileLockInfo.GetProcessesLockingFile(destinationFileName);
             if (destinationLockingProcesses is not null && destinationLockingProcesses.Any())
             {
-                _logger.LogWarning(ex, message + $"\nthe file '{destinationFileName}', locked by: {string.Join(", ", destinationLockingProcesses)}");
+                _logger.LogWarning(ex, "Failed to move file '{SourceFileName}' to the '{DestinationFileName}'\nthe destination file is locked by: {DestinationLockedByProcesses}", sourceFileName, destinationFileName, string.Join(", ", destinationLockingProcesses));
 
                 throw;
             }
 
-            _logger.LogWarning(ex, message);
+            _logger.LogWarning(ex, message, sourceFileName, destinationFileName);
 
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to move file '{sourceFileName}' => '{destinationFileName}'");
+            _logger.LogWarning(ex, "Failed to move file '{SourceFileName}' => '{DestinationFileName}'", sourceFileName, destinationFileName);
 
             throw;
         }
@@ -266,7 +266,7 @@ public class FileService : IFileService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to check whether file '{fileName}' exists");
+            _logger.LogWarning(ex, "Failed to check whether file '{FileName}' exists", fileName);
 
             throw;
         }
@@ -280,7 +280,7 @@ public class FileService : IFileService
         {
             if (File.Exists(fileName))
             {
-                _logger.LogDebugIfAttached($"Deleting file '{fileName}'");
+                _logger.LogDebugIfAttached("Deleting file '{FileName}'", fileName);
 
                 File.Delete(fileName);
             }
@@ -289,10 +289,10 @@ public class FileService : IFileService
         {
             var hResult = (uint)ex.GetHResult();
 
-            var message = $"Failed to delete file '{fileName}'";
+            var message = "Failed to delete file '{FileName}'";
             if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
             {
-                _logger.LogWarning(ex, message);
+                _logger.LogWarning(ex, message, fileName);
 
                 throw;
             }
@@ -300,18 +300,18 @@ public class FileService : IFileService
             var processes = FileLockInfo.GetProcessesLockingFile(fileName);
             if (processes is null || !processes.Any())
             {
-                _logger.LogWarning(ex, message);
+                _logger.LogWarning(ex, message, fileName);
 
                 throw;
             }
 
-            _logger.LogWarning(message + $", locked by: {string.Join(", ", processes)}");
+            _logger.LogWarning("Failed to delete file '{FileName}', locked by: {LockedByProcesses}", fileName, string.Join(", ", processes));
 
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to delete file '{fileName}'");
+            _logger.LogWarning(ex, "Failed to delete file '{FileName}'", fileName);
 
             throw;
         }
