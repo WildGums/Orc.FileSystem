@@ -93,14 +93,14 @@ public class FileLockScope : Disposable
                 _stream?.Dispose();
                 _stream = File.Open(syncFile, FileMode.Create, FileAccess.Write, _isReadScope ? FileShare.Delete : FileShare.None);
 
-                Logger.LogDebug($"Locked synchronization file '{syncFile}'");
+                Logger.LogDebug("Locked synchronization file '{SyncFile}'", syncFile);
             }
             catch (IOException ex)
             {
                 var hResult = (uint)ex.GetHResult();
                 if (hResult != SystemErrorCodes.ERROR_SHARING_VIOLATION)
                 {
-                    Logger.LogWarning(ex, $"Failed to lock synchronization file '{syncFile}'");
+                    Logger.LogWarning(ex, "Failed to lock synchronization file '{SyncFile}'", syncFile);
 
                     throw Logger.LogErrorAndCreateException(message => new FileLockScopeException(message, ex), $"Failed to lock synchronization file '{syncFile}'");
                 }
@@ -113,13 +113,13 @@ public class FileLockScope : Disposable
                 var processes = FileLockInfo.GetProcessesLockingFile(syncFile);
                 if (processes is null || !processes.Any())
                 {
-                    Logger.LogDebug(ex, $"First attempt to lock synchronization file '{syncFile}' was unsuccessful. " +
-                                  "Possibly locked by unknown application. Will keep retrying in the background.");
+                    Logger.LogDebug(ex, "First attempt to lock synchronization file '{SyncFile}' was unsuccessful. " +
+                                  "Possibly locked by unknown application. Will keep retrying in the background.", syncFile);
                 }
                 else
                 {
-                    Logger.LogDebug($"First attempt to lock synchronization file '{syncFile}' was unsuccessful. " +
-                              $"Locked by: {string.Join(", ", processes)}. Will keep retrying in the background.");
+                    Logger.LogDebug("First attempt to lock synchronization file '{SyncFile}' was unsuccessful. " +
+                              "Locked by: {LockedByProcesses}. Will keep retrying in the background.", syncFile, string.Join(", ", processes));
                 }
 
                 return false;
@@ -156,7 +156,7 @@ public class FileLockScope : Disposable
             _stream.Dispose();
             _stream = null;
 
-            Logger.LogDebug($"Unlocked synchronization file '{_syncFile}'");
+            Logger.LogDebug("Unlocked synchronization file '{SyncFile}'", _syncFile);
         }
 
         _lockAttemptCounter = 0;
@@ -187,7 +187,7 @@ public class FileLockScope : Disposable
             {
                 fileService.Delete(syncFile);
 
-                Logger.LogDebug($"Deleted synchronization file '{syncFile}'");
+                Logger.LogDebug("Deleted synchronization file '{SyncFile}'", syncFile);
             }
         }
         catch (IOException ex)
@@ -195,11 +195,11 @@ public class FileLockScope : Disposable
             var processes = FileLockInfo.GetProcessesLockingFile(syncFile);
             if (processes is null || !processes.Any())
             {
-                Logger.LogWarning(ex, $"Failed to delete synchronization file '{syncFile}'");
+                Logger.LogWarning(ex, "Failed to delete synchronization file '{SyncFile}'", syncFile);
             }
             else
             {
-                Logger.LogWarning(ex, $"Failed to delete synchronization file '{syncFile}' locked by: {string.Join(", ", processes)}");
+                Logger.LogWarning(ex, "Failed to delete synchronization file '{SyncFile}' locked by: {LockedByProcesses}", syncFile, string.Join(", ", processes));
             }
         }
     }

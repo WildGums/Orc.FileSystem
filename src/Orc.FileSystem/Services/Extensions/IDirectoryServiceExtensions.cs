@@ -56,7 +56,7 @@ public static class IDirectoryServiceExtensions
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Failed to calculate the size of directory '{0}'", path);
+            Logger.LogWarning(ex, "Failed to calculate the size of directory '{Path}'", path);
         }
 
         return size;

@@ -12,11 +12,11 @@ internal static class ILogExtensions
         IsDebuggerAttached = Debugger.IsAttached;
     }
 
-    public static void LogDebugIfAttached(this ILogger logger, string message)
+    public static void LogDebugIfAttached(this ILogger logger, string message, params object?[] args)
     {
         if (IsDebuggerAttached)
         {
-            logger.LogDebug(message);
+            logger.LogDebug(message, args);
         }
     }
 }
