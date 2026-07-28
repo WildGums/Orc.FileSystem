@@ -17,6 +17,7 @@ public static partial class IFileServiceExtensions
         try
         {
             using var stream = fileService.OpenRead(fileName);
+
             Logger.LogDebug("Reading all text from '{FileName}'", fileName);
 
             using var reader = new StreamReader(stream);
@@ -39,6 +40,7 @@ public static partial class IFileServiceExtensions
         try
         {
             await using var stream = fileService.OpenRead(fileName);
+
             Logger.LogDebug("Reading all text from '{FileName}'", fileName);
 
             using var reader = new StreamReader(stream);
@@ -61,6 +63,7 @@ public static partial class IFileServiceExtensions
         try
         {
             using var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+
             Logger.LogDebug("Writing text to '{FileName}'", fileName);
 
             using var writer = new StreamWriter(stream);
@@ -82,6 +85,7 @@ public static partial class IFileServiceExtensions
         try
         {
             await using var stream = fileService.Open(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+
             Logger.LogDebug("Writing text to '{FileName}'", fileName);
 
             await using var writer = new StreamWriter(stream);
